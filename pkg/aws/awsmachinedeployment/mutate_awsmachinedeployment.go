@@ -10,9 +10,9 @@ import (
 	"github.com/giantswarm/micrologger"
 	"k8s.io/api/admission/v1beta1"
 
-	"github.com/giantswarm/aws-admission-controller/config"
-	"github.com/giantswarm/aws-admission-controller/pkg/aws"
-	"github.com/giantswarm/aws-admission-controller/pkg/mutator"
+	"github.com/giantswarm/app-admission-controller/config"
+	"github.com/giantswarm/app-admission-controller/pkg/aws"
+	"github.com/giantswarm/app-admission-controller/pkg/mutator"
 )
 
 var (

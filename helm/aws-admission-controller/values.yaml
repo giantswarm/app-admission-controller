@@ -1,5 +1,5 @@
 image:
-  name: "giantswarm/aws-admission-controller"
+  name: "giantswarm/app-admission-controller"
   tag: "[[ .Version ]]"
 
 project:

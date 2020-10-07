@@ -13,10 +13,10 @@ import (
 	"k8s.io/api/admission/v1beta1"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/giantswarm/aws-admission-controller/config"
-	"github.com/giantswarm/aws-admission-controller/pkg/aws"
-	"github.com/giantswarm/aws-admission-controller/pkg/key"
-	"github.com/giantswarm/aws-admission-controller/pkg/validator"
+	"github.com/giantswarm/app-admission-controller/config"
+	"github.com/giantswarm/app-admission-controller/pkg/aws"
+	"github.com/giantswarm/app-admission-controller/pkg/key"
+	"github.com/giantswarm/app-admission-controller/pkg/validator"
 )
 
 type Validator struct {

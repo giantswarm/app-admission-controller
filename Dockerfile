@@ -1,4 +1,4 @@
 FROM alpine:3.12
 WORKDIR /app
-COPY aws-admission-controller /app
-CMD ["/app/aws-admission-controller"]
+COPY app-admission-controller /app
+CMD ["/app/app-admission-controller"]

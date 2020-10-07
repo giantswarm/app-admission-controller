@@ -11,12 +11,12 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"github.com/giantswarm/aws-admission-controller/config"
-	"github.com/giantswarm/aws-admission-controller/pkg/aws/awscontrolplane"
-	"github.com/giantswarm/aws-admission-controller/pkg/aws/awsmachinedeployment"
-	"github.com/giantswarm/aws-admission-controller/pkg/aws/g8scontrolplane"
-	"github.com/giantswarm/aws-admission-controller/pkg/mutator"
-	"github.com/giantswarm/aws-admission-controller/pkg/validator"
+	"github.com/giantswarm/app-admission-controller/config"
+	"github.com/giantswarm/app-admission-controller/pkg/aws/awscontrolplane"
+	"github.com/giantswarm/app-admission-controller/pkg/aws/awsmachinedeployment"
+	"github.com/giantswarm/app-admission-controller/pkg/aws/g8scontrolplane"
+	"github.com/giantswarm/app-admission-controller/pkg/mutator"
+	"github.com/giantswarm/app-admission-controller/pkg/validator"
 )
 
 func main() {

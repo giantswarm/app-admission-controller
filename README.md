@@ -1,42 +1,20 @@
 [![CircleCI](https://circleci.com/gh/giantswarm/app-admission-controller.svg?style=shield)](https://circleci.com/gh/giantswarm/app-admission-controller)
 
-# G8S Admission Controller
+# app-admission-controller (Under Contruction)
 
-Giant Swarm Control Plane admission controller that implements the following rules:
+Admission controller that implements the following rules:
 
-Mutating Webhook:
+## Mutating Webhook:
 
-- In a `G8sControlPlane` resource, when the `.spec.replicas` is changed from 1 to 3, the Availability Zones of the according `AWSControlPlane` will be defaulted if needed.
-- In a `G8sControlPlane` resource, the replicas attribute will be defaulted if it is not defined.
-  - For HA-Versions, in case the matching `AWSControlPlane` already exists, the number of AZs determines the value of `replicas`.
-    In case no such `AWSControlPlane` exists, the default number of AZs is assigned. 
-  - For pre-HA versions, replicas is always set to 1 for a single master cluster.
-- In a `G8sControlPlane` resource, the infrastructure reference will be set to point to the matching `AWSControlPlane` resource if it already exists.
+- TODO: Add details.
 
-- In an `AWSControlPlane` resource, the Availability Zones will be defaulted if they are `nil`. 
-  - For HA-Versions, in case the matching `G8sControlPlane` already exists, the number of AZs is determined by the number of `replicas` defined there. 
-    In case no such `G8sControlPlane` exists, the default number of AZs is assigned. 
-  - For Pre-HA-Versions, in case the matching `AWSCluster` already exists, the AZ is taken from there. 
-- In an `AWSControlPlane` resource, the Instance Type will be defaulted if it is not defined. 
-  - For HA-Versions, the default Instance Type is chosen. 
-  - For Pre-HA-Versions, in case the matching `AWSCluster` already exists, the Instance Type is taken from there. 
-- On creation of an `AWSControlPlane` resource, the infrastructure reference of the according `G8sControlPlane` will be set if needed.
+## Validating Webhook:
 
-- When a new `AWSMachineDeployment` is created, details are logged.
-
-Validating Webhook:
-
-- In a `G8sControlPlane` resource, it validates the Master Node Replicas are a valid count (Right now either 1 or 3).
-- In a `G8sControlPlane` resource, it validates the Master Node Replicas are matching the number of Availability Zones in the `AWSControlPlane` resource.
-
-- In a `AWSControlPlane` resource, it validates the Control Plane ID is matching against `G8sControlPlane` resource.
-- In a `AWSMachineDeployment` resource, it validates the Machine Deployment ID is matching against `MachineDeployment` resource.
-
-The certificates for the webhook are created with CertManager and injected through the CA Injector.
+- TODO: Add details.
 
 ## Ownership
 
-Firecracker Team
+Team Batman
 
 ### Local Development
 
@@ -79,10 +57,6 @@ See [Releases](https://github.com/giantswarm/app-admission-controller/releases)
 
 See [CONTRIBUTING](CONTRIBUTING.md) for details on submitting patches, the
 contribution workflow as well as reporting bugs.
-
-## Publishing a release
-
-See [docs/Release.md](https://github.com/giantswarm/app-admission-controller/blob/master/docs/release.md)
 
 ## Add a new webhook
 

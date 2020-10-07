@@ -11,6 +11,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/giantswarm/app-admission-controller/config"
+	"github.com/giantswarm/app-admission-controller/pkg/app"
 	"github.com/giantswarm/app-admission-controller/pkg/aws/g8scontrolplane"
 	"github.com/giantswarm/app-admission-controller/pkg/mutator"
 	"github.com/giantswarm/app-admission-controller/pkg/validator"
@@ -27,7 +28,7 @@ func main() {
 		panic(microerror.JSON(err))
 	}
 
-	g8scontrolplaneValidator, err := g8scontrolplane.NewValidator(config)
+	appValidator, err := app.NewValidator(config)
 	if err != nil {
 		panic(microerror.JSON(err))
 	}
@@ -35,7 +36,7 @@ func main() {
 	// Here we register our endpoints.
 	handler := http.NewServeMux()
 	handler.Handle("/mutate/g8scontrolplane", mutator.Handler(g8scontrolplaneMutator))
-	handler.Handle("/validate/g8scontrolplane", validator.Handler(g8scontrolplaneValidator))
+	handler.Handle("/validate/app", validator.Handler(appValidator))
 
 	handler.HandleFunc("/healthz", healthCheck)
 

@@ -3,12 +3,14 @@ module github.com/giantswarm/app-admission-controller
 go 1.15
 
 require (
+	github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535 // indirect
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/giantswarm/apiextensions/v2 v2.6.0
 	github.com/giantswarm/backoff v0.2.0
 	github.com/giantswarm/k8sclient/v4 v4.0.0
 	github.com/giantswarm/microerror v0.2.1
 	github.com/giantswarm/micrologger v0.3.3
+	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/prometheus/client_golang v1.7.1
 	github.com/stretchr/testify v1.6.1 // indirect
 	golang.org/x/tools v0.0.0-20200706234117-b22de6825cf7 // indirect

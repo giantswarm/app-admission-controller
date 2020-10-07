@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -12,8 +11,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/giantswarm/app-admission-controller/config"
-	"github.com/giantswarm/app-admission-controller/pkg/aws/awscontrolplane"
-	"github.com/giantswarm/app-admission-controller/pkg/aws/awsmachinedeployment"
 	"github.com/giantswarm/app-admission-controller/pkg/aws/g8scontrolplane"
 	"github.com/giantswarm/app-admission-controller/pkg/mutator"
 	"github.com/giantswarm/app-admission-controller/pkg/validator"
@@ -25,29 +22,7 @@ func main() {
 		panic(microerror.JSON(err))
 	}
 
-	// Setup handler for mutating webhook
-	awscontrolplaneMutator, err := awscontrolplane.NewMutator(config)
-	if err != nil {
-		panic(microerror.JSON(err))
-	}
-
-	awsmachinedeploymentMutator, err := awsmachinedeployment.NewMutator(config)
-	if err != nil {
-		log.Fatalf("Unable to create G8s Control Plane admitter: %v", err)
-	}
-
 	g8scontrolplaneMutator, err := g8scontrolplane.NewMutator(config)
-	if err != nil {
-		panic(microerror.JSON(err))
-	}
-
-	// Setup handler for validating webhook
-	awscontrolplaneValidator, err := awscontrolplane.NewValidator(config)
-	if err != nil {
-		panic(microerror.JSON(err))
-	}
-
-	awsmachinedeploymentValidator, err := awsmachinedeployment.NewValidator(config)
 	if err != nil {
 		panic(microerror.JSON(err))
 	}
@@ -59,11 +34,7 @@ func main() {
 
 	// Here we register our endpoints.
 	handler := http.NewServeMux()
-	handler.Handle("/mutate/awsmachinedeployment", mutator.Handler(awsmachinedeploymentMutator))
-	handler.Handle("/mutate/awscontrolplane", mutator.Handler(awscontrolplaneMutator))
 	handler.Handle("/mutate/g8scontrolplane", mutator.Handler(g8scontrolplaneMutator))
-	handler.Handle("/validate/awscontrolplane", validator.Handler(awscontrolplaneValidator))
-	handler.Handle("/validate/awsmachinedeployment", validator.Handler(awsmachinedeploymentValidator))
 	handler.Handle("/validate/g8scontrolplane", validator.Handler(g8scontrolplaneValidator))
 
 	handler.HandleFunc("/healthz", healthCheck)

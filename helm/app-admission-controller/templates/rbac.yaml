@@ -6,6 +6,19 @@ metadata:
     {{- include "labels.common" . | nindent 4 }}
 rules:
   - apiGroups:
+      - application.giantswarm.io
+    resources:
+      - apps
+    verbs:
+      - "*"
+  - apiGroups:
+    - ""
+    resources:
+      - configmaps
+      - secrets
+    verbs:
+      - "get"
+  - apiGroups:
       - infrastructure.giantswarm.io
     resources:
       - awsclusters

@@ -10,20 +10,20 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func DefaultAdmissionRequestG8sControlPlane() (v1beta1.AdmissionRequest, error) {
-	byt, err := json.Marshal(DefaultG8sControlPlane())
+func DefaultAdmissionRequestApp() (v1beta1.AdmissionRequest, error) {
+	byt, err := json.Marshal(DefaultApp())
 	if err != nil {
 		return v1beta1.AdmissionRequest{}, microerror.Mask(err)
 	}
 
 	req := v1beta1.AdmissionRequest{
 		Kind: metav1.GroupVersionKind{
-			Version: "infrastructure.giantswarm.io/v1alpha2",
-			Kind:    "G8sControlPlane",
+			Version: "application.giantswarm.io/v1alpha1",
+			Kind:    "App",
 		},
 		Resource: metav1.GroupVersionResource{
-			Version:  "infrastructure.giantswarm.io/v1alpha2",
-			Resource: "g8scontrolplanes",
+			Version:  "application.giantswarm.io/v1alpha1",
+			Resource: "apps",
 		},
 		Operation: v1beta1.Create,
 		Object: runtime.RawExtension{

@@ -46,8 +46,8 @@ func NewValidator(config config.Config) (*Validator, error) {
 	return validator, nil
 }
 
-func (m *Validator) Log(keyVals ...interface{}) {
-	m.logger.Log(keyVals...)
+func (v *Validator) Log(keyVals ...interface{}) {
+	v.logger.Log(keyVals...)
 }
 
 func (v *Validator) Resource() string {

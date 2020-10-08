@@ -41,11 +41,15 @@ func IsDeleted(customResource v1alpha1.App) bool {
 	return customResource.DeletionTimestamp != nil
 }
 
-func KubecConfigSecretName(customResource v1alpha1.App) string {
+func KubeConfigContextName(customResource v1alpha1.App) string {
+	return customResource.Spec.KubeConfig.Context.Name
+}
+
+func KubeConfigSecretName(customResource v1alpha1.App) string {
 	return customResource.Spec.KubeConfig.Secret.Name
 }
 
-func KubecConfigSecretNamespace(customResource v1alpha1.App) string {
+func KubeConfigSecretNamespace(customResource v1alpha1.App) string {
 	return customResource.Spec.KubeConfig.Secret.Namespace
 }
 

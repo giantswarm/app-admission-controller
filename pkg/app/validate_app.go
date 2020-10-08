@@ -135,14 +135,14 @@ func (v *Validator) validateApp(ctx context.Context, cr v1alpha1.App) error {
 	}
 
 	if !key.InCluster(cr) {
-		ns := key.KubecConfigSecretNamespace(cr)
+		ns := key.KubeConfigSecretNamespace(cr)
 		if ns == "" {
-			return microerror.Maskf(validationError, namespaceNotFoundReasonTemplate, "kubeconfig secret", key.KubecConfigSecretName(cr))
+			return microerror.Maskf(validationError, namespaceNotFoundReasonTemplate, "kubeconfig secret", key.KubeConfigSecretName(cr))
 		}
 
-		_, err := v.k8sClient.K8sClient().CoreV1().Secrets(key.KubecConfigSecretNamespace(cr)).Get(ctx, key.KubecConfigSecretName(cr), metav1.GetOptions{})
+		_, err := v.k8sClient.K8sClient().CoreV1().Secrets(key.KubeConfigSecretNamespace(cr)).Get(ctx, key.KubeConfigSecretName(cr), metav1.GetOptions{})
 		if apierrors.IsNotFound(err) {
-			return microerror.Maskf(validationError, resourceNotFoundTemplate, "kubeconfig secret", key.KubecConfigSecretName(cr), ns)
+			return microerror.Maskf(validationError, resourceNotFoundTemplate, "kubeconfig secret", key.KubeConfigSecretName(cr), ns)
 		} else if err != nil {
 			return microerror.Mask(err)
 		}

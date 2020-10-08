@@ -80,11 +80,32 @@ func (m *Mutator) MutateApp(ctx context.Context, appNewCR, appOldCR v1alpha1.App
 		result = append(result, labelPatches...)
 	}
 
+	configPatches, err := m.mutateConfig(ctx, appNewCR, appOldCR)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	if len(configPatches) > 0 {
+		result = append(result, configPatches...)
+	}
+
 	return result, nil
 }
 
 func (m *Mutator) Resource() string {
 	return Name
+}
+
+func (m *Mutator) mutateConfig(ctx context.Context, appNewCR, appOldCR v1alpha1.App) ([]mutator.PatchOperation, error) {
+	var result []mutator.PatchOperation
+
+	if key.AppConfigMapName(appNewCR) == "" && key.AppConfigMapNamespace(appNewCR) == "" {
+		result = append(result, mutator.PatchAdd("/spec/config", map[string]string{}))
+		result = append(result, mutator.PatchAdd("/spec/config/configMap", map[string]string{}))
+		result = append(result, mutator.PatchAdd("/spec/config/configMap/namespace", appNewCR.Namespace))
+		result = append(result, mutator.PatchAdd("/spec/config/configMap/name", fmt.Sprintf("%s-cluster-values", appNewCR.Namespace)))
+	}
+
+	return result, nil
 }
 
 func (m *Mutator) mutateLabels(ctx context.Context, appNewCR, appOldCR v1alpha1.App) ([]mutator.PatchOperation, error) {

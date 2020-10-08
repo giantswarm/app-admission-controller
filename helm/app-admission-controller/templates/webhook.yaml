@@ -18,11 +18,11 @@ webhooks:
         path: /mutate/g8scontrolplane
       caBundle: Cg==
     rules:
-      - apiGroups: ["infrastructure.giantswarm.io"]
+      - apiGroups: ["application.giantswarm.io"]
         resources:
-          - "g8scontrolplanes"
+          - "apps"
         apiVersions:
-          - "v1alpha2"
+          - "v1alpha1"
         operations:
           - CREATE
           - UPDATE

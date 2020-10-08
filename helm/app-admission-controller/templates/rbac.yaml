@@ -12,6 +12,12 @@ rules:
     verbs:
       - "*"
   - apiGroups:
+      - application.giantswarm.io
+    resources:
+      - appcatalogs
+    verbs:
+      - "get"
+  - apiGroups:
     - ""
     resources:
       - configmaps

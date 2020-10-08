@@ -88,6 +88,14 @@ func (m *Mutator) MutateApp(ctx context.Context, appNewCR, appOldCR v1alpha1.App
 		result = append(result, configPatches...)
 	}
 
+	kubeConfigPatches, err := m.mutateKubeConfig(ctx, appNewCR, appOldCR)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	if len(kubeConfigPatches) > 0 {
+		result = append(result, kubeConfigPatches...)
+	}
+
 	return result, nil
 }
 
@@ -97,6 +105,34 @@ func (m *Mutator) Resource() string {
 
 func (m *Mutator) mutateConfig(ctx context.Context, appNewCR, appOldCR v1alpha1.App) ([]mutator.PatchOperation, error) {
 	var result []mutator.PatchOperation
+
+	if key.AppConfigMapName(appNewCR) == "" && key.AppConfigMapNamespace(appNewCR) == "" {
+		result = append(result, mutator.PatchAdd("/spec/config", map[string]string{}))
+		result = append(result, mutator.PatchAdd("/spec/config/configMap", map[string]string{}))
+		result = append(result, mutator.PatchAdd("/spec/config/configMap/namespace", appNewCR.Namespace))
+		result = append(result, mutator.PatchAdd("/spec/config/configMap/name", fmt.Sprintf("%s-cluster-values", appNewCR.Namespace)))
+	}
+
+	return result, nil
+}
+
+func (m *Mutator) mutateKubeConfig(ctx context.Context, appNewCR, appOldCR v1alpha1.App) ([]mutator.PatchOperation, error) {
+	var result []mutator.PatchOperation
+
+	if !key.InCluster(appNewCR) {
+		result = append(result, mutator.PatchAdd("/spec/kubeConfig", map[string]string{}))
+
+		if key.KubeConfigContextName(appNewCR) == "" {
+			result = append(result, mutator.PatchAdd("/spec/kubeConfig/context", map[string]string{}))
+			result = append(result, mutator.PatchAdd("/spec/kubeConfig/context/name", appNewCR.Namespace))
+		}
+
+		if key.KubeConfigSecretName(appNewCR) == "" && key.KubeConfigSecretNamespace(appNewCR) == "" {
+			result = append(result, mutator.PatchAdd("/spec/kubeConfig/secret", map[string]string{}))
+			result = append(result, mutator.PatchAdd("/spec/kubeConfig/secret/name", fmt.Sprintf("%s-kubeconfig", appNewCR.Namespace)))
+			result = append(result, mutator.PatchAdd("/spec/kubeConfig/secret/namespace", appNewCR.Namespace))
+		}
+	}
 
 	if key.AppConfigMapName(appNewCR) == "" && key.AppConfigMapNamespace(appNewCR) == "" {
 		result = append(result, mutator.PatchAdd("/spec/config", map[string]string{}))

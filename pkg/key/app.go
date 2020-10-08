@@ -29,6 +29,10 @@ func AppSecretNamespace(customResource v1alpha1.App) string {
 	return customResource.Spec.Config.Secret.Namespace
 }
 
+func CatalogName(customResource v1alpha1.App) string {
+	return customResource.Spec.Catalog
+}
+
 func ClusterID(customResource v1alpha1.App) string {
 	return customResource.GetLabels()[label.Cluster]
 }

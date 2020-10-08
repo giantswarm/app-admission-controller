@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/giantswarm/apiextensions/v2/pkg/apis/application/v1alpha1"
+	"github.com/giantswarm/apiextensions/v2/pkg/label"
 	"github.com/giantswarm/k8sclient/v4/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -19,8 +20,10 @@ import (
 const (
 	Name = "app"
 
-	resourceNotFoundTemplate        = "%s %#q in namespace %#q not found"
+	catalogNotFoundTemplate         = "catalog %#q not found"
+	labelNotFoundTemplate           = "label %#q not found"
 	namespaceNotFoundReasonTemplate = "namespace is not specified for %s %#q"
+	resourceNotFoundTemplate        = "%s %#q in namespace %#q not found"
 )
 
 type Validator struct {
@@ -43,6 +46,14 @@ func NewValidator(config config.Config) (*Validator, error) {
 	return validator, nil
 }
 
+func (m *Validator) Log(keyVals ...interface{}) {
+	m.logger.Log(keyVals...)
+}
+
+func (v *Validator) Resource() string {
+	return Name
+}
+
 func (v *Validator) Validate(request *v1beta1.AdmissionRequest) (bool, error) {
 	ctx := context.Background()
 
@@ -61,7 +72,29 @@ func (v *Validator) Validate(request *v1beta1.AdmissionRequest) (bool, error) {
 }
 
 func (v *Validator) ValidateApp(ctx context.Context, app v1alpha1.App) (bool, error) {
-	err := v.validateApp(ctx, app)
+	var err error
+
+	err = v.validateLabels(ctx, app)
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	err = v.validateCatalog(ctx, app)
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	err = v.validateConfig(ctx, app)
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	err = v.validateKubeConfig(ctx, app)
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	err = v.validateUserConfig(ctx, app)
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
@@ -69,15 +102,20 @@ func (v *Validator) ValidateApp(ctx context.Context, app v1alpha1.App) (bool, er
 	return true, nil
 }
 
-func (m *Validator) Log(keyVals ...interface{}) {
-	m.logger.Log(keyVals...)
+func (v *Validator) validateCatalog(ctx context.Context, cr v1alpha1.App) error {
+	if key.CatalogName(cr) != "" {
+		_, err := v.k8sClient.G8sClient().ApplicationV1alpha1().AppCatalogs().Get(ctx, key.CatalogName(cr), metav1.GetOptions{})
+		if apierrors.IsNotFound(err) {
+			return microerror.Maskf(validationError, catalogNotFoundTemplate, key.CatalogName(cr))
+		} else if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	return nil
 }
 
-func (v *Validator) Resource() string {
-	return Name
-}
-
-func (v *Validator) validateApp(ctx context.Context, cr v1alpha1.App) error {
+func (v *Validator) validateConfig(ctx context.Context, cr v1alpha1.App) error {
 	if key.AppConfigMapName(cr) != "" {
 		ns := key.AppConfigMapNamespace(cr)
 		if ns == "" {
@@ -106,6 +144,36 @@ func (v *Validator) validateApp(ctx context.Context, cr v1alpha1.App) error {
 		}
 	}
 
+	return nil
+}
+
+func (v *Validator) validateLabels(ctx context.Context, cr v1alpha1.App) error {
+	if key.VersionLabel(cr) == "" {
+		return microerror.Maskf(validationError, labelNotFoundTemplate, label.AppOperatorVersion)
+	}
+
+	return nil
+}
+
+func (v *Validator) validateKubeConfig(ctx context.Context, cr v1alpha1.App) error {
+	if !key.InCluster(cr) {
+		ns := key.KubeConfigSecretNamespace(cr)
+		if ns == "" {
+			return microerror.Maskf(validationError, namespaceNotFoundReasonTemplate, "kubeconfig secret", key.KubeConfigSecretName(cr))
+		}
+
+		_, err := v.k8sClient.K8sClient().CoreV1().Secrets(key.KubeConfigSecretNamespace(cr)).Get(ctx, key.KubeConfigSecretName(cr), metav1.GetOptions{})
+		if apierrors.IsNotFound(err) {
+			return microerror.Maskf(validationError, resourceNotFoundTemplate, "kubeconfig secret", key.KubeConfigSecretName(cr), ns)
+		} else if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	return nil
+}
+
+func (v *Validator) validateUserConfig(ctx context.Context, cr v1alpha1.App) error {
 	if key.UserConfigMapName(cr) != "" {
 		ns := key.UserConfigMapNamespace(cr)
 		if ns == "" {
@@ -129,20 +197,6 @@ func (v *Validator) validateApp(ctx context.Context, cr v1alpha1.App) error {
 		_, err := v.k8sClient.K8sClient().CoreV1().Secrets(key.UserSecretNamespace(cr)).Get(ctx, key.UserSecretName(cr), metav1.GetOptions{})
 		if apierrors.IsNotFound(err) {
 			return microerror.Maskf(validationError, resourceNotFoundTemplate, "secret", key.UserSecretName(cr), ns)
-		} else if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	if !key.InCluster(cr) {
-		ns := key.KubeConfigSecretNamespace(cr)
-		if ns == "" {
-			return microerror.Maskf(validationError, namespaceNotFoundReasonTemplate, "kubeconfig secret", key.KubeConfigSecretName(cr))
-		}
-
-		_, err := v.k8sClient.K8sClient().CoreV1().Secrets(key.KubeConfigSecretNamespace(cr)).Get(ctx, key.KubeConfigSecretName(cr), metav1.GetOptions{})
-		if apierrors.IsNotFound(err) {
-			return microerror.Maskf(validationError, resourceNotFoundTemplate, "kubeconfig secret", key.KubeConfigSecretName(cr), ns)
 		} else if err != nil {
 			return microerror.Mask(err)
 		}

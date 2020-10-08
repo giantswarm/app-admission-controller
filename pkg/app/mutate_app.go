@@ -1,12 +1,19 @@
 package app
 
 import (
+	"context"
+	"fmt"
+	"strings"
+
+	"github.com/giantswarm/apiextensions/v2/pkg/apis/application/v1alpha1"
+	"github.com/giantswarm/apiextensions/v2/pkg/label"
 	"github.com/giantswarm/k8sclient/v4/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"k8s.io/api/admission/v1beta1"
 
 	"github.com/giantswarm/app-admission-controller/config"
+	"github.com/giantswarm/app-admission-controller/pkg/key"
 	"github.com/giantswarm/app-admission-controller/pkg/mutator"
 )
 
@@ -31,34 +38,76 @@ func NewMutator(config config.Config) (*Mutator, error) {
 	return mutator, nil
 }
 
+func (m *Mutator) Log(keyVals ...interface{}) {
+	m.logger.Log(keyVals...)
+}
+
 func (m *Mutator) Mutate(request *v1beta1.AdmissionRequest) ([]mutator.PatchOperation, error) {
+	ctx := context.Background()
+
 	var result []mutator.PatchOperation
 
 	if request.DryRun != nil && *request.DryRun {
 		return result, nil
 	}
 
-	/*
-		appNewCR := &v1alpha1.App{}
-		appOldCR := &v1alpha1.App{}
-		if _, _, err := mutator.Deserializer.Decode(request.Object.Raw, nil, appNewCR); err != nil {
-			return nil, microerror.Maskf(parsingFailedError, "unable to parse app: %#v", err)
-		}
-		if _, _, err := mutator.Deserializer.Decode(request.OldObject.Raw, nil, appOldCR); err != nil {
-			return nil, microerror.Maskf(parsingFailedError, "unable to parse app: %#v", err)
-		}
+	appNewCR := &v1alpha1.App{}
+	if _, _, err := mutator.Deserializer.Decode(request.Object.Raw, nil, appNewCR); err != nil {
+		return nil, microerror.Maskf(parsingFailedError, "unable to parse app: %#v", err)
+	}
 
-			patch := mutator.PatchReplace("/spec/replicas", replicas)
-			result = append(result, patch)
-	*/
+	appOldCR := &v1alpha1.App{}
+	if _, _, err := mutator.Deserializer.Decode(request.OldObject.Raw, nil, appOldCR); err != nil {
+		return nil, microerror.Maskf(parsingFailedError, "unable to parse app: %#v", err)
+	}
+
+	result, err := m.MutateApp(ctx, *appNewCR, *appOldCR)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
 
 	return result, nil
 }
 
-func (m *Mutator) Log(keyVals ...interface{}) {
-	m.logger.Log(keyVals...)
+func (m *Mutator) MutateApp(ctx context.Context, appNewCR, appOldCR v1alpha1.App) ([]mutator.PatchOperation, error) {
+	var result []mutator.PatchOperation
+
+	labelPatches, err := m.mutateLabels(ctx, appNewCR, appOldCR)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	if len(labelPatches) > 0 {
+		result = append(result, labelPatches...)
+	}
+
+	return result, nil
 }
 
 func (m *Mutator) Resource() string {
 	return Name
+}
+
+func (m *Mutator) mutateLabels(ctx context.Context, appNewCR, appOldCR v1alpha1.App) ([]mutator.PatchOperation, error) {
+	var result []mutator.PatchOperation
+
+	if key.VersionLabel(appNewCR) == "" {
+		version := "1.0.0"
+
+		if appNewCR.Namespace == "giantswarm" {
+			version = "0.0.0"
+		}
+
+		if len(appNewCR.Labels) == 0 {
+			result = append(result, mutator.PatchAdd("/metadata/labels", map[string]string{}))
+		}
+
+		patch := mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), version)
+		result = append(result, patch)
+	}
+
+	return result, nil
+}
+
+func replaceToEscape(from string) string {
+	return strings.Replace(from, "/", "~1", -1)
 }

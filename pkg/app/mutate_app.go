@@ -130,8 +130,8 @@ func (m *Mutator) mutateKubeConfig(ctx context.Context, appNewCR, appOldCR v1alp
 
 		if key.KubeConfigSecretName(appNewCR) == "" && key.KubeConfigSecretNamespace(appNewCR) == "" {
 			result = append(result, mutator.PatchAdd("/spec/kubeConfig/secret", map[string]string{}))
-			result = append(result, mutator.PatchAdd("/spec/kubeConfig/secret/name", fmt.Sprintf("%s-kubeconfig", appNewCR.Namespace)))
 			result = append(result, mutator.PatchAdd("/spec/kubeConfig/secret/namespace", appNewCR.Namespace))
+			result = append(result, mutator.PatchAdd("/spec/kubeConfig/secret/name", fmt.Sprintf("%s-kubeconfig", appNewCR.Namespace)))
 		}
 	}
 

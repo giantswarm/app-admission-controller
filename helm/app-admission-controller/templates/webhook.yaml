@@ -8,21 +8,21 @@ metadata:
   labels:
     {{- include "labels.common" . | nindent 4 }}
 webhooks:
-  - name: g8scontrolplanes.{{ include "resource.default.name" . }}.giantswarm.io
+  - name: apps.{{ include "resource.default.name" . }}.giantswarm.io
     failurePolicy: Ignore
     sideEffects: NoneOnDryRun
     clientConfig:
       service:
         name: {{ include "resource.default.name" . }}
         namespace: {{ include "resource.default.namespace" . }}
-        path: /mutate/g8scontrolplane
+        path: /mutate/app
       caBundle: Cg==
     rules:
-      - apiGroups: ["infrastructure.giantswarm.io"]
+      - apiGroups: ["application.giantswarm.io"]
         resources:
-          - "g8scontrolplanes"
+          - "apps"
         apiVersions:
-          - "v1alpha2"
+          - "v1alpha1"
         operations:
           - CREATE
           - UPDATE

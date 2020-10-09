@@ -12,38 +12,18 @@ rules:
     verbs:
       - "*"
   - apiGroups:
+      - application.giantswarm.io
+    resources:
+      - appcatalogs
+    verbs:
+      - "get"
+  - apiGroups:
     - ""
     resources:
       - configmaps
       - secrets
     verbs:
       - "get"
-  - apiGroups:
-      - infrastructure.giantswarm.io
-    resources:
-      - awsclusters
-      - awsclusters/status
-      - awscontrolplanes
-      - awscontrolplanes/status
-      - awsmachinedeployments
-      - awsmachinedeployments/status
-      - g8scontrolplanes
-      - g8scontrolplanes/status
-    verbs:
-      - "*"
-  - apiGroups:
-      - cluster.x-k8s.io
-    resources:
-      - machinedeployments
-      - machinedeployments/status
-    verbs:
-      - "*"
-  - apiGroups:
-      - release.giantswarm.io
-    resources:
-      - releases
-    verbs:
-      - "list"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding

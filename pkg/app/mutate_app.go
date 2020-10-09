@@ -106,6 +106,10 @@ func (m *Mutator) Resource() string {
 func (m *Mutator) mutateConfig(ctx context.Context, appNewCR, appOldCR v1alpha1.App) ([]mutator.PatchOperation, error) {
 	var result []mutator.PatchOperation
 
+	if appNewCR.Namespace == "giantswarm" {
+		return result, nil
+	}
+
 	if key.AppConfigMapName(appNewCR) == "" && key.AppConfigMapNamespace(appNewCR) == "" {
 		result = append(result, mutator.PatchAdd("/spec/config", map[string]string{}))
 		result = append(result, mutator.PatchAdd("/spec/config/configMap", map[string]string{}))

@@ -121,6 +121,7 @@ func (m *Mutator) mutateKubeConfig(ctx context.Context, appNewCR, appOldCR v1alp
 
 	if !key.InCluster(appNewCR) {
 		result = append(result, mutator.PatchAdd("/spec/kubeConfig", map[string]string{}))
+		result = append(result, mutator.PatchAdd("/spec/kubeConfig/inCluster", false))
 
 		if key.KubeConfigContextName(appNewCR) == "" {
 			result = append(result, mutator.PatchAdd("/spec/kubeConfig/context", map[string]string{}))

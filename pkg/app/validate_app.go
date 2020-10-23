@@ -89,10 +89,12 @@ func (v *Validator) ValidateApp(ctx context.Context, app v1alpha1.App) (bool, er
 		return false, microerror.Mask(err)
 	}
 
-	err = v.validateKubeConfig(ctx, app)
-	if err != nil {
-		return false, microerror.Mask(err)
-	}
+	/*
+		err = v.validateKubeConfig(ctx, app)
+		if err != nil {
+			return false, microerror.Mask(err)
+		}
+	*/
 
 	err = v.validateUserConfig(ctx, app)
 	if err != nil {
@@ -155,6 +157,7 @@ func (v *Validator) validateLabels(ctx context.Context, cr v1alpha1.App) error {
 	return nil
 }
 
+/*
 func (v *Validator) validateKubeConfig(ctx context.Context, cr v1alpha1.App) error {
 	if !key.InCluster(cr) {
 		ns := key.KubeConfigSecretNamespace(cr)
@@ -172,6 +175,7 @@ func (v *Validator) validateKubeConfig(ctx context.Context, cr v1alpha1.App) err
 
 	return nil
 }
+*/
 
 func (v *Validator) validateUserConfig(ctx context.Context, cr v1alpha1.App) error {
 	if key.UserConfigMapName(cr) != "" {

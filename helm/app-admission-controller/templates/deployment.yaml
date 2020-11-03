@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "resource.default.name" . }}
+  namespace: {{ include "resource.default.namespace" . }}
+  labels:
+    {{- include "labels.common" . | nindent 4 }}
+spec:
+  replicas: 3
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+  {{- include "labels.selector" . | nindent 6 }}
+  {{- with .Values.deploymentStrategy }}
+  strategy:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  template:
+    metadata:
+      labels:
+        {{- include "labels.common" . | nindent 8 }}
+    spec:
+      volumes:
+        - name: {{ include "name" . }}-certificates
+          secret:
+            secretName: {{ include "resource.default.name"  . }}-certificates
+      serviceAccountName: {{ include "resource.default.name"  . }}
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+      containers:
+        - name: {{ include "name" . }}
+          image: "{{ .Values.Installation.V1.Registry.Domain }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
+          args:
+            - ./app-admission-controller
+            - --tls-cert-file=/certs/ca.crt
+            - --tls-key-file=/certs/tls.key
+          volumeMounts:
+          - name: {{ include "name" . }}-certificates
+            mountPath: "/certs"
+          ports:
+          - containerPort: 8443
+            name: webhook
+          - containerPort: 8080
+            name: metrics
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              scheme: HTTPS
+              port: 8443
+            initialDelaySeconds: 30
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              scheme: HTTPS
+              port: 8443
+            initialDelaySeconds: 30
+            timeoutSeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 150Mi
+            limits:
+              cpu: 250m
+              memory: 250Mi

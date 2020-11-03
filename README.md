@@ -1,32 +1,27 @@
-<!--
-
-    TODO:
-
-    - Add the project to the CircleCI:
-      https://circleci.com/setup-project/gh/giantswarm/REPOSITORY_NAME
-
-    - Change the badge (with style=shield):
-      https://circleci.com/gh/giantswarm/REPOSITORY_NAME/edit#badges
-      If this is a private repository token with scope `status` will be needed.
-
-    - Update CODEOWNERS file according to the needs for this project
-
-    - Run `devctl replace -i "REPOSITORY_NAME" "$(basename $(git rev-parse --show-toplevel))" *.md`
-      and commit your changes.
-
-    - If the repository is public consider adding godoc badge. This should be
-      the first badge separated with a single space.
-      [![GoDoc](https://godoc.org/github.com/giantswarm/REPOSITORY_NAME?status.svg)](http://godoc.org/github.com/giantswarm/REPOSITORY_NAME)
-
--->
 [![CircleCI](https://circleci.com/gh/giantswarm/template.svg?style=shield&circle-token=cbabd7d13186f190fca813db4f0c732b026f5f6c)](https://circleci.com/gh/giantswarm/template)
 
-# REPOSITORY_NAME
+# app-admission-controller
 
-This is a template repository containing some basic files every repository
-needs.
+Admission controller for app CRs managed by app-operator.
 
-To use it just hit `Use this template` button or [this
-link][generate].
+## Changelog
 
-[generate]: https://github.com/giantswarm/template/generate
+See [Releases](https://github.com/giantswarm/app-admission-controller/releases)
+
+## Contact
+
+- Bugs: [issues](https://github.com/giantswarm/app-admission-controller/issues)
+- Please visit https://www.giantswarm.io/responsible-disclosure for information on reporting security issues.
+
+## Contributing, reporting bugs
+
+See [CONTRIBUTING](CONTRIBUTING.md) for details on submitting patches, the
+contribution workflow as well as reporting bugs.
+
+## Add a new webhook
+
+See [docs/webhook.md](https://github.com/giantswarm/app-admission-controller/blob/master/docs/webhook.md)
+
+## Writing tests
+
+See [docs/tests.md](https://github.com/giantswarm/app-admission-controller/blob/master/docs/tests.md)

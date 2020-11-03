@@ -41,3 +41,16 @@ workflows:
             # Do this on every commit and when a new tag is created.
             tags:
               only: /^v.*/
+
+      - architect/push-to-app-catalog:
+          name: push-app-admission-controller-to-control-plane-app-catalog
+          context: architect
+          app_catalog: "control-plane-catalog"
+          app_catalog_test: "control-plane-test-catalog"
+          chart: "app-admission-controller"
+          requires:
+            - push-app-admission-controller-to-quay
+          filters:
+            # Do this on every commit and when a new tag is created.
+            tags:
+              only: /^v.*/

@@ -15,13 +15,13 @@ const (
 )
 
 type Config struct {
-	Address           string
-	MetricsAddress    string
-	AvailabilityZones string
-	CertFile          string
-	Logger            micrologger.Logger
-	K8sClient         k8sclient.Interface
-	KeyFile           string
+	Address        string
+	CertFile       string
+	KeyFile        string
+	MetricsAddress string
+
+	Logger    micrologger.Logger
+	K8sClient k8sclient.Interface
 }
 
 func Parse() (Config, error) {

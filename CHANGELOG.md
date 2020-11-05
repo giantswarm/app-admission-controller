@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
 
+- Add validation webhook for app CRs.
 
 [Unreleased]: https://github.com/giantswarm/app-admission-controller/tree/master

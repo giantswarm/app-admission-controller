@@ -10,6 +10,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"k8s.io/api/admission/v1beta1"
+	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 
 	"github.com/giantswarm/app-admission-controller/pkg/validator"
 )
@@ -71,6 +72,11 @@ func (v *Validator) Validate(request *v1beta1.AdmissionRequest) (bool, error) {
 	ctx := context.Background()
 
 	var app v1alpha1.App
+
+	if request.Operation == admissionv1beta1.Delete {
+		v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("admitted %#q operation for app %#q in namespace %#q", request.Operation, app.Name, app.Namespace))
+		return true, nil
+	}
 
 	if _, _, err := validator.Deserializer.Decode(request.Object.Raw, nil, &app); err != nil {
 		return false, microerror.Maskf(parsingFailedError, "unable to parse app: %#v", err)

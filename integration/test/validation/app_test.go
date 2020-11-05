@@ -4,6 +4,7 @@ package validation
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
@@ -15,6 +16,8 @@ func TestFailWhenCatalogNotFound(t *testing.T) {
 	ctx := context.Background()
 	var err error
 
+	expectedError := "validation error: catalog `missing` not found"
+
 	app := &v1alpha1.App{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "dex-app-unique",
@@ -24,7 +27,7 @@ func TestFailWhenCatalogNotFound(t *testing.T) {
 			},
 		},
 		Spec: v1alpha1.AppSpec{
-			Catalog:   "missing-catalog",
+			Catalog:   "missing",
 			Name:      "dex-app",
 			Namespace: "giantswarm",
 			KubeConfig: v1alpha1.AppSpecKubeConfig{
@@ -35,6 +38,9 @@ func TestFailWhenCatalogNotFound(t *testing.T) {
 	}
 	err = appTest.CtrlClient().Create(ctx, app)
 	if err == nil {
-		t.Fatalf("it should fail when catalog not found")
+		t.Fatalf("expected error but got nil")
+	}
+	if !strings.Contains(err.Error(), expectedError) {
+		t.Fatalf("error == %#v, want %#v ", err.Error(), expectedError)
 	}
 }

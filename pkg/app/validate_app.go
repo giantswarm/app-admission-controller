@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/app/v3/validation"
@@ -75,10 +76,15 @@ func (v *Validator) Validate(request *v1beta1.AdmissionRequest) (bool, error) {
 		return false, microerror.Maskf(parsingFailedError, "unable to parse app: %#v", err)
 	}
 
+	v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("validating app %#q in namespace %#q", app.Name, app.Namespace))
+
 	appAllowed, err := v.appValidator.ValidateApp(ctx, app)
 	if err != nil {
+		v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("rejected app %#q in namespace %#q", app.Name, app.Namespace), "stack", microerror.JSON(err))
 		return false, microerror.Mask(err)
 	}
+
+	v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("admitted app %#q in namespace %#q", app.Name, app.Namespace))
 
 	return appAllowed, nil
 }

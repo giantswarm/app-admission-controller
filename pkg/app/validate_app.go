@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/app/v3/validation"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"k8s.io/api/admission/v1beta1"
@@ -18,8 +18,8 @@ const (
 )
 
 type Validator struct {
-	k8sClient k8sclient.Interface
-	logger    micrologger.Logger
+	appValidator *validation.Validator
+	logger       micrologger.Logger
 }
 
 func NewValidator(config config.Config) (*Validator, error) {
@@ -29,9 +29,25 @@ func NewValidator(config config.Config) (*Validator, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
+
+	var err error
+
+	var appValidator *validation.Validator
+	{
+		c := validation.Config{
+			G8sClient: config.K8sClient.G8sClient(),
+			K8sClient: config.K8sClient.K8sClient(),
+			Logger:    config.Logger,
+		}
+		appValidator, err = validation.NewValidator(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	validator := &Validator{
-		k8sClient: config.K8sClient,
-		logger:    config.Logger,
+		appValidator: appValidator,
+		logger:       config.Logger,
 	}
 
 	return validator, nil
@@ -54,14 +70,10 @@ func (v *Validator) Validate(request *v1beta1.AdmissionRequest) (bool, error) {
 		return false, microerror.Maskf(parsingFailedError, "unable to parse app: %#v", err)
 	}
 
-	appAllowed, err := v.ValidateApp(ctx, app)
+	appAllowed, err := v.appValidator.ValidateApp(ctx, app)
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
 
 	return appAllowed, nil
-}
-
-func (v *Validator) ValidateApp(ctx context.Context, app v1alpha1.App) (bool, error) {
-	return true, nil
 }

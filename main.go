@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/giantswarm/app-admission-controller/config"
@@ -16,14 +18,38 @@ import (
 )
 
 func main() {
-	config, err := config.Parse()
+	err := mainWithError()
+	if err != nil {
+		panic(fmt.Sprintf("%#v\n", err))
+	}
+}
+
+func mainWithError() error {
+	ctx := context.Background()
+
+	cfg, err := config.Parse()
 	if err != nil {
 		panic(microerror.JSON(err))
 	}
 
-	appValidator, err := app.NewValidator(config)
-	if err != nil {
-		panic(microerror.JSON(err))
+	var newLogger micrologger.Logger
+	{
+		newLogger, err = micrologger.New(micrologger.Config{})
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	var appValidator *app.Validator
+	{
+		c := app.ValidatorConfig{
+			K8sClient: cfg.K8sClient,
+			Logger:    newLogger,
+		}
+		appValidator, err = app.NewValidator(c)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	// Here we register our endpoints.
@@ -35,8 +61,12 @@ func main() {
 	metrics := http.NewServeMux()
 	metrics.Handle("/metrics", promhttp.Handler())
 
-	go serveMetrics(config, metrics)
-	serveTLS(config, handler)
+	newLogger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("listening on port %s", cfg.Address))
+
+	go serveMetrics(cfg, metrics)
+	serveTLS(cfg, handler)
+
+	return nil
 }
 
 func healthCheck(writer http.ResponseWriter, request *http.Request) {

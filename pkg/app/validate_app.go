@@ -5,11 +5,11 @@ import (
 
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/app/v3/validation"
+	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"k8s.io/api/admission/v1beta1"
 
-	"github.com/giantswarm/app-admission-controller/config"
 	"github.com/giantswarm/app-admission-controller/pkg/validator"
 )
 
@@ -17,12 +17,17 @@ const (
 	Name = "app"
 )
 
+type ValidatorConfig struct {
+	K8sClient k8sclient.Interface
+	Logger    micrologger.Logger
+}
+
 type Validator struct {
 	appValidator *validation.Validator
 	logger       micrologger.Logger
 }
 
-func NewValidator(config config.Config) (*Validator, error) {
+func NewValidator(config ValidatorConfig) (*Validator, error) {
 	if config.K8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
 	}

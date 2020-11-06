@@ -54,3 +54,16 @@ workflows:
             # Do this on every commit and when a new tag is created.
             tags:
               only: /^v.*/
+
+      - architect/integration-test:
+          context: architect
+          name: validation-integration-test
+          setup-script: "integration/test/validation/setup.sh"
+          test-dir: "integration/test/validation"
+          filters:
+            # Do not trigger the job on merge to master.
+            branches:
+              ignore:
+                - master
+          requires:
+            - push-app-admission-controller-to-control-plane-app-catalog

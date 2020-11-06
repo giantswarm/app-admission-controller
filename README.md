@@ -25,4 +25,3 @@ See [docs/webhook.md](https://github.com/giantswarm/app-admission-controller/blo
 ## Writing tests
 
 See [docs/tests.md](https://github.com/giantswarm/app-admission-controller/blob/master/docs/tests.md)
-

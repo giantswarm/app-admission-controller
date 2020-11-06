@@ -58,7 +58,7 @@ workflows:
       - architect/integration-test:
           context: architect
           name: validation-integration-test
-          setup-script: "integration/test/validation/setup.sh"
+          install-app-platform: true
           test-dir: "integration/test/validation"
           filters:
             # Do not trigger the job on merge to master.

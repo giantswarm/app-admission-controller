@@ -16,10 +16,8 @@ import (
 )
 
 const (
-	prodCatalogName = "control-plane"
-	prodCatalogUrl  = "https://giantswarm.github.io/control-plane-catalog"
-	testCatalogName = "control-plane-test"
-	testCatalogUrl  = "https://giantswarm.github.io/control-plane-test-catalog"
+	prodCatalogName = "control-plane-catalog"
+	testCatalogName = "control-plane-test-catalog"
 )
 
 var (
@@ -59,7 +57,6 @@ func TestMain(m *testing.M) {
 		apps := []apptest.App{
 			{
 				CatalogName:   prodCatalogName,
-				CatalogURL:    prodCatalogUrl,
 				Name:          "cert-manager-app",
 				Namespace:     metav1.NamespaceSystem,
 				Version:       "2.3.1",
@@ -67,7 +64,6 @@ func TestMain(m *testing.M) {
 			},
 			{
 				CatalogName:   testCatalogName,
-				CatalogURL:    testCatalogUrl,
 				Name:          "app-admission-controller",
 				Namespace:     "giantswarm",
 				SHA:           env.CircleSHA(),

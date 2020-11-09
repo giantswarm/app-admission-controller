@@ -4,6 +4,7 @@ package validation
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -15,6 +16,14 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+)
+
+const (
+	appName       = "dex-app"
+	catalog       = "control-plane-catalog"
+	configMapName = "dex-config"
+	namespace     = "test"
 )
 
 // TestFailWhenCatalogNotFound tests that the app CR is rejected if the
@@ -26,7 +35,7 @@ func TestFailWhenCatalogNotFound(t *testing.T) {
 
 	app := &v1alpha1.App{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "dex-app-unique",
+			Name:      appName,
 			Namespace: "giantswarm",
 			Labels: map[string]string{
 				label.AppOperatorVersion: "0.0.0",
@@ -34,7 +43,7 @@ func TestFailWhenCatalogNotFound(t *testing.T) {
 		},
 		Spec: v1alpha1.AppSpec{
 			Catalog:   "missing",
-			Name:      "dex-app",
+			Name:      appName,
 			Namespace: "giantswarm",
 			KubeConfig: v1alpha1.AppSpecKubeConfig{
 				InCluster: true,
@@ -57,7 +66,7 @@ func TestFailWhenCatalogNotFound(t *testing.T) {
 
 		return nil
 	}
-	b := backoff.NewConstant(5*time.Minute, 30*time.Second)
+	b := backoff.NewConstant(5*time.Minute, 10*time.Second)
 	n := backoff.NewNotifier(logger, ctx)
 
 	err = backoff.RetryNotify(o, b, n)
@@ -68,42 +77,95 @@ func TestFailWhenCatalogNotFound(t *testing.T) {
 	logger.LogCtx(ctx, "level", "debug", "message", "waited for failed app creation")
 }
 
-// TestSkipValidationOnDelete tests that the validation is skipped when the app
-// CR is deleted. Both an app CR and configmap are created and the configmap is
-// deleted first.
-func TestSkipValidationOnDelete(t *testing.T) {
+// TestSkipValidationOnNamespaceDeletion tests that when the namespace
+// containing an app CR is deleted the validation logic is skipped. This is
+// done by checking if the app CR has a deletion timestamp.
+func TestSkipValidationOnNamespaceDeletion(t *testing.T) {
 	ctx := context.Background()
 
 	var err error
+
+	logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating test resources in %#q namespace", namespace))
+
+	err = createTestResources(ctx)
+	if err != nil {
+		t.Fatalf("expected nil but got error %#v", err)
+	}
+
+	logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("created test resources in %#q namespace", namespace))
+
+	logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting %#q namespace", namespace))
+
+	err = appTest.K8sClient().CoreV1().Namespaces().Delete(ctx, namespace, metav1.DeleteOptions{})
+	if err != nil {
+		t.Fatalf("expected nil but got error %#v", err)
+	}
+
+	logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleted %#q namespace", namespace))
+
+	logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("waiting for %#q app deletion", appName))
+
+	app := &v1alpha1.App{}
+
+	o := func() error {
+		err = appTest.CtrlClient().Get(ctx, types.NamespacedName{Name: appName, Namespace: namespace}, app)
+		if apierrors.IsNotFound(err) {
+			// fall through
+			return nil
+		} else if err != nil {
+			return microerror.Mask(err)
+		}
+
+		return nil
+	}
+	b := backoff.NewConstant(5*time.Minute, 10*time.Second)
+	n := backoff.NewNotifier(logger, ctx)
+
+	err = backoff.RetryNotify(o, b, n)
+	if err != nil {
+		t.Fatalf("expected nil but got error %#v", err)
+	}
+
+	logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("waited for %#q app deletion", appName))
+}
+
+func createTestResources(ctx context.Context) error {
+	var err error
+
+	ns := &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: namespace,
+		},
+	}
 
 	cm := &corev1.ConfigMap{
 		Data: map[string]string{
 			"values": "values",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "dex-config",
-			Namespace: "giantswarm",
+			Name:      configMapName,
+			Namespace: namespace,
 		},
 	}
 
 	app := &v1alpha1.App{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "dex-app-unique",
-			Namespace: "giantswarm",
+			Name:      appName,
+			Namespace: namespace,
 			Labels: map[string]string{
 				label.AppOperatorVersion: "0.0.0",
 			},
 		},
 		Spec: v1alpha1.AppSpec{
-			Catalog: "control-plane-catalog",
+			Catalog: catalog,
 			Config: v1alpha1.AppSpecConfig{
 				ConfigMap: v1alpha1.AppSpecConfigConfigMap{
-					Name:      "dex-config",
-					Namespace: "giantswarm",
+					Name:      configMapName,
+					Namespace: namespace,
 				},
 			},
-			Name:      "dex-app",
-			Namespace: "giantswarm",
+			Name:      appName,
+			Namespace: namespace,
 			KubeConfig: v1alpha1.AppSpecKubeConfig{
 				InCluster: true,
 			},
@@ -111,10 +173,16 @@ func TestSkipValidationOnDelete(t *testing.T) {
 		},
 	}
 
-	logger.LogCtx(ctx, "level", "debug", "message", "creating app and configmap")
-
 	o := func() error {
-		_, err = appTest.K8sClient().CoreV1().ConfigMaps("giantswarm").Create(ctx, cm, metav1.CreateOptions{})
+		_, err = appTest.K8sClient().CoreV1().Namespaces().Create(ctx, ns, metav1.CreateOptions{})
+		if apierrors.IsAlreadyExists(err) {
+			// fall through
+			return nil
+		} else if err != nil {
+			return microerror.Mask(err)
+		}
+
+		_, err = appTest.K8sClient().CoreV1().ConfigMaps(namespace).Create(ctx, cm, metav1.CreateOptions{})
 		if apierrors.IsAlreadyExists(err) {
 			// fall through
 			return nil
@@ -132,31 +200,13 @@ func TestSkipValidationOnDelete(t *testing.T) {
 
 		return nil
 	}
-	b := backoff.NewConstant(5*time.Minute, 30*time.Second)
+	b := backoff.NewConstant(5*time.Minute, 10*time.Second)
 	n := backoff.NewNotifier(logger, ctx)
 
 	err = backoff.RetryNotify(o, b, n)
 	if err != nil {
-		t.Fatalf("expected nil but got error %#v", err)
+		return microerror.Mask(err)
 	}
 
-	logger.LogCtx(ctx, "level", "debug", "message", "created app and configmap")
-
-	logger.LogCtx(ctx, "level", "debug", "message", "deleting configmap")
-
-	err = appTest.K8sClient().CoreV1().ConfigMaps("giantswarm").Delete(ctx, "dex-config", metav1.DeleteOptions{})
-	if err != nil {
-		t.Fatalf("expected nil but got error %#v", err)
-	}
-
-	logger.LogCtx(ctx, "level", "debug", "message", "deleted configmap")
-
-	logger.LogCtx(ctx, "level", "debug", "message", "deleting app")
-
-	err = appTest.CtrlClient().Delete(ctx, app)
-	if err != nil {
-		t.Fatalf("expected nil but got error %#v", err)
-	}
-
-	logger.LogCtx(ctx, "level", "debug", "message", "deleted app")
+	return nil
 }

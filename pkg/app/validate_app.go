@@ -78,9 +78,6 @@ func (v *Validator) Validate(request *v1beta1.AdmissionRequest) (bool, error) {
 
 	v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("validating app %#q in namespace %#q", app.Name, app.Namespace))
 
-	v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("DEBUG admission request %#v", request))
-	v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("DEBUG app %#v", app))
-
 	if !app.DeletionTimestamp.IsZero() {
 		v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("admitted deleted app %#q in namespace %#q", app.Name, app.Namespace))
 		return true, nil

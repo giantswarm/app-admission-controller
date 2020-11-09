@@ -10,7 +10,6 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"k8s.io/api/admission/v1beta1"
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 
 	"github.com/giantswarm/app-admission-controller/pkg/validator"
 )
@@ -73,18 +72,19 @@ func (v *Validator) Validate(request *v1beta1.AdmissionRequest) (bool, error) {
 
 	var app v1alpha1.App
 
-	v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("DEBUG admission request %#v", request))
-
-	if request.Operation == admissionv1beta1.Delete {
-		v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("admitted %#q operation for app %#q in namespace %#q", request.Operation, app.Name, app.Namespace))
-		return true, nil
-	}
-
 	if _, _, err := validator.Deserializer.Decode(request.Object.Raw, nil, &app); err != nil {
 		return false, microerror.Maskf(parsingFailedError, "unable to parse app: %#v", err)
 	}
 
 	v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("validating app %#q in namespace %#q", app.Name, app.Namespace))
+
+	v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("DEBUG admission request %#v", request))
+	v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("DEBUG app %#v", app))
+
+	if !app.DeletionTimestamp.IsZero() {
+		v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("admitted deleted app %#q in namespace %#q", app.Name, app.Namespace))
+		return true, nil
+	}
 
 	appAllowed, err := v.appValidator.ValidateApp(ctx, app)
 	if err != nil {

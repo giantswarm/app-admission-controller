@@ -73,6 +73,8 @@ func (v *Validator) Validate(request *v1beta1.AdmissionRequest) (bool, error) {
 
 	var app v1alpha1.App
 
+	v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("DEBUG admission request %#v", request))
+
 	if request.Operation == admissionv1beta1.Delete {
 		v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("admitted %#q operation for app %#q in namespace %#q", request.Operation, app.Name, app.Namespace))
 		return true, nil

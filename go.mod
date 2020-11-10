@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/giantswarm/apiextensions/v3 v3.7.0
-	github.com/giantswarm/app/v3 v3.1.0
+	github.com/giantswarm/app/v3 v3.1.1
 	github.com/giantswarm/apptest v0.5.0
 	github.com/giantswarm/backoff v0.2.0
 	github.com/giantswarm/k8sclient/v5 v5.0.0

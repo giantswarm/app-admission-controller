@@ -1,4 +1,33 @@
 apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: {{ include "resource.default.name" . }}
+  namespace: {{ include "resource.default.namespace" . }}
+  annotations:
+    cert-manager.io/inject-ca-from: {{ include "resource.default.namespace" . }}/{{ include "resource.default.name" . }}-certificates
+  labels:
+    {{- include "labels.common" . | nindent 4 }}
+webhooks:
+  - name: apps.{{ include "resource.default.name" . }}.giantswarm.io
+    failurePolicy: Ignore
+    sideEffects: NoneOnDryRun
+    clientConfig:
+      service:
+        name: {{ include "resource.default.name" . }}
+        namespace: {{ include "resource.default.namespace" . }}
+        path: /mutate/app
+      caBundle: Cg==
+    rules:
+      - apiGroups: ["application.giantswarm.io"]
+        resources:
+          - "apps"
+        apiVersions:
+          - "v1alpha1"
+        operations:
+          - CREATE
+          - UPDATE
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
 kind: ValidatingWebhookConfiguration
 metadata:
   name: {{ include "resource.default.name" . }}

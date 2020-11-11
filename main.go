@@ -14,6 +14,7 @@ import (
 
 	"github.com/giantswarm/app-admission-controller/config"
 	"github.com/giantswarm/app-admission-controller/pkg/app"
+	"github.com/giantswarm/app-admission-controller/pkg/mutator"
 	"github.com/giantswarm/app-admission-controller/pkg/validator"
 )
 
@@ -40,6 +41,18 @@ func mainWithError() error {
 		}
 	}
 
+	var appMutator *app.Mutator
+	{
+		c := app.MutatorConfig{
+			K8sClient: cfg.K8sClient,
+			Logger:    newLogger,
+		}
+		appMutator, err = app.NewMutator(c)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
 	var appValidator *app.Validator
 	{
 		c := app.ValidatorConfig{
@@ -54,6 +67,7 @@ func mainWithError() error {
 
 	// Here we register our endpoints.
 	handler := http.NewServeMux()
+	handler.Handle("/mutate/app", mutator.Handler(appMutator))
 	handler.Handle("/validate/app", validator.Handler(appValidator))
 
 	handler.HandleFunc("/healthz", healthCheck)

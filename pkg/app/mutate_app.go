@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/app/v3/pkg/key"
@@ -62,10 +63,21 @@ func (m *Mutator) Mutate(request *v1beta1.AdmissionRequest) ([]mutator.PatchOper
 		return nil, microerror.Maskf(parsingFailedError, "unable to parse app: %#v", err)
 	}
 
+	m.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("mutating app %#q in namespace %#q", appNewCR.Name, appNewCR.Namespace))
+
+	// We check the deletion timestamp because app CRs may be deleted by
+	// deleting the namespace they belong to.
+	if !appNewCR.DeletionTimestamp.IsZero() {
+		m.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("admitted deletion of app %#q in namespace %#q", appNewCR.Name, appNewCR.Namespace))
+		return nil, nil
+	}
+
 	result, err := m.MutateApp(ctx, *appNewCR, *appOldCR)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
+
+	m.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("applying %d patches to app %#q in namespace %#q", len(result), appNewCR.Name, appNewCR.Namespace))
 
 	return result, nil
 }

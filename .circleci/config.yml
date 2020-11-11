@@ -56,7 +56,6 @@ workflows:
               only: /^v.*/
 
       - architect/integration-test:
-          context: architect
           name: validation-integration-test
           install-app-platform: true
           test-dir: "integration/test/validation"

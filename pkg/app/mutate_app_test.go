@@ -36,7 +36,7 @@ func Test_MutateApp(t *testing.T) {
 					Name:      "kiam",
 					Namespace: "kube-system",
 					KubeConfig: v1alpha1.AppSpecKubeConfig{
-						InCluster: true,
+						InCluster: false,
 					},
 					Version: "1.4.0",
 				},
@@ -46,10 +46,15 @@ func Test_MutateApp(t *testing.T) {
 				mutator.PatchAdd("/spec/config/configMap", map[string]string{}),
 				mutator.PatchAdd("/spec/config/configMap/namespace", "eggs2"),
 				mutator.PatchAdd("/spec/config/configMap/name", "eggs2-cluster-values"),
+				mutator.PatchAdd("/spec/kubeConfig/context", map[string]string{}),
+				mutator.PatchAdd("/spec/kubeConfig/context/name", "eggs2"),
+				mutator.PatchAdd("/spec/kubeConfig/secret", map[string]string{}),
+				mutator.PatchAdd("/spec/kubeConfig/secret/namespace", "eggs2"),
+				mutator.PatchAdd("/spec/kubeConfig/secret/name", "eggs2-kubeconfig"),
 			},
 		},
 		{
-			name: "case 1: no cluster configmap patches",
+			name: "case 1: no patches",
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "kiam",
@@ -66,7 +71,14 @@ func Test_MutateApp(t *testing.T) {
 					Name:      "kiam",
 					Namespace: "kube-system",
 					KubeConfig: v1alpha1.AppSpecKubeConfig{
-						InCluster: true,
+						Context: v1alpha1.AppSpecKubeConfigContext{
+							Name: "eggs2",
+						},
+						InCluster: false,
+						Secret: v1alpha1.AppSpecKubeConfigSecret{
+							Namespace: "eggs2",
+							Name:      "eggs2-kubeconfig",
+						},
 					},
 					Version: "1.4.0",
 				},
@@ -99,6 +111,30 @@ func Test_MutateApp(t *testing.T) {
 				mutator.PatchAdd("/spec/config/configMap", map[string]string{}),
 				mutator.PatchAdd("/spec/config/configMap/namespace", "eggs2"),
 				mutator.PatchAdd("/spec/config/configMap/name", "eggs2-cluster-values"),
+			},
+		},
+		{
+			name: "case 3: different configmap for nginx-ingress-controller-app",
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "nginx-ingress-controller-app",
+					Namespace: "eggs2",
+				},
+				Spec: v1alpha1.AppSpec{
+					Catalog:   "giantswarm",
+					Name:      "nginx-ingress-controller-app",
+					Namespace: "kube-system",
+					KubeConfig: v1alpha1.AppSpecKubeConfig{
+						InCluster: true,
+					},
+					Version: "1.4.0",
+				},
+			},
+			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/spec/config", map[string]string{}),
+				mutator.PatchAdd("/spec/config/configMap", map[string]string{}),
+				mutator.PatchAdd("/spec/config/configMap/namespace", "eggs2"),
+				mutator.PatchAdd("/spec/config/configMap/name", "ingress-controller-values"),
 			},
 		},
 	}

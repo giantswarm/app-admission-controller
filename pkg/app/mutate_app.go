@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/app/v3/pkg/key"
@@ -10,8 +9,6 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"k8s.io/api/admission/v1beta1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/app-admission-controller/pkg/mutator"
 )
@@ -84,6 +81,14 @@ func (m *Mutator) MutateApp(ctx context.Context, appNewCR, appOldCR v1alpha1.App
 		result = append(result, configPatches...)
 	}
 
+	kubeConfigPatches, err := m.mutateKubeConfig(ctx, appNewCR, appOldCR)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	if len(kubeConfigPatches) > 0 {
+		result = append(result, kubeConfigPatches...)
+	}
+
 	return result, nil
 }
 
@@ -99,23 +104,36 @@ func (m *Mutator) mutateConfig(ctx context.Context, appNewCR, appOldCR v1alpha1.
 		return nil, nil
 	}
 
-	clusterNamespace := appNewCR.Namespace
-	clusterConfigMapName := fmt.Sprintf("%s-cluster-values", clusterNamespace)
-
-	_, err := m.k8sClient.K8sClient().CoreV1().ConfigMaps(clusterNamespace).Get(ctx, clusterConfigMapName, metav1.GetOptions{})
-	if apierrors.IsNotFound(err) {
-		// Fall through if configmap does not exist.
-		return nil, nil
-	}
-
 	// If there is no secret then create a patch for the config block.
 	if key.AppSecretName(appNewCR) == "" && key.AppSecretNamespace(appNewCR) == "" {
 		result = append(result, mutator.PatchAdd("/spec/config", map[string]string{}))
 	}
 
 	result = append(result, mutator.PatchAdd("/spec/config/configMap", map[string]string{}))
-	result = append(result, mutator.PatchAdd("/spec/config/configMap/namespace", clusterNamespace))
-	result = append(result, mutator.PatchAdd("/spec/config/configMap/name", clusterConfigMapName))
+	result = append(result, mutator.PatchAdd("/spec/config/configMap/namespace", appNewCR.Namespace))
+	result = append(result, mutator.PatchAdd("/spec/config/configMap/name", key.ClusterConfigMapName(appNewCR)))
+
+	return result, nil
+}
+
+func (m *Mutator) mutateKubeConfig(ctx context.Context, appNewCR, appOldCR v1alpha1.App) ([]mutator.PatchOperation, error) {
+	var result []mutator.PatchOperation
+
+	// Return early if in-cluster is used.
+	if key.InCluster(appNewCR) {
+		return nil, nil
+	}
+
+	if key.KubeConfigContextName(appNewCR) == "" {
+		result = append(result, mutator.PatchAdd("/spec/kubeConfig/context", map[string]string{}))
+		result = append(result, mutator.PatchAdd("/spec/kubeConfig/context/name", appNewCR.Namespace))
+	}
+
+	if key.KubeConfigSecretName(appNewCR) == "" && key.KubeConfigSecretNamespace(appNewCR) == "" {
+		result = append(result, mutator.PatchAdd("/spec/kubeConfig/secret", map[string]string{}))
+		result = append(result, mutator.PatchAdd("/spec/kubeConfig/secret/namespace", appNewCR.Namespace))
+		result = append(result, mutator.PatchAdd("/spec/kubeConfig/secret/name", key.ClusterKubeConfigSecretName(appNewCR)))
+	}
 
 	return result, nil
 }

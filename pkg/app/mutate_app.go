@@ -171,7 +171,7 @@ func (m *Mutator) mutateLabels(ctx context.Context, appNewCR, appOldCR v1alpha1.
 
 	// Set app label if there is no app label present.
 	if key.AppKubernetesNameLabel(appNewCR) == "" && key.AppLabel(appNewCR) == "" {
-		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", label.AppKubernetesName), key.AppName(appNewCR)))
+		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), key.AppName(appNewCR)))
 	}
 
 	// Set version label to be the same as the chart-operator app CR. This

@@ -60,7 +60,7 @@ func Test_MutateApp(t *testing.T) {
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/labels", map[string]string{}),
 				mutator.PatchAdd("/metadata/labels/app.kubernetes.io/name", "kiam"),
-				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", label.AppOperatorVersion), "2.6.0"),
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "2.6.0"),
 				mutator.PatchAdd("/spec/config", map[string]string{}),
 				mutator.PatchAdd("/spec/config/configMap", map[string]string{}),
 				mutator.PatchAdd("/spec/config/configMap/namespace", "eggs2"),
@@ -203,7 +203,7 @@ func Test_MutateApp(t *testing.T) {
 				},
 			},
 			expectedPatches: []mutator.PatchOperation{
-				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", label.AppOperatorVersion), "2.4.0"),
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "2.4.0"),
 			},
 		},
 	}

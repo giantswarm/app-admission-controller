@@ -182,7 +182,7 @@ func (m *Mutator) mutateLabels(ctx context.Context, appNewCR, appOldCR v1alpha1.
 			return nil, microerror.Mask(err)
 		}
 		if appVersion != "" {
-			result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", label.AppOperatorVersion), appVersion))
+			result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), appVersion))
 		}
 	}
 

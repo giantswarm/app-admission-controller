@@ -4,10 +4,7 @@ import (
 	"context"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-<<<<<<< HEAD
 	"github.com/giantswarm/app/v3/pkg/key"
-=======
->>>>>>> master
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -74,7 +71,6 @@ func (m *Mutator) Mutate(request *v1beta1.AdmissionRequest) ([]mutator.PatchOper
 }
 
 func (m *Mutator) MutateApp(ctx context.Context, appNewCR, appOldCR v1alpha1.App) ([]mutator.PatchOperation, error) {
-<<<<<<< HEAD
 	var result []mutator.PatchOperation
 
 	configPatches, err := m.mutateConfig(ctx, appNewCR, appOldCR)
@@ -94,15 +90,11 @@ func (m *Mutator) MutateApp(ctx context.Context, appNewCR, appOldCR v1alpha1.App
 	}
 
 	return result, nil
-=======
-	return []mutator.PatchOperation{}, nil
->>>>>>> master
 }
 
 func (m *Mutator) Resource() string {
 	return Name
 }
-<<<<<<< HEAD
 
 func (m *Mutator) mutateConfig(ctx context.Context, appNewCR, appOldCR v1alpha1.App) ([]mutator.PatchOperation, error) {
 	var result []mutator.PatchOperation
@@ -145,5 +137,3 @@ func (m *Mutator) mutateKubeConfig(ctx context.Context, appNewCR, appOldCR v1alp
 
 	return result, nil
 }
-=======
->>>>>>> master

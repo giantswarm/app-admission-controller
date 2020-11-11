@@ -10,10 +10,7 @@ import (
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclienttest"
 	"github.com/giantswarm/micrologger/microloggertest"
 	"github.com/google/go-cmp/cmp"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	clientgofake "k8s.io/client-go/kubernetes/fake"
 
 	"github.com/giantswarm/app-admission-controller/pkg/mutator"
 )
@@ -24,8 +21,6 @@ func Test_MutateApp(t *testing.T) {
 	tests := []struct {
 		name            string
 		obj             v1alpha1.App
-		configMaps      []*corev1.ConfigMap
-		secrets         []*corev1.Secret
 		expectedPatches []mutator.PatchOperation
 		expectedErr     string
 	}{
@@ -45,9 +40,6 @@ func Test_MutateApp(t *testing.T) {
 					},
 					Version: "1.4.0",
 				},
-			},
-			configMaps: []*corev1.ConfigMap{
-				newTestConfigMap("eggs2-cluster-values", "eggs2"),
 			},
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/spec/config", map[string]string{}),
@@ -79,9 +71,6 @@ func Test_MutateApp(t *testing.T) {
 					Version: "1.4.0",
 				},
 			},
-			configMaps: []*corev1.ConfigMap{
-				newTestConfigMap("eggs2-cluster-values", "eggs2"),
-			},
 		},
 		{
 			name: "case 2: cluster secret set",
@@ -106,9 +95,6 @@ func Test_MutateApp(t *testing.T) {
 					Version: "1.4.0",
 				},
 			},
-			configMaps: []*corev1.ConfigMap{
-				newTestConfigMap("eggs2-cluster-values", "eggs2"),
-			},
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/spec/config/configMap", map[string]string{}),
 				mutator.PatchAdd("/spec/config/configMap/namespace", "eggs2"),
@@ -119,22 +105,8 @@ func Test_MutateApp(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			objs := make([]runtime.Object, 0)
-
-			for _, cm := range tc.configMaps {
-				objs = append(objs, cm)
-			}
-
-			for _, secret := range tc.secrets {
-				objs = append(objs, secret)
-			}
-
-			k8sClient := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
-				K8sClient: clientgofake.NewSimpleClientset(objs...),
-			})
-
 			c := MutatorConfig{
-				K8sClient: k8sClient,
+				K8sClient: k8sclienttest.NewClients(k8sclienttest.ClientsConfig{}),
 				Logger:    microloggertest.New(),
 			}
 			r, err := NewMutator(c)
@@ -159,17 +131,5 @@ func Test_MutateApp(t *testing.T) {
 				t.Fatalf("want matching patches \n %s", cmp.Diff(patches, tc.expectedPatches))
 			}
 		})
-	}
-}
-
-func newTestConfigMap(name, namespace string) *corev1.ConfigMap {
-	return &corev1.ConfigMap{
-		Data: map[string]string{
-			"values": "cluster: yaml\n",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
 	}
 }

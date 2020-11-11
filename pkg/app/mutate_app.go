@@ -124,16 +124,19 @@ func (m *Mutator) mutateKubeConfig(ctx context.Context, appNewCR, appOldCR v1alp
 		return nil, nil
 	}
 
+	// Return early if either field is set.
+	if key.KubeConfigSecretName(appNewCR) != "" || key.KubeConfigSecretNamespace(appNewCR) != "" {
+		return nil, nil
+	}
+
 	if key.KubeConfigContextName(appNewCR) == "" {
 		result = append(result, mutator.PatchAdd("/spec/kubeConfig/context", map[string]string{}))
 		result = append(result, mutator.PatchAdd("/spec/kubeConfig/context/name", appNewCR.Namespace))
 	}
 
-	if key.KubeConfigSecretName(appNewCR) == "" && key.KubeConfigSecretNamespace(appNewCR) == "" {
-		result = append(result, mutator.PatchAdd("/spec/kubeConfig/secret", map[string]string{}))
-		result = append(result, mutator.PatchAdd("/spec/kubeConfig/secret/namespace", appNewCR.Namespace))
-		result = append(result, mutator.PatchAdd("/spec/kubeConfig/secret/name", key.ClusterKubeConfigSecretName(appNewCR)))
-	}
+	result = append(result, mutator.PatchAdd("/spec/kubeConfig/secret", map[string]string{}))
+	result = append(result, mutator.PatchAdd("/spec/kubeConfig/secret/namespace", appNewCR.Namespace))
+	result = append(result, mutator.PatchAdd("/spec/kubeConfig/secret/name", key.ClusterKubeConfigSecretName(appNewCR)))
 
 	return result, nil
 }

@@ -2,15 +2,19 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
+	"github.com/giantswarm/apiextensions/v3/pkg/clientset/versioned/fake"
+	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclienttest"
 	"github.com/giantswarm/micrologger/microloggertest"
 	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/giantswarm/app-admission-controller/pkg/mutator"
 )
@@ -21,6 +25,7 @@ func Test_MutateApp(t *testing.T) {
 	tests := []struct {
 		name            string
 		obj             v1alpha1.App
+		apps            []*v1alpha1.App
 		expectedPatches []mutator.PatchOperation
 		expectedErr     string
 	}{
@@ -41,7 +46,21 @@ func Test_MutateApp(t *testing.T) {
 					Version: "1.4.0",
 				},
 			},
+			apps: []*v1alpha1.App{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "chart-operator",
+						Namespace: "eggs2",
+						Labels: map[string]string{
+							label.AppOperatorVersion: "2.6.0",
+						},
+					},
+				},
+			},
 			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/metadata/labels", map[string]string{}),
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), "kiam"),
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "2.6.0"),
 				mutator.PatchAdd("/spec/config", map[string]string{}),
 				mutator.PatchAdd("/spec/config/configMap", map[string]string{
 					"namespace": "eggs2",
@@ -62,6 +81,9 @@ func Test_MutateApp(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "kiam",
 					Namespace: "eggs2",
+					Labels: map[string]string{
+						"app.kubernetes.io/name": "kiam",
+					},
 				},
 				Spec: v1alpha1.AppSpec{
 					Catalog: "giantswarm",
@@ -93,6 +115,9 @@ func Test_MutateApp(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "kiam",
 					Namespace: "eggs2",
+					Labels: map[string]string{
+						"app.kubernetes.io/name": "kiam",
+					},
 				},
 				Spec: v1alpha1.AppSpec{
 					Catalog: "giantswarm",
@@ -123,6 +148,9 @@ func Test_MutateApp(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "nginx-ingress-controller-app",
 					Namespace: "eggs2",
+					Labels: map[string]string{
+						"app.kubernetes.io/name": "kiam",
+					},
 				},
 				Spec: v1alpha1.AppSpec{
 					Catalog:   "giantswarm",
@@ -142,12 +170,62 @@ func Test_MutateApp(t *testing.T) {
 				}),
 			},
 		},
+		{
+			name: "case 4: set version label only",
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "kiam",
+					Namespace: "eggs2",
+					Labels: map[string]string{
+						"app": "kiam",
+					},
+				},
+				Spec: v1alpha1.AppSpec{
+					Catalog: "giantswarm",
+					Config: v1alpha1.AppSpecConfig{
+						ConfigMap: v1alpha1.AppSpecConfigConfigMap{
+							Namespace: "eggs2",
+							Name:      "eggs2-cluster-values",
+						},
+					},
+					Name:      "kiam",
+					Namespace: "kube-system",
+					KubeConfig: v1alpha1.AppSpecKubeConfig{
+						InCluster: true,
+					},
+					Version: "1.4.0",
+				},
+			},
+			apps: []*v1alpha1.App{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "chart-operator",
+						Namespace: "eggs2",
+						Labels: map[string]string{
+							label.AppOperatorVersion: "2.4.0",
+						},
+					},
+				},
+			},
+			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "2.4.0"),
+			},
+		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			objs := make([]runtime.Object, 0)
+			for _, app := range tc.apps {
+				objs = append(objs, app)
+			}
+
+			k8sClient := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
+				G8sClient: fake.NewSimpleClientset(objs...),
+			})
+
 			c := MutatorConfig{
-				K8sClient: k8sclienttest.NewClients(k8sclienttest.ClientsConfig{}),
+				K8sClient: k8sClient,
 				Logger:    microloggertest.New(),
 			}
 			r, err := NewMutator(c)

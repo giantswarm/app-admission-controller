@@ -196,10 +196,10 @@ github.com/garyburd/redigo v0.0.0-20150301180006-535138d7bcd7/go.mod h1:NR3MbYis
 github.com/ghodss/yaml v0.0.0-20150909031657-73d445a93680/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/giantswarm/apiextensions/v3 v3.4.0/go.mod h1:MMLkRJta4mbTbrikP9LewADiCL+55LmsagyhdTU7XAY=
-github.com/giantswarm/apiextensions/v3 v3.7.0 h1:KUAjZn3OMMkmTWvgAfAPTLdrNbFY2zukMntdeLhMGY4=
-github.com/giantswarm/apiextensions/v3 v3.7.0/go.mod h1:MMLkRJta4mbTbrikP9LewADiCL+55LmsagyhdTU7XAY=
-github.com/giantswarm/app/v3 v3.2.0 h1:pBVQ22hRytYEM4WBv2iztBczBcWomxSiOdgLHoiu9HA=
-github.com/giantswarm/app/v3 v3.2.0/go.mod h1:1P9plfrJ5IzG9sg4nw93a6G1mDSLUHBDL5TLaxlRTHc=
+github.com/giantswarm/apiextensions/v3 v3.7.1-0.20201111144349-4ed00f3702ef h1:u4idsdMQ1UerKMShBLkxM1Srlf+xGW7vIra0Rt47XYU=
+github.com/giantswarm/apiextensions/v3 v3.7.1-0.20201111144349-4ed00f3702ef/go.mod h1:MMLkRJta4mbTbrikP9LewADiCL+55LmsagyhdTU7XAY=
+github.com/giantswarm/app/v3 v3.2.1-0.20201111144832-2ec3df0b5723 h1:e7nqklMWRPuSke7heM4++qydULRRHEV715E8ylfeLyw=
+github.com/giantswarm/app/v3 v3.2.1-0.20201111144832-2ec3df0b5723/go.mod h1:pv1mIPWxGR67krnix79v25ddg/2Gwm214gfvtk/K3iE=
 github.com/giantswarm/appcatalog v0.2.7 h1:SVD1OH/C5zEP8TaeS3L9t8+lVcfaRZhwY98sn8v9lYs=
 github.com/giantswarm/appcatalog v0.2.7/go.mod h1:WHO5lJvcuwzToxxHPdiX9CVxvMsmP8YZfjoo4E/NTLs=
 github.com/giantswarm/apptest v0.5.0 h1:WGHEe5UDO9Rtn61s7/Osh/pF17JXThuc4JXyzPYeHJ0=

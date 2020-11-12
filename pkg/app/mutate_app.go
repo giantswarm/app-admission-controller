@@ -3,13 +3,18 @@ package app
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
+	"github.com/giantswarm/apiextensions/v3/pkg/clientset/versioned"
+	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/app/v3/pkg/key"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"k8s.io/api/admission/v1beta1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/app-admission-controller/pkg/mutator"
 )
@@ -85,6 +90,14 @@ func (m *Mutator) Mutate(request *v1beta1.AdmissionRequest) ([]mutator.PatchOper
 func (m *Mutator) MutateApp(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
 	var result []mutator.PatchOperation
 
+	labelPatches, err := m.mutateLabels(ctx, app)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	if len(labelPatches) > 0 {
+		result = append(result, labelPatches...)
+	}
+
 	configPatches, err := m.mutateConfig(ctx, app)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -154,4 +167,47 @@ func (m *Mutator) mutateKubeConfig(ctx context.Context, app v1alpha1.App) ([]mut
 	}))
 
 	return result, nil
+}
+
+func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
+	var result []mutator.PatchOperation
+
+	// Set app label if there is no app label present.
+	if key.AppKubernetesNameLabel(app) == "" && key.AppLabel(app) == "" {
+		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), key.AppName(app)))
+	}
+
+	// Set version label to be the same as the chart-operator app CR. This
+	// is the version we need and means we don't need to check for a cluster CR.
+	if key.VersionLabel(app) == "" {
+		appVersion, err := getChartOperatorAppVersion(ctx, m.k8sClient.G8sClient(), app.Namespace)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		if appVersion != "" {
+			result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), appVersion))
+		}
+	}
+
+	if len(app.Labels) == 0 {
+		root := mutator.PatchAdd("/metadata/labels", map[string]string{})
+		result = append([]mutator.PatchOperation{root}, result...)
+	}
+
+	return result, nil
+}
+
+func getChartOperatorAppVersion(ctx context.Context, g8sClient versioned.Interface, namespace string) (string, error) {
+	chartOperatorApp, err := g8sClient.ApplicationV1alpha1().Apps(namespace).Get(ctx, "chart-operator", metav1.GetOptions{})
+	if apierrors.IsNotFound(err) {
+		return "", nil
+	} else if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	return key.VersionLabel(*chartOperatorApp), nil
+}
+
+func replaceToEscape(from string) string {
+	return strings.Replace(from, "/", "~1", -1)
 }

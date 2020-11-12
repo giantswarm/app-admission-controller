@@ -77,7 +77,7 @@ func (m *Mutator) Mutate(request *v1beta1.AdmissionRequest) ([]mutator.PatchOper
 		return nil, nil
 	}
 
-	result, err := m.MutateApp(ctx, *appNewCR, *appOldCR)
+	result, err := m.MutateApp(ctx, *appNewCR)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -87,10 +87,10 @@ func (m *Mutator) Mutate(request *v1beta1.AdmissionRequest) ([]mutator.PatchOper
 	return result, nil
 }
 
-func (m *Mutator) MutateApp(ctx context.Context, appNewCR, appOldCR v1alpha1.App) ([]mutator.PatchOperation, error) {
+func (m *Mutator) MutateApp(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
 	var result []mutator.PatchOperation
 
-	labelPatches, err := m.mutateLabels(ctx, appNewCR, appOldCR)
+	labelPatches, err := m.mutateLabels(ctx, app)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -98,7 +98,7 @@ func (m *Mutator) MutateApp(ctx context.Context, appNewCR, appOldCR v1alpha1.App
 		result = append(result, labelPatches...)
 	}
 
-	configPatches, err := m.mutateConfig(ctx, appNewCR, appOldCR)
+	configPatches, err := m.mutateConfig(ctx, app)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -106,7 +106,7 @@ func (m *Mutator) MutateApp(ctx context.Context, appNewCR, appOldCR v1alpha1.App
 		result = append(result, configPatches...)
 	}
 
-	kubeConfigPatches, err := m.mutateKubeConfig(ctx, appNewCR, appOldCR)
+	kubeConfigPatches, err := m.mutateKubeConfig(ctx, app)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -121,63 +121,66 @@ func (m *Mutator) Resource() string {
 	return Name
 }
 
-func (m *Mutator) mutateConfig(ctx context.Context, appNewCR, appOldCR v1alpha1.App) ([]mutator.PatchOperation, error) {
+func (m *Mutator) mutateConfig(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
 	var result []mutator.PatchOperation
 
 	// Return early if either field is set.
-	if key.AppConfigMapName(appNewCR) != "" || key.AppConfigMapNamespace(appNewCR) != "" {
+	if key.AppConfigMapName(app) != "" || key.AppConfigMapNamespace(app) != "" {
 		return nil, nil
 	}
 
 	// If there is no secret then create a patch for the config block.
-	if key.AppSecretName(appNewCR) == "" && key.AppSecretNamespace(appNewCR) == "" {
+	if key.AppSecretName(app) == "" && key.AppSecretNamespace(app) == "" {
 		result = append(result, mutator.PatchAdd("/spec/config", map[string]string{}))
 	}
 
-	result = append(result, mutator.PatchAdd("/spec/config/configMap", map[string]string{}))
-	result = append(result, mutator.PatchAdd("/spec/config/configMap/namespace", appNewCR.Namespace))
-	result = append(result, mutator.PatchAdd("/spec/config/configMap/name", key.ClusterConfigMapName(appNewCR)))
+	result = append(result, mutator.PatchAdd("/spec/config/configMap", map[string]string{
+		"namespace": app.Namespace,
+		"name":      key.ClusterConfigMapName(app),
+	}))
 
 	return result, nil
 }
 
-func (m *Mutator) mutateKubeConfig(ctx context.Context, appNewCR, appOldCR v1alpha1.App) ([]mutator.PatchOperation, error) {
+func (m *Mutator) mutateKubeConfig(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
 	var result []mutator.PatchOperation
 
 	// Return early if in-cluster is used.
-	if key.InCluster(appNewCR) {
+	if key.InCluster(app) {
 		return nil, nil
 	}
 
 	// Return early if either field is set.
-	if key.KubeConfigSecretName(appNewCR) != "" || key.KubeConfigSecretNamespace(appNewCR) != "" {
+	if key.KubeConfigSecretName(app) != "" || key.KubeConfigSecretNamespace(app) != "" {
 		return nil, nil
 	}
 
-	if key.KubeConfigContextName(appNewCR) == "" {
-		result = append(result, mutator.PatchAdd("/spec/kubeConfig/context", map[string]string{}))
-		result = append(result, mutator.PatchAdd("/spec/kubeConfig/context/name", appNewCR.Namespace))
+	if key.KubeConfigContextName(app) == "" {
+		result = append(result, mutator.PatchAdd("/spec/kubeConfig/context", map[string]string{
+			"name": app.Namespace,
+		}))
 	}
 
-	result = append(result, mutator.PatchAdd("/spec/kubeConfig/secret", map[string]string{}))
-	result = append(result, mutator.PatchAdd("/spec/kubeConfig/secret/namespace", appNewCR.Namespace))
-	result = append(result, mutator.PatchAdd("/spec/kubeConfig/secret/name", key.ClusterKubeConfigSecretName(appNewCR)))
+	result = append(result, mutator.PatchAdd("/spec/kubeConfig/secret", map[string]string{
+		"namespace": app.Namespace,
+		"name":      key.ClusterKubeConfigSecretName(app),
+	}))
 
 	return result, nil
 }
 
-func (m *Mutator) mutateLabels(ctx context.Context, appNewCR, appOldCR v1alpha1.App) ([]mutator.PatchOperation, error) {
+func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
 	var result []mutator.PatchOperation
 
 	// Set app label if there is no app label present.
-	if key.AppKubernetesNameLabel(appNewCR) == "" && key.AppLabel(appNewCR) == "" {
-		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), key.AppName(appNewCR)))
+	if key.AppKubernetesNameLabel(app) == "" && key.AppLabel(app) == "" {
+		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), key.AppName(app)))
 	}
 
 	// Set version label to be the same as the chart-operator app CR. This
 	// is the version we need and means we don't need to check for a cluster CR.
-	if key.VersionLabel(appNewCR) == "" {
-		appVersion, err := getChartOperatorAppVersion(ctx, m.k8sClient.G8sClient(), appNewCR.Namespace)
+	if key.VersionLabel(app) == "" {
+		appVersion, err := getChartOperatorAppVersion(ctx, m.k8sClient.G8sClient(), app.Namespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -186,7 +189,7 @@ func (m *Mutator) mutateLabels(ctx context.Context, appNewCR, appOldCR v1alpha1.
 		}
 	}
 
-	if len(appNewCR.Labels) == 0 {
+	if len(app.Labels) == 0 {
 		root := mutator.PatchAdd("/metadata/labels", map[string]string{})
 		result = append([]mutator.PatchOperation{root}, result...)
 	}

@@ -78,8 +78,8 @@ func (v *Validator) Validate(request *v1beta1.AdmissionRequest) (bool, error) {
 
 	v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("validating app %#q in namespace %#q", app.Name, app.Namespace))
 
-	// We check the deletion timestamp rather than for a delete event because
-	// app CRs may be deleted by deleting the namespace they belong to.
+	// We check the deletion timestamp because app CRs may be deleted by
+	// deleting the namespace they belong to.
 	if !app.DeletionTimestamp.IsZero() {
 		v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("admitted deletion of app %#q in namespace %#q", app.Name, app.Namespace))
 		return true, nil

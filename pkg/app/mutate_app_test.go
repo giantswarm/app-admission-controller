@@ -43,14 +43,17 @@ func Test_MutateApp(t *testing.T) {
 			},
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/spec/config", map[string]string{}),
-				mutator.PatchAdd("/spec/config/configMap", map[string]string{}),
-				mutator.PatchAdd("/spec/config/configMap/namespace", "eggs2"),
-				mutator.PatchAdd("/spec/config/configMap/name", "eggs2-cluster-values"),
-				mutator.PatchAdd("/spec/kubeConfig/context", map[string]string{}),
-				mutator.PatchAdd("/spec/kubeConfig/context/name", "eggs2"),
-				mutator.PatchAdd("/spec/kubeConfig/secret", map[string]string{}),
-				mutator.PatchAdd("/spec/kubeConfig/secret/namespace", "eggs2"),
-				mutator.PatchAdd("/spec/kubeConfig/secret/name", "eggs2-kubeconfig"),
+				mutator.PatchAdd("/spec/config/configMap", map[string]string{
+					"namespace": "eggs2",
+					"name":      "eggs2-cluster-values",
+				}),
+				mutator.PatchAdd("/spec/kubeConfig/context", map[string]string{
+					"name": "eggs2",
+				}),
+				mutator.PatchAdd("/spec/kubeConfig/secret", map[string]string{
+					"namespace": "eggs2",
+					"name":      "eggs2-kubeconfig",
+				}),
 			},
 		},
 		{
@@ -108,9 +111,10 @@ func Test_MutateApp(t *testing.T) {
 				},
 			},
 			expectedPatches: []mutator.PatchOperation{
-				mutator.PatchAdd("/spec/config/configMap", map[string]string{}),
-				mutator.PatchAdd("/spec/config/configMap/namespace", "eggs2"),
-				mutator.PatchAdd("/spec/config/configMap/name", "eggs2-cluster-values"),
+				mutator.PatchAdd("/spec/config/configMap", map[string]string{
+					"namespace": "eggs2",
+					"name":      "eggs2-cluster-values",
+				}),
 			},
 		},
 		{
@@ -132,9 +136,10 @@ func Test_MutateApp(t *testing.T) {
 			},
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/spec/config", map[string]string{}),
-				mutator.PatchAdd("/spec/config/configMap", map[string]string{}),
-				mutator.PatchAdd("/spec/config/configMap/namespace", "eggs2"),
-				mutator.PatchAdd("/spec/config/configMap/name", "ingress-controller-values"),
+				mutator.PatchAdd("/spec/config/configMap", map[string]string{
+					"namespace": "eggs2",
+					"name":      "ingress-controller-values",
+				}),
 			},
 		},
 	}
@@ -150,7 +155,7 @@ func Test_MutateApp(t *testing.T) {
 				t.Fatalf("error == %#v, want nil", err)
 			}
 
-			patches, err := r.MutateApp(ctx, tc.obj, tc.obj)
+			patches, err := r.MutateApp(ctx, tc.obj)
 			switch {
 			case err != nil && tc.expectedErr == "":
 				t.Fatalf("error == %#v, want nil", err)

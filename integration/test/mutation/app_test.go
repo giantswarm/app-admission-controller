@@ -25,6 +25,8 @@ const (
 	namespace      = "mutation-test"
 )
 
+// TestDefaultKubeConfig checks that the app CR kubeconfig is defaulted to the
+// correct settings.
 func TestDefaultKubeConfig(t *testing.T) {
 	ctx := context.Background()
 

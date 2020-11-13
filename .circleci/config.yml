@@ -54,6 +54,18 @@ workflows:
             # Do this on every commit and when a new tag is created.
             tags:
               only: /^v.*/
+ 
+      - architect/integration-test:
+          name: mutation-integration-test
+          install-app-platform: true
+          test-dir: "integration/test/mutation"
+          filters:
+            # Do not trigger the job on merge to master.
+            branches:
+              ignore:
+                - master
+          requires:
+            - push-app-admission-controller-to-control-plane-app-catalog
 
       - architect/integration-test:
           name: validation-integration-test

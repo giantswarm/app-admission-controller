@@ -23,7 +23,7 @@ const (
 	appName       = "dex-app"
 	catalog       = "control-plane-catalog"
 	configMapName = "dex-config"
-	namespace     = "test"
+	namespace     = "validation-test"
 )
 
 // TestFailWhenCatalogNotFound tests that the app CR is rejected if the

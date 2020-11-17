@@ -3,7 +3,7 @@ module github.com/giantswarm/app-admission-controller
 go 1.15
 
 require (
-	github.com/giantswarm/apiextensions/v3 v3.7.0
+	github.com/giantswarm/apiextensions/v3 v3.8.0
 	github.com/giantswarm/app/v3 v3.2.0
 	github.com/giantswarm/apptest v0.5.0
 	github.com/giantswarm/backoff v0.2.0

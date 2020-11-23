@@ -94,11 +94,13 @@ func (m *Mutator) MutateApp(ctx context.Context, app v1alpha1.App) ([]mutator.Pa
 
 	appVersionLabel := key.VersionLabel(app)
 	if appVersionLabel == "" {
+		// If there is no version label check the value for the chart-operator
+		// app CR. This is the version we need and means we don't need to check
+		// for a cluster CR.
 		appVersionLabel, err = getChartOperatorAppVersion(ctx, m.k8sClient.G8sClient(), app.Namespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-
 		if appVersionLabel == "" {
 			m.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("skipping mutation of app %#q in namespace %#q due to missing version label", app.Name, app.Namespace))
 			return nil, nil
@@ -116,7 +118,7 @@ func (m *Mutator) MutateApp(ctx context.Context, app v1alpha1.App) ([]mutator.Pa
 		return nil, nil
 	}
 
-	labelPatches, err := m.mutateLabels(ctx, app)
+	labelPatches, err := m.mutateLabels(ctx, app, appVersionLabel)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -195,7 +197,7 @@ func (m *Mutator) mutateKubeConfig(ctx context.Context, app v1alpha1.App) ([]mut
 	return result, nil
 }
 
-func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
+func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appVersionLabel string) ([]mutator.PatchOperation, error) {
 	var result []mutator.PatchOperation
 
 	// Set app label if there is no app label present.
@@ -203,16 +205,8 @@ func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App) ([]mutator
 		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), key.AppName(app)))
 	}
 
-	// Set version label to be the same as the chart-operator app CR. This
-	// is the version we need and means we don't need to check for a cluster CR.
-	if key.VersionLabel(app) == "" {
-		appVersion, err := getChartOperatorAppVersion(ctx, m.k8sClient.G8sClient(), app.Namespace)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		if appVersion != "" {
-			result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), appVersion))
-		}
+	if key.VersionLabel(app) == "" && appVersionLabel != "" {
+		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), appVersionLabel))
 	}
 
 	if len(app.Labels) == 0 {

@@ -3,6 +3,7 @@ module github.com/giantswarm/app-admission-controller
 go 1.15
 
 require (
+	github.com/Masterminds/semver/v3 v3.1.0
 	github.com/giantswarm/apiextensions/v3 v3.7.1-0.20201111144349-4ed00f3702ef
 	github.com/giantswarm/app/v3 v3.2.1-0.20201111144832-2ec3df0b5723
 	github.com/giantswarm/apptest v0.5.0

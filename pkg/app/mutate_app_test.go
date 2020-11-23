@@ -52,7 +52,7 @@ func Test_MutateApp(t *testing.T) {
 						Name:      "chart-operator",
 						Namespace: "eggs2",
 						Labels: map[string]string{
-							label.AppOperatorVersion: "2.6.0",
+							label.AppOperatorVersion: "3.0.0",
 						},
 					},
 				},
@@ -60,7 +60,7 @@ func Test_MutateApp(t *testing.T) {
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/labels", map[string]string{}),
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), "kiam"),
-				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "2.6.0"),
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
 				mutator.PatchAdd("/spec/config", map[string]string{}),
 				mutator.PatchAdd("/spec/config/configMap", map[string]string{
 					"namespace": "eggs2",
@@ -83,6 +83,7 @@ func Test_MutateApp(t *testing.T) {
 					Namespace: "eggs2",
 					Labels: map[string]string{
 						"app.kubernetes.io/name": "kiam",
+						label.AppOperatorVersion: "3.0.0",
 					},
 				},
 				Spec: v1alpha1.AppSpec{
@@ -117,6 +118,7 @@ func Test_MutateApp(t *testing.T) {
 					Namespace: "eggs2",
 					Labels: map[string]string{
 						"app.kubernetes.io/name": "kiam",
+						label.AppOperatorVersion: "3.0.0",
 					},
 				},
 				Spec: v1alpha1.AppSpec{
@@ -150,6 +152,7 @@ func Test_MutateApp(t *testing.T) {
 					Namespace: "eggs2",
 					Labels: map[string]string{
 						"app.kubernetes.io/name": "kiam",
+						label.AppOperatorVersion: "3.0.0",
 					},
 				},
 				Spec: v1alpha1.AppSpec{
@@ -160,6 +163,17 @@ func Test_MutateApp(t *testing.T) {
 						InCluster: true,
 					},
 					Version: "1.4.0",
+				},
+			},
+			apps: []*v1alpha1.App{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "chart-operator",
+						Namespace: "eggs2",
+						Labels: map[string]string{
+							label.AppOperatorVersion: "3.0.0",
+						},
+					},
 				},
 			},
 			expectedPatches: []mutator.PatchOperation{
@@ -202,13 +216,13 @@ func Test_MutateApp(t *testing.T) {
 						Name:      "chart-operator",
 						Namespace: "eggs2",
 						Labels: map[string]string{
-							label.AppOperatorVersion: "2.4.0",
+							label.AppOperatorVersion: "3.0.0",
 						},
 					},
 				},
 			},
 			expectedPatches: []mutator.PatchOperation{
-				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "2.4.0"),
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
 			},
 		},
 	}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/apiextensions/v3/pkg/clientset/versioned"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
@@ -88,7 +89,32 @@ func (m *Mutator) Mutate(request *v1beta1.AdmissionRequest) ([]mutator.PatchOper
 }
 
 func (m *Mutator) MutateApp(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
+	var err error
 	var result []mutator.PatchOperation
+
+	appVersionLabel := key.VersionLabel(app)
+	if appVersionLabel == "" {
+		appVersionLabel, err = getChartOperatorAppVersion(ctx, m.k8sClient.G8sClient(), app.Namespace)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		if appVersionLabel == "" {
+			m.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("skipping mutation of app %#q in namespace %#q due to missing version label", app.Name, app.Namespace))
+			return nil, nil
+		}
+	}
+
+	ver, err := semver.NewVersion(appVersionLabel)
+	if err != nil {
+		m.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("skipping mutation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appVersionLabel))
+		return nil, nil
+	}
+
+	if ver.Major() < 3 {
+		m.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("skipping mutation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appVersionLabel))
+		return nil, nil
+	}
 
 	labelPatches, err := m.mutateLabels(ctx, app)
 	if err != nil {

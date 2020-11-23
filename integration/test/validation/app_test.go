@@ -58,7 +58,7 @@ func TestFailWhenCatalogNotFound(t *testing.T) {
 	o := func() error {
 		err = appTest.CtrlClient().Create(ctx, app)
 		if err == nil {
-			microerror.Maskf(executionFailedError, "expected error but got nil")
+			return microerror.Maskf(executionFailedError, "expected error but got nil")
 		}
 		if !strings.Contains(err.Error(), expectedError) {
 			return microerror.Maskf(executionFailedError, "error == %#v, want %#v ", err.Error(), expectedError)

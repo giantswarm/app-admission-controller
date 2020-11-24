@@ -2,11 +2,14 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
+	"github.com/giantswarm/apiextensions/v3/pkg/clientset/versioned/fake"
+	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclienttest"
 	"github.com/giantswarm/micrologger/microloggertest"
 	"github.com/google/go-cmp/cmp"
@@ -24,6 +27,7 @@ func Test_MutateApp(t *testing.T) {
 	tests := []struct {
 		name            string
 		obj             v1alpha1.App
+		apps            []*v1alpha1.App
 		configMaps      []*corev1.ConfigMap
 		secrets         []*corev1.Secret
 		expectedPatches []mutator.PatchOperation
@@ -46,6 +50,9 @@ func Test_MutateApp(t *testing.T) {
 					Version: "1.4.0",
 				},
 			},
+			apps: []*v1alpha1.App{
+				newTestApp("chart-operator", "eggs2", "3.0.0"),
+			},
 			configMaps: []*corev1.ConfigMap{
 				newTestConfigMap("eggs2-cluster-values", "eggs2"),
 			},
@@ -53,6 +60,9 @@ func Test_MutateApp(t *testing.T) {
 				newTestSecret("eggs2-kubeconfig", "eggs2"),
 			},
 			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/metadata/labels", map[string]string{}),
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), "kiam"),
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
 				mutator.PatchAdd("/spec/config", map[string]string{}),
 				mutator.PatchAdd("/spec/config/configMap", map[string]string{
 					"namespace": "eggs2",
@@ -73,6 +83,10 @@ func Test_MutateApp(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "kiam",
 					Namespace: "eggs2",
+					Labels: map[string]string{
+						"app.kubernetes.io/name": "kiam",
+						label.AppOperatorVersion: "3.0.0",
+					},
 				},
 				Spec: v1alpha1.AppSpec{
 					Catalog: "giantswarm",
@@ -104,6 +118,10 @@ func Test_MutateApp(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "kiam",
 					Namespace: "eggs2",
+					Labels: map[string]string{
+						"app.kubernetes.io/name": "kiam",
+						label.AppOperatorVersion: "3.0.0",
+					},
 				},
 				Spec: v1alpha1.AppSpec{
 					Catalog: "giantswarm",
@@ -137,6 +155,10 @@ func Test_MutateApp(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "nginx-ingress-controller-app",
 					Namespace: "eggs2",
+					Labels: map[string]string{
+						"app.kubernetes.io/name": "kiam",
+						label.AppOperatorVersion: "3.0.0",
+					},
 				},
 				Spec: v1alpha1.AppSpec{
 					Catalog:   "giantswarm",
@@ -147,6 +169,9 @@ func Test_MutateApp(t *testing.T) {
 					},
 					Version: "1.4.0",
 				},
+			},
+			apps: []*v1alpha1.App{
+				newTestApp("chart-operator", "eggs2", "3.0.0"),
 			},
 			configMaps: []*corev1.ConfigMap{
 				newTestConfigMap("ingress-controller-values", "eggs2"),
@@ -160,20 +185,45 @@ func Test_MutateApp(t *testing.T) {
 			},
 		},
 		{
-			name: "case 4: no config map patch if it doesn't exist",
+			name: "case 4: set version label only",
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "kiam",
 					Namespace: "eggs2",
+					Labels: map[string]string{
+						"app": "kiam",
+					},
 				},
 				Spec: v1alpha1.AppSpec{
-					Catalog: "giantswarm",
-					Config: v1alpha1.AppSpecConfig{
-						Secret: v1alpha1.AppSpecConfigSecret{
-							Namespace: "eggs2",
-							Name:      "eggs2-cluster-secrets",
-						},
+					Catalog:   "giantswarm",
+					Name:      "kiam",
+					Namespace: "kube-system",
+					KubeConfig: v1alpha1.AppSpecKubeConfig{
+						InCluster: true,
 					},
+					Version: "1.4.0",
+				},
+			},
+			apps: []*v1alpha1.App{
+				newTestApp("chart-operator", "eggs2", "3.1.0"),
+			},
+			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.1.0"),
+			},
+		},
+		{
+			name: "case 5: no config map patch if it doesn't exist",
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "kiam",
+					Namespace: "eggs2",
+					Labels: map[string]string{
+						"app":                    "kiam",
+						label.AppOperatorVersion: "3.0.0",
+					},
+				},
+				Spec: v1alpha1.AppSpec{
+					Catalog:   "giantswarm",
 					Name:      "kiam",
 					Namespace: "kube-system",
 					KubeConfig: v1alpha1.AppSpecKubeConfig{
@@ -183,25 +233,32 @@ func Test_MutateApp(t *testing.T) {
 				},
 			},
 			configMaps: []*corev1.ConfigMap{
-				newTestConfigMap("other-values-configmap", "eggs2"),
+				newTestConfigMap("other-app-values", "eggs2"),
 			},
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			objs := make([]runtime.Object, 0)
+			g8sObjs := make([]runtime.Object, 0)
+
+			for _, app := range tc.apps {
+				g8sObjs = append(g8sObjs, app)
+			}
+
+			k8sObjs := make([]runtime.Object, 0)
 
 			for _, cm := range tc.configMaps {
-				objs = append(objs, cm)
+				k8sObjs = append(k8sObjs, cm)
 			}
 
 			for _, secret := range tc.secrets {
-				objs = append(objs, secret)
+				k8sObjs = append(k8sObjs, secret)
 			}
 
 			k8sClient := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
-				K8sClient: clientgofake.NewSimpleClientset(objs...),
+				G8sClient: fake.NewSimpleClientset(g8sObjs...),
+				K8sClient: clientgofake.NewSimpleClientset(k8sObjs...),
 			})
 
 			c := MutatorConfig{
@@ -230,6 +287,18 @@ func Test_MutateApp(t *testing.T) {
 				t.Fatalf("want matching patches \n %s", cmp.Diff(patches, tc.expectedPatches))
 			}
 		})
+	}
+}
+
+func newTestApp(name, namespace, versionLabel string) *v1alpha1.App {
+	return &v1alpha1.App{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels: map[string]string{
+				label.AppOperatorVersion: versionLabel,
+			},
+		},
 	}
 }
 

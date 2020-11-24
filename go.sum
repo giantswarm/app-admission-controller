@@ -30,6 +30,7 @@ github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible/go
 github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd/go.mod h1:64YHyfSL2R96J44Nlwm39UHepQbyR5q10x7iYa1ks2E=
 github.com/MakeNowJust/heredoc v1.0.0/go.mod h1:mG5amYoWBHf8vpLOuehzbGGw0EHxpZZ6lCpQ4fNJ8LE=
 github.com/Masterminds/goutils v1.1.0/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
+github.com/Masterminds/semver/v3 v3.1.0 h1:Y2lUDsFKVRSYGojLJ1yLxSXdMmMYTYls0rCvoqmMUQk=
 github.com/Masterminds/semver/v3 v3.1.0/go.mod h1:VPu/7SZ7ePZ3QOrcuXROw5FAcLl4a0cBrbBpGY/8hQs=
 github.com/Masterminds/sprig/v3 v3.1.0/go.mod h1:ONGMf7UfYGAbMXCZmQLy8x3lCDIPrEZE/rU8pmrbihA=
 github.com/Masterminds/squirrel v1.4.0/go.mod h1:yaPeOnPG5ZRwL9oKdTsO/prlkPbXWZlRVMQ/gGlzIuA=
@@ -196,10 +197,10 @@ github.com/garyburd/redigo v0.0.0-20150301180006-535138d7bcd7/go.mod h1:NR3MbYis
 github.com/ghodss/yaml v0.0.0-20150909031657-73d445a93680/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/giantswarm/apiextensions/v3 v3.4.0/go.mod h1:MMLkRJta4mbTbrikP9LewADiCL+55LmsagyhdTU7XAY=
-github.com/giantswarm/apiextensions/v3 v3.7.0 h1:KUAjZn3OMMkmTWvgAfAPTLdrNbFY2zukMntdeLhMGY4=
-github.com/giantswarm/apiextensions/v3 v3.7.0/go.mod h1:MMLkRJta4mbTbrikP9LewADiCL+55LmsagyhdTU7XAY=
-github.com/giantswarm/app/v3 v3.2.0 h1:pBVQ22hRytYEM4WBv2iztBczBcWomxSiOdgLHoiu9HA=
-github.com/giantswarm/app/v3 v3.2.0/go.mod h1:1P9plfrJ5IzG9sg4nw93a6G1mDSLUHBDL5TLaxlRTHc=
+github.com/giantswarm/apiextensions/v3 v3.8.0 h1:gRqlNE62k49EdXYKBaShH0jkFBoOuGPxIgEnD5SZCx4=
+github.com/giantswarm/apiextensions/v3 v3.8.0/go.mod h1:MMLkRJta4mbTbrikP9LewADiCL+55LmsagyhdTU7XAY=
+github.com/giantswarm/app/v3 v3.3.0 h1:Mpwc3+dHZKGTNl3y50F6QjVbiBQrgpZGTZfvax+xZKE=
+github.com/giantswarm/app/v3 v3.3.0/go.mod h1:1+kDyJBXp127yVXTdqfgWfGp50V4LkIq1lSDXBizICk=
 github.com/giantswarm/appcatalog v0.2.7 h1:SVD1OH/C5zEP8TaeS3L9t8+lVcfaRZhwY98sn8v9lYs=
 github.com/giantswarm/appcatalog v0.2.7/go.mod h1:WHO5lJvcuwzToxxHPdiX9CVxvMsmP8YZfjoo4E/NTLs=
 github.com/giantswarm/apptest v0.5.0 h1:WGHEe5UDO9Rtn61s7/Osh/pF17JXThuc4JXyzPYeHJ0=

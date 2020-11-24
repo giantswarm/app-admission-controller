@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
+	"github.com/giantswarm/app/v3/pkg/key"
 	"github.com/giantswarm/app/v3/pkg/validation"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
@@ -82,6 +84,17 @@ func (v *Validator) Validate(request *v1beta1.AdmissionRequest) (bool, error) {
 	// deleting the namespace they belong to.
 	if !app.DeletionTimestamp.IsZero() {
 		v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("admitted deletion of app %#q in namespace %#q", app.Name, app.Namespace))
+		return true, nil
+	}
+
+	ver, err := semver.NewVersion(key.VersionLabel(app))
+	if err != nil {
+		v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("skipping validation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, key.VersionLabel(app)))
+		return true, nil
+	}
+
+	if ver.Major() < 3 {
+		v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("skipping validation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, key.VersionLabel(app)))
 		return true, nil
 	}
 

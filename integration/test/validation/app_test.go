@@ -38,7 +38,7 @@ func TestFailWhenCatalogNotFound(t *testing.T) {
 			Name:      appName,
 			Namespace: "giantswarm",
 			Labels: map[string]string{
-				label.AppOperatorVersion: "0.0.0",
+				label.AppOperatorVersion: "3.0.0",
 			},
 		},
 		Spec: v1alpha1.AppSpec{
@@ -58,7 +58,7 @@ func TestFailWhenCatalogNotFound(t *testing.T) {
 	o := func() error {
 		err = appTest.CtrlClient().Create(ctx, app)
 		if err == nil {
-			microerror.Maskf(executionFailedError, "expected error but got nil")
+			return microerror.Maskf(executionFailedError, "expected error but got nil")
 		}
 		if !strings.Contains(err.Error(), expectedError) {
 			return microerror.Maskf(executionFailedError, "error == %#v, want %#v ", err.Error(), expectedError)
@@ -153,7 +153,7 @@ func createTestResources(ctx context.Context) error {
 			Name:      appName,
 			Namespace: namespace,
 			Labels: map[string]string{
-				label.AppOperatorVersion: "0.0.0",
+				label.AppOperatorVersion: "3.0.0",
 			},
 		},
 		Spec: v1alpha1.AppSpec{

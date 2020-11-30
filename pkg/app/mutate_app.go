@@ -157,6 +157,12 @@ func (m *Mutator) mutateConfig(ctx context.Context, app v1alpha1.App) ([]mutator
 		return nil, nil
 	}
 
+	// Return early if values configmap not found.
+	_, err := m.k8sClient.K8sClient().CoreV1().ConfigMaps(app.Namespace).Get(ctx, key.ClusterConfigMapName(app), metav1.GetOptions{})
+	if apierrors.IsNotFound(err) {
+		return nil, nil
+	}
+
 	// If there is no secret then create a patch for the config block.
 	if key.AppSecretName(app) == "" && key.AppSecretNamespace(app) == "" {
 		result = append(result, mutator.PatchAdd("/spec/config", map[string]string{}))
@@ -180,6 +186,12 @@ func (m *Mutator) mutateKubeConfig(ctx context.Context, app v1alpha1.App) ([]mut
 
 	// Return early if either field is set.
 	if key.KubeConfigSecretName(app) != "" || key.KubeConfigSecretNamespace(app) != "" {
+		return nil, nil
+	}
+
+	// Return early if kubeconfig not found.
+	_, err := m.k8sClient.K8sClient().CoreV1().Secrets(app.Namespace).Get(ctx, key.ClusterKubeConfigSecretName(app), metav1.GetOptions{})
+	if apierrors.IsNotFound(err) {
 		return nil, nil
 	}
 

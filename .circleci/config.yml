@@ -56,7 +56,7 @@ workflows:
               only: /^v.*/
 
       - architect/integration-test:
-          name: muation-integration-test
+          name: mutation-integration-test
           install-app-platform: true
           test-dir: "integration/test/mutation"
           filters:

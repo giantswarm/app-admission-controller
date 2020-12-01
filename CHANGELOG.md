@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add validation webhook for app CRs.
+- Add mutation webhook with defaulting logic that is enabled for app CRs with
+`app-operator.giantswarm.io/version` label value >= `3.0.0`.
+- Add validation webhook that is enabled for app CRs with
+`app-operator.giantswarm.io/version` label value >= `3.0.0`.
 
 [Unreleased]: https://github.com/giantswarm/app-admission-controller/tree/master

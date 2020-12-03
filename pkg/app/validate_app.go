@@ -6,8 +6,8 @@ import (
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	"github.com/giantswarm/app/v3/pkg/key"
-	"github.com/giantswarm/app/v3/pkg/validation"
+	"github.com/giantswarm/app/v4/pkg/key"
+	"github.com/giantswarm/app/v4/pkg/validation"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -99,7 +99,10 @@ func (v *Validator) Validate(request *v1beta1.AdmissionRequest) (bool, error) {
 	}
 
 	appAllowed, err := v.appValidator.ValidateApp(ctx, app)
-	if err != nil {
+	if validation.IsAppDependencyNotReady(err) {
+		v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("skipping validation of app %#q in namespace %#q due to app dependency not ready yet", app.Name, app.Namespace))
+		return true, nil
+	} else if err != nil {
 		v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("rejected app %#q in namespace %#q", app.Name, app.Namespace), "stack", microerror.JSON(err))
 		return false, microerror.Mask(err)
 	}

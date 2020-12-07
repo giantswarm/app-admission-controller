@@ -113,7 +113,7 @@ func (m *Mutator) MutateApp(ctx context.Context, app v1alpha1.App) ([]mutator.Pa
 		return nil, nil
 	}
 
-	if ver.Major() < 3 {
+	if key.VersionLabel(app) == "0.0.0" || ver.Major() < 3 {
 		m.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("skipping mutation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appVersionLabel))
 		return nil, nil
 	}

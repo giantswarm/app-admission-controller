@@ -18,6 +18,8 @@ import (
 
 const (
 	Name = "app"
+
+	uniqueAppCRVersion = "0.0.0"
 )
 
 type ValidatorConfig struct {
@@ -93,7 +95,7 @@ func (v *Validator) Validate(request *v1beta1.AdmissionRequest) (bool, error) {
 		return true, nil
 	}
 
-	if key.VersionLabel(app) == "0.0.0" || ver.Major() < 3 {
+	if key.VersionLabel(app) != uniqueAppCRVersion && ver.Major() < 3 {
 		v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("skipping validation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, key.VersionLabel(app)))
 		return true, nil
 	}

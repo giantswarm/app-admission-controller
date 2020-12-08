@@ -64,7 +64,7 @@ func Handler(mutator Mutator) http.HandlerFunc {
 
 		patch, err := mutator.Mutate(review.Request)
 		if err != nil {
-			writeResponse(mutator, writer, errorResponse(review.Request.UID, microerror.Mask(err)))
+			writeResponse(mutator, writer, errorResponse(mutator, review.Request.UID, microerror.Mask(err)))
 			metrics.RejectedRequests.WithLabelValues("mutating", mutator.Resource()).Inc()
 			return
 		}
@@ -72,7 +72,7 @@ func Handler(mutator Mutator) http.HandlerFunc {
 		patchData, err := json.Marshal(patch)
 		if err != nil {
 			mutator.Log("level", "error", "message", fmt.Sprintf("unable to serialize patch for %s: %v", resourceName, err))
-			writeResponse(mutator, writer, errorResponse(review.Request.UID, InternalError))
+			writeResponse(mutator, writer, errorResponse(mutator, review.Request.UID, InternalError))
 			metrics.RejectedRequests.WithLabelValues("mutating", mutator.Resource()).Inc()
 			return
 		}
@@ -123,7 +123,8 @@ func writeResponse(mutator Mutator, writer http.ResponseWriter, response *v1beta
 	}
 }
 
-func errorResponse(uid types.UID, err error) *v1beta1.AdmissionResponse {
+func errorResponse(mutator Mutator, uid types.UID, err error) *v1beta1.AdmissionResponse {
+	mutator.Log("level", "error", "message", fmt.Sprintf("failed to mutate object %#q", mutator.Resource()), "stack", microerror.JSON(err))
 	return &v1beta1.AdmissionResponse{
 		Allowed: false,
 		UID:     uid,

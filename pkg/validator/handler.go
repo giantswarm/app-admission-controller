@@ -59,7 +59,7 @@ func Handler(validator Validator) http.HandlerFunc {
 
 		allowed, err := validator.Validate(review.Request)
 		if err != nil {
-			writeResponse(validator, writer, errorResponse(review.Request.UID, microerror.Mask(err)))
+			writeResponse(validator, writer, errorResponse(validator, review.Request.UID, microerror.Mask(err)))
 			metrics.RejectedRequests.WithLabelValues("validating", validator.Resource()).Inc()
 			return
 		}
@@ -92,7 +92,8 @@ func writeResponse(validator Validator, writer http.ResponseWriter, response *v1
 	}
 }
 
-func errorResponse(uid types.UID, err error) *v1beta1.AdmissionResponse {
+func errorResponse(validator Validator, uid types.UID, err error) *v1beta1.AdmissionResponse {
+	validator.Log("level", "error", "message", fmt.Sprintf("failed to mutate object %#q", validator.Resource()), "stack", microerror.JSON(err))
 	return &v1beta1.AdmissionResponse{
 		Allowed: false,
 		UID:     uid,

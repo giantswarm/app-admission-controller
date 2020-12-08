@@ -219,14 +219,19 @@ func (m *Mutator) muateControlPlaneApp(ctx context.Context, app v1alpha1.App) ([
 		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
-			bytes, _ := ioutil.ReadAll(resp.Body)
-			return nil, microerror.Maskf(executionFailedError, "failed to get catalog %#q index for app %#q, status code = %d, want %d, response = %#q", app.Spec.Catalog, app.Name, resp.StatusCode, http.StatusOK, bytes)
+			bodyBytes, _ := ioutil.ReadAll(resp.Body)
+			return nil, microerror.Maskf(executionFailedError, "failed to get catalog %#q index for app %#q, status code = %d, want %d, response = %#q", app.Spec.Catalog, app.Name, resp.StatusCode, http.StatusOK, bodyBytes)
+		}
+
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, microerror.Maskf(executionFailedError, "failed to read read response body for catalog %#q index with error %#q", app.Spec.Catalog, err)
 		}
 
 		var index Index
-		err = json.NewDecoder(resp.Body).Decode(&index)
+		err = json.Unmarshal(bodyBytes, &index)
 		if err != nil {
-			return nil, microerror.Mask(err)
+			return nil, microerror.Maskf(executionFailedError, "failed to unmarshal body to JSON for catalog %#q index with error %#q, body = %#q", app.Spec.Catalog, err, bodyBytes)
 		}
 
 		appEntries, ok := index.Entries[app.Name]

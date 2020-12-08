@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -217,8 +218,13 @@ func (m *Mutator) muateControlPlaneApp(ctx context.Context, app v1alpha1.App) ([
 		}
 		defer resp.Body.Close()
 
+		if resp.StatusCode != http.StatusOK {
+			bytes, _ := ioutil.ReadAll(resp.Body)
+			return nil, microerror.Maskf(executionFailedError, "failed to get catalog %#q index for app %#q, status code = %d, want %d, response = %#q", app.Spec.Catalog, app.Name, resp.StatusCode, http.StatusOK, bytes)
+		}
+
 		var index Index
-		err = json.NewDecoder(req.Body).Decode(&index)
+		err = json.NewDecoder(resp.Body).Decode(&index)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

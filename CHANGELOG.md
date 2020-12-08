@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Configure `config.giantswram.io/version` annotation for Control Plane app
+  CRs, i.e. app CRs reconciled by app-operator v0.0.0.
+
 ## [0.1.0] - 2020-12-01
 
 ### Added

@@ -2,10 +2,13 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
+	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/apiextensions/v3/pkg/clientset/versioned"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
@@ -92,33 +95,46 @@ func (m *Mutator) MutateApp(ctx context.Context, app v1alpha1.App) ([]mutator.Pa
 	var err error
 	var result []mutator.PatchOperation
 
-	appVersionLabel := key.VersionLabel(app)
-	if appVersionLabel == "" {
+	appOperatorVersion := key.VersionLabel(app)
+	if appOperatorVersion == "" {
 		// If there is no version label check the value for the chart-operator
 		// app CR. This is the version we need and means we don't need to check
 		// for a cluster CR.
-		appVersionLabel, err = getChartOperatorAppVersion(ctx, m.k8sClient.G8sClient(), app.Namespace)
+		appOperatorVersion, err = getChartOperatorAppVersion(ctx, m.k8sClient.G8sClient(), app.Namespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-		if appVersionLabel == "" {
+		if appOperatorVersion == "" {
 			m.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("skipping mutation of app %#q in namespace %#q due to missing version label", app.Name, app.Namespace))
 			return nil, nil
 		}
 	}
 
-	ver, err := semver.NewVersion(appVersionLabel)
+	// Special case for Control Plane apps.
+	if appOperatorVersion == "0.0.0" {
+		controlPlanePatches, err := m.muateControlPlaneApp(ctx, app)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		if len(controlPlanePatches) > 0 {
+			result = append(result, controlPlanePatches...)
+		}
+
+		return result, nil
+	}
+
+	ver, err := semver.NewVersion(appOperatorVersion)
 	if err != nil {
-		m.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("skipping mutation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appVersionLabel))
+		m.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("skipping mutation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appOperatorVersion))
 		return nil, nil
 	}
 
 	if ver.Major() < 3 {
-		m.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("skipping mutation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appVersionLabel))
+		m.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("skipping mutation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appOperatorVersion))
 		return nil, nil
 	}
 
-	labelPatches, err := m.mutateLabels(ctx, app, appVersionLabel)
+	labelPatches, err := m.mutateLabels(ctx, app, appOperatorVersion)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -176,6 +192,73 @@ func (m *Mutator) mutateConfig(ctx context.Context, app v1alpha1.App) ([]mutator
 	return result, nil
 }
 
+func (m *Mutator) muateControlPlaneApp(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
+	var result []mutator.PatchOperation
+
+	// Get annotations from the catalog index.
+	var annotations map[string]string
+	{
+		type Index struct {
+			Entries map[string][]struct {
+				Version     string            `json:"version"`
+				Annotations map[string]string `json:"annotations"`
+			} `json:"entries"`
+		}
+
+		catalogIndexURL := "https://giantswarm.github.io/" + app.Spec.Catalog + "/index.yaml"
+
+		req, err := http.NewRequestWithContext(ctx, "GET", catalogIndexURL, nil)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		defer resp.Body.Close()
+
+		var index Index
+		err = json.NewDecoder(req.Body).Decode(&index)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		appEntries, ok := index.Entries[app.Name]
+		if !ok {
+			return nil, microerror.Maskf(invalidConfigError, "app %#q not found in %#q catalog", app.Name, app.Spec.Catalog)
+		}
+
+		found := false
+		for _, e := range appEntries {
+			if e.Version == app.Spec.Version {
+				found = true
+				annotations = e.Annotations
+				break
+			}
+		}
+		if !found {
+			return nil, microerror.Maskf(invalidConfigError, "app %#q in version %#q not found in %#q catalog", app.Name, app.Spec.Version, app.Spec.Catalog)
+		}
+	}
+
+	if len(annotations) == 0 {
+		return nil, nil
+	}
+
+	configVersion, ok := annotations[annotation.ConfigVersion]
+	if !ok {
+		return nil, nil
+	}
+
+	if len(app.Annotations) == 0 {
+		result = append(result, mutator.PatchAdd("/metadata/annotations", map[string]string{}))
+	}
+	result = append(result, mutator.PatchAdd("/metadata/annotations/"+annotation.ConfigVersion, configVersion))
+
+	return result, nil
+
+}
+
 func (m *Mutator) mutateKubeConfig(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
 	var result []mutator.PatchOperation
 
@@ -209,7 +292,7 @@ func (m *Mutator) mutateKubeConfig(ctx context.Context, app v1alpha1.App) ([]mut
 	return result, nil
 }
 
-func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appVersionLabel string) ([]mutator.PatchOperation, error) {
+func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appOperatorVersion string) ([]mutator.PatchOperation, error) {
 	var result []mutator.PatchOperation
 
 	// Set app label if there is no app label present.
@@ -217,8 +300,8 @@ func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appVersion
 		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), key.AppName(app)))
 	}
 
-	if key.VersionLabel(app) == "" && appVersionLabel != "" {
-		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), appVersionLabel))
+	if key.VersionLabel(app) == "" && appOperatorVersion != "" {
+		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), appOperatorVersion))
 	}
 
 	if len(app.Labels) == 0 {

@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -20,6 +19,7 @@ import (
 	"k8s.io/api/admission/v1beta1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/app-admission-controller/pkg/mutator"
 )
@@ -229,9 +229,13 @@ func (m *Mutator) muateControlPlaneApp(ctx context.Context, app v1alpha1.App) ([
 		}
 
 		var index Index
-		err = json.Unmarshal(bodyBytes, &index)
+		err = yaml.Unmarshal(bodyBytes, &index)
 		if err != nil {
-			return nil, microerror.Maskf(executionFailedError, "failed to unmarshal body to JSON for catalog %#q index with error %#q, body = %#q", app.Spec.Catalog, err, bodyBytes)
+			first100 := bodyBytes
+			if len(first100) > 100 {
+				first100 = first100[:100]
+			}
+			return nil, microerror.Maskf(executionFailedError, "failed to unmarshal body to JSON for catalog %#q index with error %#q, body = %#q", app.Spec.Catalog, err, first100)
 		}
 
 		appEntries, ok := index.Entries[app.Name]

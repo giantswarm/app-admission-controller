@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Enable admission controller logic for unique app CRs.
 - Update to v4 of app library and skip if app dependencies are not ready to
 allow app CR creation.
 

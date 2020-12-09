@@ -95,6 +95,9 @@ func (v *Validator) Validate(request *v1beta1.AdmissionRequest) (bool, error) {
 		return true, nil
 	}
 
+	// If the app CR does not have the unique version and is < 3.0.0 we skip
+	// the validation logic. This is so the admission controller is not
+	// enabled for existing platform releases.
 	if key.VersionLabel(app) != uniqueAppCRVersion && ver.Major() < 3 {
 		v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("skipping validation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, key.VersionLabel(app)))
 		return true, nil

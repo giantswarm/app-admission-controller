@@ -6,8 +6,8 @@ import (
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	"github.com/giantswarm/app/v3/pkg/key"
-	"github.com/giantswarm/app/v3/pkg/validation"
+	"github.com/giantswarm/app/v4/pkg/key"
+	"github.com/giantswarm/app/v4/pkg/validation"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -18,6 +18,8 @@ import (
 
 const (
 	Name = "app"
+
+	uniqueAppCRVersion = "0.0.0"
 )
 
 type ValidatorConfig struct {
@@ -93,13 +95,19 @@ func (v *Validator) Validate(request *v1beta1.AdmissionRequest) (bool, error) {
 		return true, nil
 	}
 
-	if ver.Major() < 3 {
+	// If the app CR does not have the unique version and is < 3.0.0 we skip
+	// the validation logic. This is so the admission controller is not
+	// enabled for existing platform releases.
+	if key.VersionLabel(app) != uniqueAppCRVersion && ver.Major() < 3 {
 		v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("skipping validation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, key.VersionLabel(app)))
 		return true, nil
 	}
 
 	appAllowed, err := v.appValidator.ValidateApp(ctx, app)
-	if err != nil {
+	if validation.IsAppDependencyNotReady(err) {
+		v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("skipping validation of app %#q in namespace %#q due to app dependency not ready yet", app.Name, app.Namespace))
+		return true, nil
+	} else if err != nil {
 		v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("rejected app %#q in namespace %#q", app.Name, app.Namespace), "stack", microerror.JSON(err))
 		return false, microerror.Mask(err)
 	}

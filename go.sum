@@ -149,8 +149,8 @@ github.com/giantswarm/app/v4 v4.0.0 h1:8PA0Hr6HRBbRS2KEWi5fSMq7rB4VdI2h0g9xI2ssL
 github.com/giantswarm/app/v4 v4.0.0/go.mod h1:OiMkgrgxGtBNsTEHoF0hE9Sisn2onBxlc+dWHIBJPP4=
 github.com/giantswarm/appcatalog v0.3.2 h1:pH0ASrizU7QcAK4oZtrPXAi4pqMFJOsjCPRLY0uLFEo=
 github.com/giantswarm/appcatalog v0.3.2/go.mod h1:cjOuCqi8gWudFY0ogbp4ukSV4Vff6kfInR9VdrX+7yI=
-github.com/giantswarm/apptest v0.8.2-0.20201214103013-cbb003742170 h1:mg3HJpRrtpOXkJr4hqSVbyp0Hv9vx5IHBbj8ZW8pkS0=
-github.com/giantswarm/apptest v0.8.2-0.20201214103013-cbb003742170/go.mod h1:tm+Nzd+3QRno04Il8+mtUUsqDPsGfDWvt76xLPjbUx0=
+github.com/giantswarm/apptest v0.8.2 h1:VlOv8Vj4pv/QsjX0Saun5nwnDYSy2XZtPKjZX9R52jo=
+github.com/giantswarm/apptest v0.8.2/go.mod h1:tm+Nzd+3QRno04Il8+mtUUsqDPsGfDWvt76xLPjbUx0=
 github.com/giantswarm/backoff v0.2.0 h1:kdfAf83pZ/l8X0KiA2dJ2Wq19nS9hISijVn7ZRdFhfU=
 github.com/giantswarm/backoff v0.2.0/go.mod h1:Z3WRsFilSJ5H5VlFa4XhraoPr+9pmZgYasoY2OSfNOk=
 github.com/giantswarm/cluster-api v0.3.10-gs h1:l2LpZlN97t7RRwKf4OBfNA2h1oVnZXWC68TFRfBMu5c=

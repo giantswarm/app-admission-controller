@@ -43,7 +43,7 @@ workflows:
               only: /^v.*/
 
       - architect/push-to-app-catalog:
-          name: push-app-admission-controller-to-control-plane-app-catalog
+          name: push-app-admission-controller-to-control-plane-catalog
           context: architect
           app_catalog: "control-plane-catalog"
           app_catalog_test: "control-plane-test-catalog"
@@ -65,7 +65,7 @@ workflows:
               ignore:
                 - master
           requires:
-            - push-app-admission-controller-to-control-plane-app-catalog
+            - push-app-admission-controller-to-control-plane-catalog
 
       - architect/integration-test:
           name: validation-integration-test
@@ -77,4 +77,47 @@ workflows:
               ignore:
                 - master
           requires:
-            - push-app-admission-controller-to-control-plane-app-catalog
+            - push-app-admission-controller-to-control-plane-catalog
+
+      - architect/push-to-app-collection:
+          context: architect
+          name: push-app-admission-controller-to-aws-app-collection
+          app_name: "app-admission-controller"
+          app_collection_repo: "aws-app-collection"
+          unique: "true"
+          requires:
+            - push-app-admission-controller-to-aliyun
+            - push-app-admission-controller-to-control-plane-catalog
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
+
+      - architect/push-to-app-collection:
+          context: architect
+          name: push-app-admission-controller-to-azure-app-collection
+          app_name: "app-admission-controller"
+          app_collection_repo: "azure-app-collection"
+          unique: "true"
+          requires:
+            - push-app-admission-controller-to-control-plane-catalog
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
+
+      - architect/push-to-app-collection:
+          context: architect
+          name: push-app-admission-controller-to-kvm-app-collection
+          app_name: "app-admission-controller"
+          app_collection_repo: "kvm-app-collection"
+          unique: "true"
+          requires:
+            - push-app-admission-controller-to-control-plane-catalog
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/

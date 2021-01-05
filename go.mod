@@ -3,10 +3,9 @@ module github.com/giantswarm/app-admission-controller
 go 1.15
 
 require (
-	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/giantswarm/apiextensions/v3 v3.13.0
 	github.com/giantswarm/app/v4 v4.0.0
-	github.com/giantswarm/apptest v0.8.2
+	github.com/giantswarm/apptest v0.9.0
 	github.com/giantswarm/backoff v0.2.0
 	github.com/giantswarm/devctl v1.0.0
 	github.com/giantswarm/k8sclient/v5 v5.0.0
@@ -17,7 +16,7 @@ require (
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/onsi/ginkgo v1.14.1 // indirect
 	github.com/onsi/gomega v1.10.2 // indirect
-	github.com/prometheus/client_golang v1.8.0
+	github.com/prometheus/client_golang v1.9.0
 	github.com/slok/kubewebhook v0.11.0
 	golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0 // indirect
 	golang.org/x/net v0.0.0-20201002202402-0a1ea396d57c // indirect

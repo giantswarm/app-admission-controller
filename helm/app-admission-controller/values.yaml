@@ -6,6 +6,8 @@ project:
   branch: "[[ .Branch ]]"
   commit: "[[ .SHA ]]"
 
+replicas: 3
+
 deploymentStrategy:
   rollingUpdate:
     maxSurge: 1

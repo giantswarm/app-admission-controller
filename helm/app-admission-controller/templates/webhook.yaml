@@ -1,4 +1,4 @@
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
   name: {{ include "resource.default.name" . }}
@@ -9,7 +9,8 @@ metadata:
     {{- include "labels.common" . | nindent 4 }}
 webhooks:
   - name: apps.{{ include "resource.default.name" . }}.giantswarm.io
-    failurePolicy: Ignore
+    admissionReviewVersions: ["v1beta1"]
+    failurePolicy: Fail
     sideEffects: NoneOnDryRun
     clientConfig:
       service:
@@ -27,7 +28,7 @@ webhooks:
           - CREATE
           - UPDATE
 ---
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   name: {{ include "resource.default.name" . }}
@@ -38,6 +39,7 @@ metadata:
     {{- include "labels.common" . | nindent 4 }}
 webhooks:
   - name: apps.{{ include "resource.default.name" . }}.giantswarm.io
+    admissionReviewVersions: ["v1beta1"]
     failurePolicy: Fail
     sideEffects: NoneOnDryRun
     clientConfig:

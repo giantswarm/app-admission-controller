@@ -46,8 +46,12 @@ func NewMutator(config MutatorConfig) (*Mutator, error) {
 	return mutator, nil
 }
 
-func (m *Mutator) Log(keyVals ...interface{}) {
-	m.logger.Log(keyVals...)
+func (m *Mutator) Debugf(ctx context.Context, format string, params ...interface{}) {
+	m.logger.WithIncreasedCallerDepth().Debugf(ctx, format, params...)
+}
+
+func (m *Mutator) Errorf(ctx context.Context, err error, format string, params ...interface{}) {
+	m.logger.WithIncreasedCallerDepth().Errorf(ctx, err, format, params...)
 }
 
 func (m *Mutator) Mutate(request *v1beta1.AdmissionRequest) ([]mutator.PatchOperation, error) {
@@ -69,12 +73,12 @@ func (m *Mutator) Mutate(request *v1beta1.AdmissionRequest) ([]mutator.PatchOper
 		return nil, microerror.Maskf(parsingFailedError, "unable to parse app: %#v", err)
 	}
 
-	m.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("mutating app %#q in namespace %#q", appNewCR.Name, appNewCR.Namespace))
+	m.logger.Debugf(ctx, "mutating app %#q in namespace %#q", appNewCR.Name, appNewCR.Namespace)
 
 	// We check the deletion timestamp because app CRs may be deleted by
 	// deleting the namespace they belong to.
 	if !appNewCR.DeletionTimestamp.IsZero() {
-		m.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("admitted deletion of app %#q in namespace %#q", appNewCR.Name, appNewCR.Namespace))
+		m.logger.Debugf(ctx, "admitted deletion of app %#q in namespace %#q", appNewCR.Name, appNewCR.Namespace)
 		return nil, nil
 	}
 
@@ -83,7 +87,7 @@ func (m *Mutator) Mutate(request *v1beta1.AdmissionRequest) ([]mutator.PatchOper
 		return nil, microerror.Mask(err)
 	}
 
-	m.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("applying %d patches to app %#q in namespace %#q", len(result), appNewCR.Name, appNewCR.Namespace))
+	m.logger.Debugf(ctx, "applying %d patches to app %#q in namespace %#q", len(result), appNewCR.Name, appNewCR.Namespace)
 
 	return result, nil
 }
@@ -102,14 +106,14 @@ func (m *Mutator) MutateApp(ctx context.Context, app v1alpha1.App) ([]mutator.Pa
 			return nil, microerror.Mask(err)
 		}
 		if appVersionLabel == "" {
-			m.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("skipping mutation of app %#q in namespace %#q due to missing version label", app.Name, app.Namespace))
+			m.logger.Debugf(ctx, "skipping mutation of app %#q in namespace %#q due to missing version label", app.Name, app.Namespace)
 			return nil, nil
 		}
 	}
 
 	ver, err := semver.NewVersion(appVersionLabel)
 	if err != nil {
-		m.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("skipping mutation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appVersionLabel))
+		m.logger.Debugf(ctx, "skipping mutation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appVersionLabel)
 		return nil, nil
 	}
 
@@ -117,7 +121,7 @@ func (m *Mutator) MutateApp(ctx context.Context, app v1alpha1.App) ([]mutator.Pa
 	// the defaulting logic. This is so the admission controller is not enabled
 	// for existing platform releases.
 	if key.VersionLabel(app) != uniqueAppCRVersion && ver.Major() < 3 {
-		m.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("skipping mutation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appVersionLabel))
+		m.logger.Debugf(ctx, "skipping mutation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appVersionLabel)
 		return nil, nil
 	}
 

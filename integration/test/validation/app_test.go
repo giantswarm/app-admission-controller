@@ -4,7 +4,6 @@ package validation
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -53,7 +52,7 @@ func TestFailWhenCatalogNotFound(t *testing.T) {
 	}
 	expectedError := "validation error: catalog `missing` not found"
 
-	logger.LogCtx(ctx, "level", "debug", "message", "waiting for failed app creation")
+	logger.Debugf(ctx, "waiting for failed app creation")
 
 	o := func() error {
 		err = appTest.CtrlClient().Create(ctx, app)
@@ -74,7 +73,7 @@ func TestFailWhenCatalogNotFound(t *testing.T) {
 		t.Fatalf("expected nil but got error %#v", err)
 	}
 
-	logger.LogCtx(ctx, "level", "debug", "message", "waited for failed app creation")
+	logger.Debugf(ctx, "waited for failed app creation")
 }
 
 // TestSkipValidationOnNamespaceDeletion tests that when the namespace
@@ -85,25 +84,25 @@ func TestSkipValidationOnNamespaceDeletion(t *testing.T) {
 
 	var err error
 
-	logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating test resources in %#q namespace", namespace))
+	logger.Debugf(ctx, "creating test resources in %#q namespace", namespace)
 
 	err = createTestResources(ctx)
 	if err != nil {
 		t.Fatalf("expected nil but got error %#v", err)
 	}
 
-	logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("created test resources in %#q namespace", namespace))
+	logger.Debugf(ctx, "created test resources in %#q namespace", namespace)
 
-	logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting %#q namespace", namespace))
+	logger.Debugf(ctx, "deleting %#q namespace", namespace)
 
 	err = appTest.K8sClient().CoreV1().Namespaces().Delete(ctx, namespace, metav1.DeleteOptions{})
 	if err != nil {
 		t.Fatalf("expected nil but got error %#v", err)
 	}
 
-	logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleted %#q namespace", namespace))
+	logger.Debugf(ctx, "deleted %#q namespace", namespace)
 
-	logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("waiting for %#q app deletion", appName))
+	logger.Debugf(ctx, "waiting for %#q app deletion", appName)
 
 	app := &v1alpha1.App{}
 
@@ -126,7 +125,7 @@ func TestSkipValidationOnNamespaceDeletion(t *testing.T) {
 		t.Fatalf("expected nil but got error %#v", err)
 	}
 
-	logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("waited for %#q app deletion", appName))
+	logger.Debugf(ctx, "waited for %#q app deletion", appName)
 }
 
 func createTestResources(ctx context.Context) error {

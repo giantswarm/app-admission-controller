@@ -75,7 +75,7 @@ func mainWithError() error {
 	metrics := http.NewServeMux()
 	metrics.Handle("/metrics", promhttp.Handler())
 
-	newLogger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("listening on port %s", cfg.Address))
+	newLogger.Debugf(ctx, "listening on port %s", cfg.Address)
 
 	go serveMetrics(cfg, metrics)
 	serveTLS(cfg, handler)

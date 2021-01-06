@@ -1,6 +1,7 @@
 package mutator
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -20,7 +21,8 @@ import (
 )
 
 type Mutator interface {
-	Log(keyVals ...interface{})
+	Debugf(ctx context.Context, format string, params ...interface{})
+	Errorf(ctx context.Context, err error, format string, params ...interface{})
 	Mutate(review *v1beta1.AdmissionRequest) ([]PatchOperation, error)
 	Resource() string
 }
@@ -34,12 +36,13 @@ var (
 
 func Handler(mutator Mutator) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
+		ctx := context.Background()
 		start := time.Now()
 		defer metrics.DurationRequests.WithLabelValues("mutating", mutator.Resource()).Observe(float64(time.Since(start)) / float64(time.Second))
 
 		metrics.TotalRequests.WithLabelValues("mutating", mutator.Resource()).Inc()
 		if request.Header.Get("Content-Type") != "application/json" {
-			mutator.Log("level", "error", "message", fmt.Sprintf("invalid content-type: %s", request.Header.Get("Content-Type")))
+			mutator.Errorf(ctx, nil, "invalid content-type: %s", request.Header.Get("Content-Type"))
 			metrics.InvalidRequests.WithLabelValues("mutating", mutator.Resource()).Inc()
 			writer.WriteHeader(http.StatusBadRequest)
 			return
@@ -47,7 +50,7 @@ func Handler(mutator Mutator) http.HandlerFunc {
 
 		data, err := ioutil.ReadAll(request.Body)
 		if err != nil {
-			mutator.Log("level", "error", "message", "unable to read request")
+			mutator.Errorf(ctx, err, "unable to read request")
 			metrics.InternalError.WithLabelValues("mutating", mutator.Resource()).Inc()
 			writer.WriteHeader(http.StatusInternalServerError)
 			return
@@ -55,7 +58,7 @@ func Handler(mutator Mutator) http.HandlerFunc {
 
 		review := v1beta1.AdmissionReview{}
 		if _, _, err := Deserializer.Decode(data, nil, &review); err != nil {
-			mutator.Log("level", "error", "message", "unable to parse admission review request")
+			mutator.Errorf(ctx, err, "unable to parse admission review request")
 			metrics.InvalidRequests.WithLabelValues("mutating", mutator.Resource()).Inc()
 			writer.WriteHeader(http.StatusBadRequest)
 			return
@@ -64,24 +67,24 @@ func Handler(mutator Mutator) http.HandlerFunc {
 
 		patch, err := mutator.Mutate(review.Request)
 		if err != nil {
-			writeResponse(mutator, writer, errorResponse(review.Request.UID, microerror.Mask(err)))
+			writeResponse(ctx, mutator, writer, errorResponse(review.Request.UID, microerror.Mask(err)))
 			metrics.RejectedRequests.WithLabelValues("mutating", mutator.Resource()).Inc()
 			return
 		}
 
 		patchData, err := json.Marshal(patch)
 		if err != nil {
-			mutator.Log("level", "error", "message", fmt.Sprintf("unable to serialize patch for %s: %v", resourceName, err))
-			writeResponse(mutator, writer, errorResponse(review.Request.UID, InternalError))
+			mutator.Errorf(ctx, err, "unable to serialize patch for %s", resourceName)
+			writeResponse(ctx, mutator, writer, errorResponse(review.Request.UID, InternalError))
 			metrics.RejectedRequests.WithLabelValues("mutating", mutator.Resource()).Inc()
 			return
 		}
 
-		mutator.Log("level", "debug", "message", fmt.Sprintf("admitted %s (with %d patches)", resourceName, len(patch)))
+		mutator.Debugf(ctx, "admitted %s (with %d patches)", resourceName, len(patch))
 		metrics.SuccessfulRequests.WithLabelValues("mutating", mutator.Resource()).Inc()
 
 		pt := v1beta1.PatchTypeJSONPatch
-		writeResponse(mutator, writer, &v1beta1.AdmissionResponse{
+		writeResponse(ctx, mutator, writer, &v1beta1.AdmissionResponse{
 			Allowed:   true,
 			UID:       review.Request.UID,
 			Patch:     patchData,
@@ -109,17 +112,17 @@ func extractName(request *v1beta1.AdmissionRequest) string {
 	return "<unknown>"
 }
 
-func writeResponse(mutator Mutator, writer http.ResponseWriter, response *v1beta1.AdmissionResponse) {
+func writeResponse(ctx context.Context, mutator Mutator, writer http.ResponseWriter, response *v1beta1.AdmissionResponse) {
 	resp, err := json.Marshal(v1beta1.AdmissionReview{
 		Response: response,
 	})
 	if err != nil {
-		mutator.Log("level", "error", "message", "unable to serialize response", microerror.JSON(err))
+		mutator.Errorf(ctx, err, "unable to serialize response")
 		metrics.InternalError.WithLabelValues("mutating", mutator.Resource()).Inc()
 		writer.WriteHeader(http.StatusInternalServerError)
 	}
 	if _, err := writer.Write(resp); err != nil {
-		mutator.Log("level", "error", "message", "unable to write response", microerror.JSON(err))
+		mutator.Errorf(ctx, err, "unable to write response")
 	}
 }
 

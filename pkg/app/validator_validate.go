@@ -27,5 +27,6 @@ func (v *Validator) Validate(ctx context.Context, req validator.Request) (*valid
 }
 
 func (v *Validator) validate(ctx context.Context, app *v1alpha1.App) (*validator.Validation, error) {
+	// https://github.com/giantswarm/app-admission-controller/blob/master/pkg/app/validate_app.go#L92
 	return validator.Accept(), nil
 }

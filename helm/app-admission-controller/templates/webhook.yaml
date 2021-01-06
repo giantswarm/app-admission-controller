@@ -9,7 +9,7 @@ metadata:
     {{- include "labels.common" . | nindent 4 }}
 webhooks:
   - name: apps.{{ include "resource.default.name" . }}.giantswarm.io
-    failurePolicy: Ignore
+    failurePolicy: Fail
     sideEffects: NoneOnDryRun
     clientConfig:
       service:

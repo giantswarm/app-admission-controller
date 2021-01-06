@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Fail when mutation review request fails. So far mutation review failures were
+  ignored.
+
 ## [0.2.0] - 2020-12-15
 
 ### Added

@@ -4,7 +4,6 @@ package mutation
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -32,16 +31,16 @@ func TestDefaultKubeConfig(t *testing.T) {
 
 	var err error
 
-	logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating test resources in %#q namespace", namespace))
+	logger.Debugf(ctx, "creating test resources in %#q namespace", namespace)
 
 	err = createTestResources(ctx)
 	if err != nil {
 		t.Fatalf("expected nil but got error %#v", err)
 	}
 
-	logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("created test resources in %#q namespace", namespace))
+	logger.Debugf(ctx, "created test resources in %#q namespace", namespace)
 
-	logger.LogCtx(ctx, "level", "debug", "message", "creating app")
+	logger.Debugf(ctx, "creating app")
 
 	app := v1alpha1.App{
 		ObjectMeta: metav1.ObjectMeta{
@@ -89,9 +88,9 @@ func TestDefaultKubeConfig(t *testing.T) {
 		t.Fatalf("expected nil but got error %#v", err)
 	}
 
-	logger.LogCtx(ctx, "level", "debug", "message", "created app")
+	logger.Debugf(ctx, "created app")
 
-	logger.LogCtx(ctx, "level", "debug", "message", "checking defaulted values for app")
+	logger.Debugf(ctx, "checking defaulted values for app")
 
 	if key.KubeConfigSecretNamespace(app) != namespace {
 		t.Fatalf("expected kubeconfig namespace %#q but got %#q", namespace, key.KubeConfigSecretNamespace(app))
@@ -100,7 +99,7 @@ func TestDefaultKubeConfig(t *testing.T) {
 		t.Fatalf("expected kubeconfig secret name %#q but got %#q", kubeConfigName, key.KubeConfigSecretName(app))
 	}
 
-	logger.LogCtx(ctx, "level", "debug", "message", "checked defaulted values for app")
+	logger.Debugf(ctx, "checked defaulted values for app")
 }
 
 func createTestResources(ctx context.Context) error {

@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
@@ -63,8 +62,12 @@ func NewValidator(config ValidatorConfig) (*Validator, error) {
 	return validator, nil
 }
 
-func (v *Validator) Log(keyVals ...interface{}) {
-	v.logger.Log(keyVals...)
+func (v *Validator) Debugf(ctx context.Context, format string, params ...interface{}) {
+	v.logger.WithIncreasedCallerDepth().Debugf(ctx, format, params...)
+}
+
+func (v *Validator) Errorf(ctx context.Context, err error, format string, params ...interface{}) {
+	v.logger.WithIncreasedCallerDepth().Errorf(ctx, err, format, params...)
 }
 
 func (v *Validator) Resource() string {
@@ -80,11 +83,18 @@ func (v *Validator) Validate(request *v1beta1.AdmissionRequest) (bool, error) {
 		return false, microerror.Maskf(parsingFailedError, "unable to parse app: %#v", err)
 	}
 
-	v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("validating app %#q in namespace %#q", app.Name, app.Namespace))
+	v.logger.Debugf(ctx, "validating app %#q in namespace %#q", app.Name, app.Namespace)
+
+	// We check the deletion timestamp because app CRs may be deleted by
+	// deleting the namespace they belong to.
+	if !app.DeletionTimestamp.IsZero() {
+		v.logger.Debugf(ctx, "admitted deletion of app %#q in namespace %#q", app.Name, app.Namespace)
+		return true, nil
+	}
 
 	ver, err := semver.NewVersion(key.VersionLabel(app))
 	if err != nil {
-		v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("skipping validation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, key.VersionLabel(app)))
+		v.logger.Debugf(ctx, "skipping validation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, key.VersionLabel(app))
 		return true, nil
 	}
 
@@ -92,20 +102,20 @@ func (v *Validator) Validate(request *v1beta1.AdmissionRequest) (bool, error) {
 	// the validation logic. This is so the admission controller is not
 	// enabled for existing platform releases.
 	if key.VersionLabel(app) != uniqueAppCRVersion && ver.Major() < 3 {
-		v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("skipping validation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, key.VersionLabel(app)))
+		v.logger.Debugf(ctx, "skipping validation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, key.VersionLabel(app))
 		return true, nil
 	}
 
 	appAllowed, err := v.appValidator.ValidateApp(ctx, app)
 	if validation.IsAppDependencyNotReady(err) {
-		v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("skipping validation of app %#q in namespace %#q due to app dependency not ready yet", app.Name, app.Namespace))
+		v.logger.Debugf(ctx, "skipping validation of app %#q in namespace %#q due to app dependency not ready yet", app.Name, app.Namespace)
 		return true, nil
 	} else if err != nil {
-		v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("rejected app %#q in namespace %#q", app.Name, app.Namespace), "stack", microerror.JSON(err))
+		v.logger.Errorf(ctx, err, "rejected app %#q in namespace %#q", app.Name, app.Namespace)
 		return false, microerror.Mask(err)
 	}
 
-	v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("admitted app %#q in namespace %#q", app.Name, app.Namespace))
+	v.logger.Debugf(ctx, "admitted app %#q in namespace %#q", app.Name, app.Namespace)
 
 	return appAllowed, nil
 }

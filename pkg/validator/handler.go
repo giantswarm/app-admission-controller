@@ -1,8 +1,8 @@
 package validator
 
 import (
+	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -18,7 +18,8 @@ import (
 )
 
 type Validator interface {
-	Log(keyVals ...interface{})
+	Debugf(ctx context.Context, format string, params ...interface{})
+	Errorf(ctx context.Context, err error, format string, params ...interface{})
 	Resource() string
 	Validate(review *v1beta1.AdmissionRequest) (bool, error)
 }
@@ -31,11 +32,12 @@ var (
 
 func Handler(validator Validator) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
+		ctx := context.Background()
 		start := time.Now()
 		defer metrics.DurationRequests.WithLabelValues("validating", validator.Resource()).Observe(float64(time.Since(start)) / float64(time.Second))
 
 		if request.Header.Get("Content-Type") != "application/json" {
-			validator.Log("level", "error", "message", fmt.Sprintf("invalid content-type: %s", request.Header.Get("Content-Type")))
+			validator.Errorf(ctx, nil, "invalid content-type: %s", request.Header.Get("Content-Type"))
 			metrics.InvalidRequests.WithLabelValues("validating", validator.Resource()).Inc()
 			writer.WriteHeader(http.StatusBadRequest)
 			return
@@ -43,7 +45,7 @@ func Handler(validator Validator) http.HandlerFunc {
 
 		data, err := ioutil.ReadAll(request.Body)
 		if err != nil {
-			validator.Log("level", "error", "message", "unable to read request")
+			validator.Errorf(ctx, err, "unable to read request")
 			metrics.InternalError.WithLabelValues("validating", validator.Resource()).Inc()
 			writer.WriteHeader(http.StatusInternalServerError)
 			return
@@ -51,7 +53,7 @@ func Handler(validator Validator) http.HandlerFunc {
 
 		review := v1beta1.AdmissionReview{}
 		if _, _, err := Deserializer.Decode(data, nil, &review); err != nil {
-			validator.Log("level", "error", "message", "unable to parse admission review request")
+			validator.Errorf(ctx, err, "unable to parse admission review request")
 			metrics.InvalidRequests.WithLabelValues("validating", validator.Resource()).Inc()
 			writer.WriteHeader(http.StatusBadRequest)
 			return
@@ -59,21 +61,21 @@ func Handler(validator Validator) http.HandlerFunc {
 
 		allowed, err := validator.Validate(review.Request)
 		if err != nil {
-			writeResponse(validator, writer, errorResponse(review.Request.UID, microerror.Mask(err)))
+			writeResponse(ctx, validator, writer, errorResponse(review.Request.UID, microerror.Mask(err)))
 			metrics.RejectedRequests.WithLabelValues("validating", validator.Resource()).Inc()
 			return
 		}
 
 		metrics.SuccessfulRequests.WithLabelValues("validating", validator.Resource()).Inc()
 
-		writeResponse(validator, writer, &v1beta1.AdmissionResponse{
+		writeResponse(ctx, validator, writer, &v1beta1.AdmissionResponse{
 			Allowed: allowed,
 			UID:     review.Request.UID,
 		})
 	}
 }
 
-func writeResponse(validator Validator, writer http.ResponseWriter, response *v1beta1.AdmissionResponse) {
+func writeResponse(ctx context.Context, validator Validator, writer http.ResponseWriter, response *v1beta1.AdmissionResponse) {
 	resp, err := json.Marshal(v1beta1.AdmissionReview{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AdmissionReview",
@@ -82,13 +84,13 @@ func writeResponse(validator Validator, writer http.ResponseWriter, response *v1
 		Response: response,
 	})
 	if err != nil {
-		validator.Log("level", "error", "message", "unable to serialize response", microerror.JSON(err))
+		validator.Errorf(ctx, err, "unable to serialize response")
 		metrics.InternalError.WithLabelValues("validating", validator.Resource()).Inc()
 		writer.WriteHeader(http.StatusInternalServerError)
 	}
 
 	if _, err := writer.Write(resp); err != nil {
-		validator.Log("level", "error", "message", "unable to write response", microerror.JSON(err))
+		validator.Errorf(ctx, err, "unable to write response")
 	}
 }
 

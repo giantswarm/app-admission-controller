@@ -71,13 +71,6 @@ func (m *Mutator) Mutate(request *v1beta1.AdmissionRequest) ([]mutator.PatchOper
 
 	m.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("mutating app %#q in namespace %#q", appNewCR.Name, appNewCR.Namespace))
 
-	// We check the deletion timestamp because app CRs may be deleted by
-	// deleting the namespace they belong to.
-	if !appNewCR.DeletionTimestamp.IsZero() {
-		m.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("admitted deletion of app %#q in namespace %#q", appNewCR.Name, appNewCR.Namespace))
-		return nil, nil
-	}
-
 	result, err := m.MutateApp(ctx, *appNewCR)
 	if err != nil {
 		return nil, microerror.Mask(err)

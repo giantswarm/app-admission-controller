@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
+	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/apiextensions/v3/pkg/clientset/versioned"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
@@ -125,6 +126,16 @@ func (m *Mutator) MutateApp(ctx context.Context, app v1alpha1.App) ([]mutator.Pa
 		return nil, nil
 	}
 
+	if key.VersionLabel(app) == uniqueAppCRVersion {
+		managementClusterAppPatches, err := m.mutateManagementCluster(ctx, app, appVersionLabel)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		if len(managementClusterAppPatches) > 0 {
+			result = append(result, managementClusterAppPatches...)
+		}
+	}
+
 	labelPatches, err := m.mutateLabels(ctx, app, appVersionLabel)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -219,6 +230,10 @@ func (m *Mutator) mutateKubeConfig(ctx context.Context, app v1alpha1.App) ([]mut
 func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appVersionLabel string) ([]mutator.PatchOperation, error) {
 	var result []mutator.PatchOperation
 
+	if len(app.Labels) == 0 {
+		result = append(result, mutator.PatchAdd("/metadata/labels", map[string]string{}))
+	}
+
 	// Set app label if there is no app label present.
 	if key.AppKubernetesNameLabel(app) == "" && key.AppLabel(app) == "" {
 		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), key.AppName(app)))
@@ -228,9 +243,22 @@ func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appVersion
 		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), appVersionLabel))
 	}
 
-	if len(app.Labels) == 0 {
-		root := mutator.PatchAdd("/metadata/labels", map[string]string{})
-		result = append([]mutator.PatchOperation{root}, result...)
+	return result, nil
+}
+
+func (m *Mutator) mutateManagementCluster(ctx context.Context, app v1alpha1.App, appVersionLabel string) ([]mutator.PatchOperation, error) {
+	var result []mutator.PatchOperation
+
+	if len(app.Annotations) == 0 {
+		result = append(result, mutator.PatchAdd("/metadata/annotations", map[string]string{}))
+	}
+
+	v, ok := app.Annotations[annotation.AppOperatorPaused]
+	if !ok {
+		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/annotations/%s", replaceToEscape(annotation.AppOperatorPaused)), "true"))
+	}
+	if ok && v != "true" {
+		result = append(result, mutator.PatchReplace(fmt.Sprintf("/metadata/annotations/%s", replaceToEscape(annotation.AppOperatorPaused)), "true"))
 	}
 
 	return result, nil

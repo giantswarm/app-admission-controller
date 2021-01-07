@@ -119,7 +119,7 @@ func (m *Mutator) MutateApp(ctx context.Context, app v1alpha1.App) ([]mutator.Pa
 	// If the app CR does not have the unique version and is < 3.0.0 we skip
 	// the defaulting logic. This is so the admission controller is not enabled
 	// for existing platform releases.
-	if appOperatorVersion.Major() < 3 {
+	if key.VersionLabel(app) != uniqueAppCRVersion && ver.Major() < 3 {
 		m.logger.Debugf(ctx, "skipping mutation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appOperatorVersion)
 		return nil, nil
 	}

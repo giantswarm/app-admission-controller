@@ -102,21 +102,18 @@ func (v *kubewebhookValidator) Validate(ctx context.Context, obj metav1.Object) 
 		return true, validating.ValidatorResult{}, microerror.Mask(err)
 	}
 
-	if resp == nil {
+	if resp == nil || resp.Rejection == nil {
 		valid.Valid = true
+
+		v.logger.Debugf(ctx, "computed validation: accept")
 		return false, valid, nil
 	}
 
 	valid = validating.ValidatorResult{
-		Valid:   resp.Validation.valid,
-		Message: resp.Validation.message,
+		Valid:   false,
+		Message: resp.Rejection.message,
 	}
 
-	if resp.Validation.valid {
-		v.logger.Debugf(ctx, "computed validation: accept")
-	} else {
-		v.logger.Debugf(ctx, "computed validation: reject with message %#q", resp.Validation.message)
-	}
-
+	v.logger.Debugf(ctx, "computed validation: reject with message %#q", resp.Rejection.message)
 	return false, valid, nil
 }

@@ -10,26 +10,20 @@ type Request struct {
 }
 
 type Response struct {
-	// Validation when is nil means accept. Accept and Rejectf should be
-	// used to create validation.
-	Validation *Validation
+	// Rejection when not nil will reject the validation request. It should
+	// be created with Rejectf. When set to nil the request is accepted by
+	// the validator.
+	Rejection *Rejection
 }
 
-type Validation struct {
-	valid   bool
+type Rejection struct {
 	message string
 }
 
-func Accept() *Validation {
-	return &Validation{
-		valid: true,
+func Rejectf(format string, a ...interface{}) *Rejection {
+	return &Rejection{
+		message: fmt.Sprintf(format, a...),
 	}
-}
-
-func Rejectf(format string, a ...interface{}) *Validation {
-	return &Validation{
-		valid:   false,
-		message: fmt.Sprintf(format, a...)}
 }
 
 // Interface is the validating handler interface.

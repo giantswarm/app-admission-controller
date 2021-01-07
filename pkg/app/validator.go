@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/giantswarm/app-admission-controller/pkg/app/internal/version"
 	"github.com/giantswarm/app/v4/pkg/validation"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
@@ -13,8 +14,10 @@ type ValidatorConfig struct {
 }
 
 type Validator struct {
+	logger micrologger.Logger
+
 	appValidator *validation.Validator
-	logger       micrologger.Logger
+	version      version.Interface
 }
 
 func NewValidator(config ValidatorConfig) (*Validator, error) {
@@ -26,6 +29,15 @@ func NewValidator(config ValidatorConfig) (*Validator, error) {
 	}
 
 	var err error
+
+	var newVersion version.Interface
+	{
+		c := version.Config(config)
+		newVersion, err = version.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
 
 	var appValidator *validation.Validator
 	{
@@ -41,8 +53,10 @@ func NewValidator(config ValidatorConfig) (*Validator, error) {
 	}
 
 	validator := &Validator{
+		logger: config.Logger,
+
 		appValidator: appValidator,
-		logger:       config.Logger,
+		version:      newVersion,
 	}
 
 	return validator, nil

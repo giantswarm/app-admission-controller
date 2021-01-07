@@ -3,6 +3,7 @@ module github.com/giantswarm/app-admission-controller
 go 1.15
 
 require (
+	github.com/Masterminds/semver/v3 v3.1.0
 	github.com/giantswarm/apiextensions/v3 v3.13.0
 	github.com/giantswarm/app/v4 v4.0.0
 	github.com/giantswarm/apptest v0.9.0
@@ -10,7 +11,7 @@ require (
 	github.com/giantswarm/devctl v1.0.0
 	github.com/giantswarm/k8sclient/v5 v5.0.0
 	github.com/giantswarm/microerror v0.3.0
-	github.com/giantswarm/micrologger v0.4.0
+	github.com/giantswarm/micrologger v0.5.0
 	github.com/go-logr/logr v0.3.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/uuid v1.1.2 // indirect

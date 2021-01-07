@@ -4,7 +4,6 @@ package validation
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"testing"
 
@@ -73,8 +72,8 @@ func TestMain(m *testing.M) {
 		}
 		err = appTest.InstallApps(ctx, apps)
 		if err != nil {
-			logger.LogCtx(ctx, "level", "error", "message", "install apps failed", "stack", fmt.Sprintf("%#v\n", err))
-			os.Exit(-1)
+			logger.Errorf(ctx, err, "install apps failed")
+			os.Exit(2)
 		}
 	}
 

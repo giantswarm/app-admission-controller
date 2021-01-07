@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	"github.com/giantswarm/apiextensions/v3/pkg/clientset/versioned"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/app/v4/pkg/key"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
@@ -17,6 +15,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/giantswarm/app-admission-controller/pkg/app/internal/version"
 	"github.com/giantswarm/app-admission-controller/pkg/mutator"
 )
 
@@ -26,6 +25,7 @@ type MutatorConfig struct {
 }
 
 type Mutator struct {
+	version   version.Interface
 	k8sClient k8sclient.Interface
 	logger    micrologger.Logger
 }
@@ -38,7 +38,19 @@ func NewMutator(config MutatorConfig) (*Mutator, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
+	var err error
+
+	var newVersion version.Interface
+	{
+		c := version.Config(config)
+		newVersion, err = version.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	mutator := &Mutator{
+		version:   newVersion,
 		k8sClient: config.K8sClient,
 		logger:    config.Logger,
 	}
@@ -96,36 +108,23 @@ func (m *Mutator) MutateApp(ctx context.Context, app v1alpha1.App) ([]mutator.Pa
 	var err error
 	var result []mutator.PatchOperation
 
-	appVersionLabel := key.VersionLabel(app)
-	if appVersionLabel == "" {
-		// If there is no version label check the value for the chart-operator
-		// app CR. This is the version we need and means we don't need to check
-		// for a cluster CR.
-		appVersionLabel, err = getChartOperatorAppVersion(ctx, m.k8sClient.G8sClient(), app.Namespace)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		if appVersionLabel == "" {
-			m.logger.Debugf(ctx, "skipping mutation of app %#q in namespace %#q due to missing version label", app.Name, app.Namespace)
-			return nil, nil
-		}
-	}
-
-	ver, err := semver.NewVersion(appVersionLabel)
-	if err != nil {
-		m.logger.Debugf(ctx, "skipping mutation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appVersionLabel)
+	appOperatorVersion, err := m.version.GetReconcilingAppOperatorVersion(ctx, app)
+	if version.IsNotFound(err) {
+		m.logger.Debugf(ctx, "skipping mutation of app %#q in namespace %#q due to missing app-operator version label", app.Name, app.Namespace)
 		return nil, nil
+	} else if err != nil {
+		return nil, microerror.Mask(err)
 	}
 
 	// If the app CR does not have the unique version and is < 3.0.0 we skip
 	// the defaulting logic. This is so the admission controller is not enabled
 	// for existing platform releases.
-	if key.VersionLabel(app) != uniqueAppCRVersion && ver.Major() < 3 {
-		m.logger.Debugf(ctx, "skipping mutation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appVersionLabel)
+	if appOperatorVersion.Major() < 3 {
+		m.logger.Debugf(ctx, "skipping mutation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appOperatorVersion)
 		return nil, nil
 	}
 
-	labelPatches, err := m.mutateLabels(ctx, app, appVersionLabel)
+	labelPatches, err := m.mutateLabels(ctx, app, appOperatorVersion.Original())
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -216,7 +215,7 @@ func (m *Mutator) mutateKubeConfig(ctx context.Context, app v1alpha1.App) ([]mut
 	return result, nil
 }
 
-func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appVersionLabel string) ([]mutator.PatchOperation, error) {
+func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appOperatorVersion string) ([]mutator.PatchOperation, error) {
 	var result []mutator.PatchOperation
 
 	// Set app label if there is no app label present.
@@ -224,8 +223,8 @@ func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appVersion
 		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), key.AppName(app)))
 	}
 
-	if key.VersionLabel(app) == "" && appVersionLabel != "" {
-		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), appVersionLabel))
+	if key.VersionLabel(app) == "" && appOperatorVersion != "" {
+		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), appOperatorVersion))
 	}
 
 	if len(app.Labels) == 0 {
@@ -234,17 +233,6 @@ func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appVersion
 	}
 
 	return result, nil
-}
-
-func getChartOperatorAppVersion(ctx context.Context, g8sClient versioned.Interface, namespace string) (string, error) {
-	chartOperatorApp, err := g8sClient.ApplicationV1alpha1().Apps(namespace).Get(ctx, "chart-operator", metav1.GetOptions{})
-	if apierrors.IsNotFound(err) {
-		return "", nil
-	} else if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	return key.VersionLabel(*chartOperatorApp), nil
 }
 
 func replaceToEscape(from string) string {

@@ -3,22 +3,19 @@ package app
 import (
 	"context"
 
-	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	"github.com/giantswarm/app/v4/pkg/key"
 	"github.com/giantswarm/app/v4/pkg/validation"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"k8s.io/api/admission/v1beta1"
 
+	"github.com/giantswarm/app-admission-controller/pkg/app/internal/version"
 	"github.com/giantswarm/app-admission-controller/pkg/validator"
 )
 
 const (
 	Name = "app"
-
-	uniqueAppCRVersion = "0.0.0"
 )
 
 type ValidatorConfig struct {
@@ -29,6 +26,7 @@ type ValidatorConfig struct {
 type Validator struct {
 	appValidator *validation.Validator
 	logger       micrologger.Logger
+	version      version.Interface
 }
 
 func NewValidator(config ValidatorConfig) (*Validator, error) {
@@ -40,6 +38,15 @@ func NewValidator(config ValidatorConfig) (*Validator, error) {
 	}
 
 	var err error
+
+	var newVersion version.Interface
+	{
+		c := version.Config(config)
+		newVersion, err = version.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
 
 	var appValidator *validation.Validator
 	{
@@ -57,6 +64,7 @@ func NewValidator(config ValidatorConfig) (*Validator, error) {
 	validator := &Validator{
 		appValidator: appValidator,
 		logger:       config.Logger,
+		version:      newVersion,
 	}
 
 	return validator, nil
@@ -75,6 +83,8 @@ func (v *Validator) Resource() string {
 }
 
 func (v *Validator) Validate(request *v1beta1.AdmissionRequest) (bool, error) {
+	var err error
+
 	ctx := context.Background()
 
 	var app v1alpha1.App
@@ -92,17 +102,19 @@ func (v *Validator) Validate(request *v1beta1.AdmissionRequest) (bool, error) {
 		return true, nil
 	}
 
-	ver, err := semver.NewVersion(key.VersionLabel(app))
-	if err != nil {
-		v.logger.Debugf(ctx, "skipping validation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, key.VersionLabel(app))
+	appOperatorVersion, err := v.version.GetReconcilingAppOperatorVersion(ctx, app)
+	if version.IsNotFound(err) {
+		v.logger.Debugf(ctx, "skipping validation of app %#q in namespace %#q due to missing app-operator version label", app.Name, app.Namespace)
 		return true, nil
+	} else if err != nil {
+		return false, microerror.Mask(err)
 	}
 
 	// If the app CR does not have the unique version and is < 3.0.0 we skip
 	// the validation logic. This is so the admission controller is not
 	// enabled for existing platform releases.
-	if key.VersionLabel(app) != uniqueAppCRVersion && ver.Major() < 3 {
-		v.logger.Debugf(ctx, "skipping validation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, key.VersionLabel(app))
+	if appOperatorVersion.Major() < 3 {
+		v.logger.Debugf(ctx, "skipping validation of app %#q in namespace %#q due to app-operator version label %#q", app.Name, app.Namespace, appOperatorVersion.Original())
 		return true, nil
 	}
 

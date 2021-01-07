@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fail when mutation review request fails. So far mutation review failures were
   ignored.
 
+### Fixed
+
+- Fall back to reconciling app-operator version from chart-operator App CR in
+  in validation.
+
 ## [0.2.0] - 2020-12-15
 
 ### Added

@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/dyson/certman"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -92,9 +94,20 @@ func healthCheck(writer http.ResponseWriter, request *http.Request) {
 }
 
 func serveTLS(config config.Config, handler http.Handler) {
+	cm, err := certman.New(config.CertFile, config.KeyFile)
+	if err != nil {
+		panic(microerror.JSON(err))
+	}
+	if err := cm.Watch(); err != nil {
+		panic(microerror.JSON(err))
+	}
+
 	server := &http.Server{
 		Addr:    config.Address,
 		Handler: handler,
+		TLSConfig: &tls.Config{
+			GetCertificate: cm.GetCertificate,
+		},
 	}
 
 	sig := make(chan os.Signal, 1)
@@ -107,7 +120,7 @@ func serveTLS(config config.Config, handler http.Handler) {
 		}
 	}()
 
-	err := server.ListenAndServeTLS(config.CertFile, config.KeyFile)
+	err = server.ListenAndServeTLS("", "")
 	if err != nil {
 		if err != http.ErrServerClosed {
 			panic(microerror.JSON(err))

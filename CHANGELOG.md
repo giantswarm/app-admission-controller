@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add support for reloading certs when they expire.
+
 ### Changed
 
 - Fail when mutation review request fails. So far mutation review failures were

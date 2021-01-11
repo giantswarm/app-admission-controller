@@ -13,6 +13,7 @@ import (
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclienttest"
 	"github.com/giantswarm/micrologger/microloggertest"
 	"github.com/google/go-cmp/cmp"
+	"k8s.io/api/admission/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -270,7 +271,7 @@ func Test_MutateApp(t *testing.T) {
 				t.Fatalf("error == %#v, want nil", err)
 			}
 
-			patches, err := r.MutateApp(ctx, tc.obj)
+			patches, err := r.MutateApp(ctx, tc.obj, v1beta1.Create)
 			switch {
 			case err != nil && tc.expectedErr == "":
 				t.Fatalf("error == %#v, want nil", err)

@@ -78,12 +78,12 @@ func (m *Mutator) Mutate(request *v1beta1.AdmissionRequest) ([]mutator.PatchOper
 
 	// We check the deletion timestamp because app CRs may be deleted by
 	// deleting the namespace they belong to.
-	if !appNewCR.DeletionTimestamp.IsZero() {
+	if request.Operation == v1beta1.Update && !appNewCR.DeletionTimestamp.IsZero() {
 		m.logger.Debugf(ctx, "admitted deletion of app %#q in namespace %#q", appNewCR.Name, appNewCR.Namespace)
 		return nil, nil
 	}
 
-	result, err := m.MutateApp(ctx, *appNewCR)
+	result, err := m.MutateApp(ctx, *appNewCR, request.Operation)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -93,7 +93,11 @@ func (m *Mutator) Mutate(request *v1beta1.AdmissionRequest) ([]mutator.PatchOper
 	return result, nil
 }
 
-func (m *Mutator) MutateApp(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
+func (m *Mutator) MutateApp(ctx context.Context, app v1alpha1.App, operation v1beta1.Operation) ([]mutator.PatchOperation, error) {
+	if operation == v1beta1.Connect {
+		return nil, nil
+	}
+
 	var err error
 	var result []mutator.PatchOperation
 
@@ -127,7 +131,7 @@ func (m *Mutator) MutateApp(ctx context.Context, app v1alpha1.App) ([]mutator.Pa
 	}
 
 	if key.VersionLabel(app) == uniqueAppCRVersion {
-		managementClusterAppPatches, err := m.mutateManagementCluster(ctx, app, appVersionLabel)
+		managementClusterAppPatches, err := m.mutateManagementClusterPauseAnnotation(ctx, app, operation, appVersionLabel)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -246,8 +250,14 @@ func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appVersion
 	return result, nil
 }
 
-func (m *Mutator) mutateManagementCluster(ctx context.Context, app v1alpha1.App, appVersionLabel string) ([]mutator.PatchOperation, error) {
+func (m *Mutator) mutateManagementClusterPauseAnnotation(ctx context.Context, app v1alpha1.App, operation v1beta1.Operation, appVersionLabel string) ([]mutator.PatchOperation, error) {
 	var result []mutator.PatchOperation
+
+	// We don't want to re-add pause annotation on already created objects
+	// (i.e. UPDATE events).
+	if operation != v1beta1.Create {
+		return nil, nil
+	}
 
 	if len(app.Annotations) == 0 {
 		result = append(result, mutator.PatchAdd("/metadata/annotations", map[string]string{}))

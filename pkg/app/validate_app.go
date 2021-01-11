@@ -108,22 +108,7 @@ func (v *Validator) Validate(request *v1beta1.AdmissionRequest) (bool, error) {
 		return true, nil
 	}
 
-	// REVERT
-	// REVERT
-	// REVERT
-	// REVERT
-	// REVERT
-	// REVERT
-	// REVERT
-	// REVERT
-	// REVERT
-	// REVERT
-	// REVERT
-	// REVERT
-	// REVERT
-	// REVERT
-	//appAllowed, err := v.appValidator.ValidateApp(ctx, app)
-	appAllowed := true
+	appAllowed, err := v.appValidator.ValidateApp(ctx, app)
 	if err != nil {
 		v.logger.Errorf(ctx, err, "rejected app %#q in namespace %#q", app.Name, app.Namespace)
 		return false, microerror.Mask(err)

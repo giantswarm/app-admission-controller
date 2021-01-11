@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add pause annotation to App CRs installing apps running in Giant Swarm
   Management Cluster.
+- Update cert apiVersion to v1.
+
+## [0.3.0] - 2021-01-11
+
+### Added
+
+- Add support for reloading certs when they expire.
+
+### Changed
+
 - Fail when mutation review request fails. So far mutation review failures were
   ignored.
 
@@ -32,6 +42,7 @@ allow app CR creation.
 - Add validation webhook that is enabled for app CRs with
 `app-operator.giantswarm.io/version` label value >= `3.0.0`.
 
-[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/giantswarm/app-admission-controller/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/giantswarm/app-admission-controller/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/giantswarm/app-admission-controller/releases/tag/v0.1.0

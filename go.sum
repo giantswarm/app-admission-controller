@@ -117,6 +117,8 @@ github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815/go.mod h1:WwZ+bS3
 github.com/drone/envsubst v1.0.3-0.20200709223903-efdb65b94e5a/go.mod h1:N2jZmlMufstn1KEqvbHjw40h1KyTmnVzHcSc9bFiJ2g=
 github.com/dustin/go-humanize v0.0.0-20171111073723-bb3d318650d4/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
 github.com/dustin/go-humanize v1.0.0/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
+github.com/dyson/certman v0.2.1 h1:+EJdgffbfwIkBvnyx97mfS3slfn2o4UN/LWGm+mWVrQ=
+github.com/dyson/certman v0.2.1/go.mod h1:Z2ho3wmP4oCGON+c/RF+FJVsMb9zYZVsupp0c1a+SlQ=
 github.com/eapache/go-resiliency v1.1.0/go.mod h1:kFI+JgMyC7bLPUVY133qvEBtVayf5mFgVsvEsIPBvNs=
 github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21/go.mod h1:+020luEh2TKB4/GOp8oxxtq0Daoen/Cii55CzbTV6DU=
 github.com/eapache/queue v1.1.0/go.mod h1:6eCeP0CKFpHLu8blIFXhExK/dRa7WDZfr6jVFPTqq+I=
@@ -145,8 +147,8 @@ github.com/giantswarm/apiextensions/v3 v3.4.0/go.mod h1:MMLkRJta4mbTbrikP9LewADi
 github.com/giantswarm/apiextensions/v3 v3.11.0/go.mod h1:f+dFUDLroK50aCGzvpqPw/jCFCCgJqdEMf/xNSJBI+A=
 github.com/giantswarm/apiextensions/v3 v3.13.0 h1:Sqf/DZJhd4aMzCjrmUVD7xffRORpZSnC9dPPqjKG7Nc=
 github.com/giantswarm/apiextensions/v3 v3.13.0/go.mod h1:f+dFUDLroK50aCGzvpqPw/jCFCCgJqdEMf/xNSJBI+A=
-github.com/giantswarm/apiextensions/v3 v3.14.0 h1:/o7Mj7Yl0rEkOrkZI9HElsJDTeUhFaerrvgZkr72TW8=
-github.com/giantswarm/apiextensions/v3 v3.14.0/go.mod h1:4XD4M9+H2xhalpdXPB8x0MIA6NhYzXGIS5eb7Q7pMz0=
+github.com/giantswarm/apiextensions/v3 v3.14.1 h1:P9jBH8T4bgtq1e+2aFbSb4hmJZ6OFT6qlwXNiGPKYhE=
+github.com/giantswarm/apiextensions/v3 v3.14.1/go.mod h1:4XD4M9+H2xhalpdXPB8x0MIA6NhYzXGIS5eb7Q7pMz0=
 github.com/giantswarm/app/v4 v4.0.0 h1:8PA0Hr6HRBbRS2KEWi5fSMq7rB4VdI2h0g9xI2ssLR4=
 github.com/giantswarm/app/v4 v4.0.0/go.mod h1:OiMkgrgxGtBNsTEHoF0hE9Sisn2onBxlc+dWHIBJPP4=
 github.com/giantswarm/appcatalog v0.3.2 h1:pH0ASrizU7QcAK4oZtrPXAi4pqMFJOsjCPRLY0uLFEo=

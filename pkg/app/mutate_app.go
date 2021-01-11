@@ -85,7 +85,7 @@ func (m *Mutator) Mutate(request *v1beta1.AdmissionRequest) ([]mutator.PatchOper
 		return nil, nil
 	}
 
-	result, err := m.MutateApp(ctx, *appNewCR)
+	result, err := m.MutateApp(ctx, *appNewCR, request.Operation)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -95,7 +95,7 @@ func (m *Mutator) Mutate(request *v1beta1.AdmissionRequest) ([]mutator.PatchOper
 	return result, nil
 }
 
-func (m *Mutator) MutateApp(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
+func (m *Mutator) MutateApp(ctx context.Context, app v1alpha1.App, operation v1beta1.Operation) ([]mutator.PatchOperation, error) {
 
 	var err error
 	var result []mutator.PatchOperation
@@ -141,7 +141,7 @@ func (m *Mutator) MutateApp(ctx context.Context, app v1alpha1.App) ([]mutator.Pa
 	}
 
 	if key.VersionLabel(app) == uniqueAppCRVersion {
-		managementClusterAppPatches, err := m.mutateManagementClusterApp(ctx, app, appVersionLabel)
+		managementClusterAppPatches, err := m.mutateManagementClusterApp(ctx, app, operation, appVersionLabel)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -256,31 +256,29 @@ func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appVersion
 	return result, nil
 }
 
-func (m *Mutator) mutateManagementClusterApp(ctx context.Context, app v1alpha1.App, appVersionLabel string) ([]mutator.PatchOperation, error) {
+func (m *Mutator) mutateManagementClusterApp(ctx context.Context, app v1alpha1.App, operation v1beta1.Operation, appVersionLabel string) ([]mutator.PatchOperation, error) {
 	var result []mutator.PatchOperation
 
 	// 1. Ensure config-controller.giantswarm.io/version label is set to
-	//    "0.0.0" or return if it is already set.
+	//    "0.0.0". If it is set and the operation is CREATE, return.
 
-	v, ok := app.Annotations[label.ConfigControllerVersion]
-	if ok && v == uniqueAppCRVersion {
-		return nil, nil
-	}
+	v, ok := app.Labels[label.ConfigControllerVersion]
 	if !ok {
 		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.ConfigControllerVersion)), uniqueAppCRVersion))
-	} else {
+	} else if v != uniqueAppCRVersion {
 		result = append(result, mutator.PatchReplace(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.ConfigControllerVersion)), uniqueAppCRVersion))
+	} else if operation != v1beta1.Create {
+		return nil, nil
 	}
 
 	// 2. If config-controller.giantswarm.io/version label was
-	//    created/updated set the app-operator.giantswarm.io/paused
-	//    annotation to "true".
+	//    created/updated or the event is CREATE set the
+	//    app-operator.giantswarm.io/paused annotation to "true".
 
 	v, ok = app.Annotations[annotation.AppOperatorPaused]
 	if !ok {
 		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/annotations/%s", replaceToEscape(annotation.AppOperatorPaused)), "true"))
-	}
-	if ok && v != "true" {
+	} else if v != "true" {
 		result = append(result, mutator.PatchReplace(fmt.Sprintf("/metadata/annotations/%s", replaceToEscape(annotation.AppOperatorPaused)), "true"))
 	}
 

@@ -87,7 +87,7 @@ func (v *Validator) Validate(request *v1beta1.AdmissionRequest) (bool, error) {
 
 	// We check the deletion timestamp because app CRs may be deleted by
 	// deleting the namespace they belong to.
-	if !app.DeletionTimestamp.IsZero() {
+	if request.Operation == v1beta1.Update && !app.DeletionTimestamp.IsZero() {
 		v.logger.Debugf(ctx, "admitted deletion of app %#q in namespace %#q", app.Name, app.Namespace)
 		return true, nil
 	}

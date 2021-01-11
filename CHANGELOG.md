@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Add pause annotation to App CRs installing apps running in Giant Swarm
+  Management Cluster.
 - Update cert apiVersion to v1.
 
 ## [0.3.0] - 2021-01-11

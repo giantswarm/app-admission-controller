@@ -101,6 +101,17 @@ func (m *Mutator) MutateApp(ctx context.Context, app v1alpha1.App, operation v1b
 	var err error
 	var result []mutator.PatchOperation
 
+	// Set empty labels and annotations in case they are not set. This is
+	// in case we add new entires to null JSON objects. We don't want to do
+	// this as needed because it can be potentially overwritten if set
+	// after other patches.
+	if len(app.Annotations) == 0 {
+		result = append(result, mutator.PatchAdd("/metadata/annotations", map[string]string{}))
+	}
+	if len(app.Labels) == 0 {
+		result = append(result, mutator.PatchAdd("/metadata/labels", map[string]string{}))
+	}
+
 	appVersionLabel := key.VersionLabel(app)
 	if appVersionLabel == "" {
 		// If there is no version label check the value for the chart-operator
@@ -234,10 +245,6 @@ func (m *Mutator) mutateKubeConfig(ctx context.Context, app v1alpha1.App) ([]mut
 func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appVersionLabel string) ([]mutator.PatchOperation, error) {
 	var result []mutator.PatchOperation
 
-	if len(app.Labels) == 0 {
-		result = append(result, mutator.PatchAdd("/metadata/labels", map[string]string{}))
-	}
-
 	// Set app label if there is no app label present.
 	if key.AppKubernetesNameLabel(app) == "" && key.AppLabel(app) == "" {
 		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), key.AppName(app)))
@@ -259,16 +266,20 @@ func (m *Mutator) mutateManagementClusterPauseAnnotation(ctx context.Context, ap
 		return nil, nil
 	}
 
-	if len(app.Annotations) == 0 {
-		result = append(result, mutator.PatchAdd("/metadata/annotations", map[string]string{}))
-	}
-
 	v, ok := app.Annotations[annotation.AppOperatorPaused]
 	if !ok {
 		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/annotations/%s", replaceToEscape(annotation.AppOperatorPaused)), "true"))
 	}
 	if ok && v != "true" {
 		result = append(result, mutator.PatchReplace(fmt.Sprintf("/metadata/annotations/%s", replaceToEscape(annotation.AppOperatorPaused)), "true"))
+	}
+
+	v, ok = app.Annotations[label.ConfigControllerVersion]
+	if !ok {
+		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.ConfigControllerVersion)), uniqueAppCRVersion))
+	}
+	if ok && v != uniqueAppCRVersion {
+		result = append(result, mutator.PatchReplace(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.ConfigControllerVersion)), uniqueAppCRVersion))
 	}
 
 	return result, nil

@@ -82,4 +82,5 @@ test:
 ## build-docker: builds docker image to registry
 build-docker: build-linux
 	@echo "====> $@"
+	cp $(APPLICATION)-linux $(APPLICATION)
 	docker build -t ${APPLICATION}:${VERSION} .

@@ -259,8 +259,8 @@ func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appVersion
 func (m *Mutator) mutateManagementClusterApp(ctx context.Context, app v1alpha1.App, appVersionLabel string) ([]mutator.PatchOperation, error) {
 	var result []mutator.PatchOperation
 
-	// 1. If config-controller.giantswarm.io/version label is set to
-	//    "0.0.0" return.
+	// 1. Ensure config-controller.giantswarm.io/version label is set to
+	//    "0.0.0" or return if it is already set.
 
 	v, ok := app.Annotations[label.ConfigControllerVersion]
 	if ok && v == uniqueAppCRVersion {

@@ -107,10 +107,7 @@ func (v *Validator) Validate(request *v1beta1.AdmissionRequest) (bool, error) {
 	}
 
 	appAllowed, err := v.appValidator.ValidateApp(ctx, app)
-	if validation.IsAppDependencyNotReady(err) {
-		v.logger.Debugf(ctx, "skipping validation of app %#q in namespace %#q due to app dependency not ready yet", app.Name, app.Namespace)
-		return true, nil
-	} else if err != nil {
+	if err != nil {
 		v.logger.Errorf(ctx, err, "rejected app %#q in namespace %#q", app.Name, app.Namespace)
 		return false, microerror.Mask(err)
 	}

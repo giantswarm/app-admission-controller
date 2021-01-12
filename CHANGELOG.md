@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Update `giantswarm/app` to `v4.2.0`.
+
 ### Added
 
 - Add `app-operator.giantswarm.io/paused: "true"` annotation to newly created

@@ -16,7 +16,6 @@ webhooks:
         name: {{ include "resource.default.name" . }}
         namespace: {{ include "resource.default.namespace" . }}
         path: /mutate/app
-      caBundle: Cg==
     rules:
       - apiGroups: ["application.giantswarm.io"]
         resources:
@@ -45,7 +44,6 @@ webhooks:
         name: {{ include "resource.default.name" . }}
         namespace: {{ include "resource.default.namespace" . }}
         path: /validate/app
-      caBundle: Cg==
     rules:
       - apiGroups: ["application.giantswarm.io"]
         resources:

@@ -76,10 +76,8 @@ func (m *Mutator) Mutate(request *v1beta1.AdmissionRequest) ([]mutator.PatchOper
 
 	m.logger.Debugf(ctx, "mutating app %#q in namespace %#q", appNewCR.Name, appNewCR.Namespace)
 
-	// We check the deletion timestamp because app CRs may be deleted by
-	// deleting the namespace they belong to.
 	if request.Operation == v1beta1.Update && !appNewCR.DeletionTimestamp.IsZero() {
-		m.logger.Debugf(ctx, "admitted deletion of app %#q in namespace %#q", appNewCR.Name, appNewCR.Namespace)
+		m.logger.Debugf(ctx, "skipping mutation for UPDATE operation of app %#q in namespace %#q with non-zero deletion timestamp", appNewCR.Name, appNewCR.Namespace)
 		return nil, nil
 	}
 
@@ -94,12 +92,20 @@ func (m *Mutator) Mutate(request *v1beta1.AdmissionRequest) ([]mutator.PatchOper
 }
 
 func (m *Mutator) MutateApp(ctx context.Context, app v1alpha1.App, operation v1beta1.Operation) ([]mutator.PatchOperation, error) {
-	if operation == v1beta1.Connect {
-		return nil, nil
-	}
 
 	var err error
 	var result []mutator.PatchOperation
+
+	// Set empty labels and annotations in case they are not set. This is
+	// in case we add new entries to null JSON objects. We don't want to do
+	// this as needed because it can be potentially overwritten if set
+	// after other patches.
+	if len(app.Annotations) == 0 {
+		result = append(result, mutator.PatchAdd("/metadata/annotations", map[string]string{}))
+	}
+	if len(app.Labels) == 0 {
+		result = append(result, mutator.PatchAdd("/metadata/labels", map[string]string{}))
+	}
 
 	appVersionLabel := key.VersionLabel(app)
 	if appVersionLabel == "" {
@@ -131,7 +137,7 @@ func (m *Mutator) MutateApp(ctx context.Context, app v1alpha1.App, operation v1b
 	}
 
 	if key.VersionLabel(app) == uniqueAppCRVersion {
-		managementClusterAppPatches, err := m.mutateManagementClusterPauseAnnotation(ctx, app, operation, appVersionLabel)
+		managementClusterAppPatches, err := m.mutateManagementClusterApp(ctx, app, operation, appVersionLabel)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -234,10 +240,6 @@ func (m *Mutator) mutateKubeConfig(ctx context.Context, app v1alpha1.App) ([]mut
 func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appVersionLabel string) ([]mutator.PatchOperation, error) {
 	var result []mutator.PatchOperation
 
-	if len(app.Labels) == 0 {
-		result = append(result, mutator.PatchAdd("/metadata/labels", map[string]string{}))
-	}
-
 	// Set app label if there is no app label present.
 	if key.AppKubernetesNameLabel(app) == "" && key.AppLabel(app) == "" {
 		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), key.AppName(app)))
@@ -250,24 +252,29 @@ func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appVersion
 	return result, nil
 }
 
-func (m *Mutator) mutateManagementClusterPauseAnnotation(ctx context.Context, app v1alpha1.App, operation v1beta1.Operation, appVersionLabel string) ([]mutator.PatchOperation, error) {
+func (m *Mutator) mutateManagementClusterApp(ctx context.Context, app v1alpha1.App, operation v1beta1.Operation, appVersionLabel string) ([]mutator.PatchOperation, error) {
 	var result []mutator.PatchOperation
 
-	// We don't want to re-add pause annotation on already created objects
-	// (i.e. UPDATE events).
-	if operation != v1beta1.Create {
+	// 1. Ensure config-controller.giantswarm.io/version label is set to
+	//    "0.0.0". If it is set and the operation is CREATE, return.
+
+	v, ok := app.Labels[label.ConfigControllerVersion]
+	if !ok {
+		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.ConfigControllerVersion)), uniqueAppCRVersion))
+	} else if v != uniqueAppCRVersion {
+		result = append(result, mutator.PatchReplace(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.ConfigControllerVersion)), uniqueAppCRVersion))
+	} else if operation != v1beta1.Create {
 		return nil, nil
 	}
 
-	if len(app.Annotations) == 0 {
-		result = append(result, mutator.PatchAdd("/metadata/annotations", map[string]string{}))
-	}
+	// 2. If config-controller.giantswarm.io/version label was
+	//    created/updated or the event is CREATE set the
+	//    app-operator.giantswarm.io/paused annotation to "true".
 
-	v, ok := app.Annotations[annotation.AppOperatorPaused]
+	v, ok = app.Annotations[annotation.AppOperatorPaused]
 	if !ok {
 		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/annotations/%s", replaceToEscape(annotation.AppOperatorPaused)), "true"))
-	}
-	if ok && v != "true" {
+	} else if v != "true" {
 		result = append(result, mutator.PatchReplace(fmt.Sprintf("/metadata/annotations/%s", replaceToEscape(annotation.AppOperatorPaused)), "true"))
 	}
 

@@ -31,6 +31,7 @@ func Test_MutateApp(t *testing.T) {
 		apps            []*v1alpha1.App
 		configMaps      []*corev1.ConfigMap
 		secrets         []*corev1.Secret
+		operation       v1beta1.Operation
 		expectedPatches []mutator.PatchOperation
 		expectedErr     string
 	}{
@@ -60,7 +61,9 @@ func Test_MutateApp(t *testing.T) {
 			secrets: []*corev1.Secret{
 				newTestSecret("eggs2-kubeconfig", "eggs2"),
 			},
+			operation: v1beta1.Create,
 			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchAdd("/metadata/labels", map[string]string{}),
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), "kiam"),
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
@@ -84,6 +87,9 @@ func Test_MutateApp(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "kiam",
 					Namespace: "eggs2",
+					Annotations: map[string]string{
+						"some": "annotation",
+					},
 					Labels: map[string]string{
 						"app.kubernetes.io/name": "kiam",
 						label.AppOperatorVersion: "3.0.0",
@@ -143,7 +149,9 @@ func Test_MutateApp(t *testing.T) {
 			configMaps: []*corev1.ConfigMap{
 				newTestConfigMap("eggs2-cluster-values", "eggs2"),
 			},
+			operation: v1beta1.Create,
 			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchAdd("/spec/config/configMap", map[string]string{
 					"namespace": "eggs2",
 					"name":      "eggs2-cluster-values",
@@ -177,7 +185,9 @@ func Test_MutateApp(t *testing.T) {
 			configMaps: []*corev1.ConfigMap{
 				newTestConfigMap("ingress-controller-values", "eggs2"),
 			},
+			operation: v1beta1.Create,
 			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchAdd("/spec/config", map[string]string{}),
 				mutator.PatchAdd("/spec/config/configMap", map[string]string{
 					"namespace": "eggs2",
@@ -208,7 +218,9 @@ func Test_MutateApp(t *testing.T) {
 			apps: []*v1alpha1.App{
 				newTestApp("chart-operator", "eggs2", "3.1.0"),
 			},
+			operation: v1beta1.Create,
 			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.1.0"),
 			},
 		},
@@ -236,11 +248,150 @@ func Test_MutateApp(t *testing.T) {
 			configMaps: []*corev1.ConfigMap{
 				newTestConfigMap("other-app-values", "eggs2"),
 			},
+			operation: v1beta1.Create,
+			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
+			},
+		},
+		{
+			name: "case 6: set app-operator paused annotation and config-controller version label for MC app on CREATE",
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "kiam",
+					Namespace: "eggs2",
+					Labels: map[string]string{
+						"app":                    "kiam",
+						label.AppOperatorVersion: "0.0.0",
+					},
+				},
+			},
+			configMaps: []*corev1.ConfigMap{
+				newTestConfigMap("other-app-values", "eggs2"),
+			},
+			operation: v1beta1.Create,
+			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
+				mutator.PatchAdd("/metadata/labels/"+replaceToEscape("config-controller.giantswarm.io/version"), "0.0.0"),
+				mutator.PatchAdd("/metadata/annotations/"+replaceToEscape("app-operator.giantswarm.io/paused"), "true"),
+			},
+		},
+		{
+			name: "case 7: set app-operator paused annotation and config-controller version label for CM app on UPDATE",
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "kiam",
+					Namespace: "eggs2",
+					Labels: map[string]string{
+						"app":                    "kiam",
+						label.AppOperatorVersion: "0.0.0",
+					},
+				},
+			},
+			configMaps: []*corev1.ConfigMap{
+				newTestConfigMap("other-app-values", "eggs2"),
+			},
+			operation: v1beta1.Update,
+			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
+				mutator.PatchAdd("/metadata/labels/"+replaceToEscape("config-controller.giantswarm.io/version"), "0.0.0"),
+				mutator.PatchAdd("/metadata/annotations/"+replaceToEscape("app-operator.giantswarm.io/paused"), "true"),
+			},
+		},
+		{
+			name: "case 8: set app-operator paused when config-controller version label is set for CM app on CREATE",
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "kiam",
+					Namespace: "eggs2",
+					Labels: map[string]string{
+						"app":                         "kiam",
+						label.AppOperatorVersion:      "0.0.0",
+						label.ConfigControllerVersion: "0.0.0",
+					},
+				},
+			},
+			configMaps: []*corev1.ConfigMap{
+				newTestConfigMap("other-app-values", "eggs2"),
+			},
+			operation: v1beta1.Create,
+			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
+				mutator.PatchAdd("/metadata/annotations/"+replaceToEscape("app-operator.giantswarm.io/paused"), "true"),
+			},
+		},
+		{
+			name: "case 9: do not set app-operator paused when config-controller version label is set for CM app on UPDATE",
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "kiam",
+					Namespace: "eggs2",
+					Labels: map[string]string{
+						"app":                         "kiam",
+						label.AppOperatorVersion:      "0.0.0",
+						label.ConfigControllerVersion: "0.0.0",
+					},
+				},
+			},
+			configMaps: []*corev1.ConfigMap{
+				newTestConfigMap("other-app-values", "eggs2"),
+			},
+			operation: v1beta1.Update,
+			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
+			},
+		},
+		{
+			name: "case 10: set app-operator paused and update config-controller version label if it is not unique version on CREATE",
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "kiam",
+					Namespace: "eggs2",
+					Labels: map[string]string{
+						"app":                         "kiam",
+						label.AppOperatorVersion:      "0.0.0",
+						label.ConfigControllerVersion: "1.0.0-non-unique",
+					},
+				},
+			},
+			configMaps: []*corev1.ConfigMap{
+				newTestConfigMap("other-app-values", "eggs2"),
+			},
+			operation: v1beta1.Create,
+			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
+				mutator.PatchReplace("/metadata/labels/"+replaceToEscape("config-controller.giantswarm.io/version"), "0.0.0"),
+				mutator.PatchAdd("/metadata/annotations/"+replaceToEscape("app-operator.giantswarm.io/paused"), "true"),
+			},
+		},
+		{
+			name: "case 11: set app-operator paused and update config-controller version label if it is not unique version on UPDATE",
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "kiam",
+					Namespace: "eggs2",
+					Labels: map[string]string{
+						"app":                         "kiam",
+						label.AppOperatorVersion:      "0.0.0",
+						label.ConfigControllerVersion: "1.0.0-non-unique",
+					},
+				},
+			},
+			configMaps: []*corev1.ConfigMap{
+				newTestConfigMap("other-app-values", "eggs2"),
+			},
+			operation: v1beta1.Update,
+			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
+				mutator.PatchReplace("/metadata/labels/"+replaceToEscape("config-controller.giantswarm.io/version"), "0.0.0"),
+				mutator.PatchAdd("/metadata/annotations/"+replaceToEscape("app-operator.giantswarm.io/paused"), "true"),
+			},
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Log(tc.name)
+
 			g8sObjs := make([]runtime.Object, 0)
 
 			for _, app := range tc.apps {
@@ -271,7 +422,7 @@ func Test_MutateApp(t *testing.T) {
 				t.Fatalf("error == %#v, want nil", err)
 			}
 
-			patches, err := r.MutateApp(ctx, tc.obj, v1beta1.Create)
+			patches, err := r.MutateApp(ctx, tc.obj, tc.operation)
 			switch {
 			case err != nil && tc.expectedErr == "":
 				t.Fatalf("error == %#v, want nil", err)

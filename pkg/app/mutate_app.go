@@ -80,10 +80,6 @@ func (m *Mutator) Mutate(request *v1beta1.AdmissionRequest) ([]mutator.PatchOper
 		m.logger.Debugf(ctx, "skipping mutation for UPDATE operation of app %#q in namespace %#q with non-zero deletion timestamp", appNewCR.Name, appNewCR.Namespace)
 		return nil, nil
 	}
-	if request.Operation == v1beta1.Connect {
-		m.logger.Debugf(ctx, "skipping mutation for CONNECT operation of app %#q in namespace %#q", appNewCR.Name, appNewCR.Namespace)
-		return nil, nil
-	}
 
 	result, err := m.MutateApp(ctx, *appNewCR, request.Operation)
 	if err != nil {

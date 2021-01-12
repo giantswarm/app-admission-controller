@@ -89,10 +89,6 @@ func (v *Validator) Validate(request *v1beta1.AdmissionRequest) (bool, error) {
 		v.logger.Debugf(ctx, "skipping validation for UPDATE operation of app %#q in namespace %#q with non-zero deletion timestamp", app.Name, app.Namespace)
 		return true, nil
 	}
-	if request.Operation == v1beta1.Connect {
-		v.logger.Debugf(ctx, "skipping validation for CONNECT operation of app %#q in namespace %#q", app.Name, app.Namespace)
-		return true, nil
-	}
 
 	ver, err := semver.NewVersion(key.VersionLabel(app))
 	if err != nil {

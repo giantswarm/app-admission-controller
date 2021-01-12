@@ -101,7 +101,7 @@ func (m *Mutator) MutateApp(ctx context.Context, app v1alpha1.App, operation v1b
 	var result []mutator.PatchOperation
 
 	// Set empty labels and annotations in case they are not set. This is
-	// in case we add new entires to null JSON objects. We don't want to do
+	// in case we add new entries to null JSON objects. We don't want to do
 	// this as needed because it can be potentially overwritten if set
 	// after other patches.
 	if len(app.Annotations) == 0 {

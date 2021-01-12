@@ -254,7 +254,7 @@ func Test_MutateApp(t *testing.T) {
 			},
 		},
 		{
-			name: "case 6: set app-operator paused annotation and config-controller version label for CM app on CREATE",
+			name: "case 6: set app-operator paused annotation and config-controller version label for MC app on CREATE",
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "kiam",

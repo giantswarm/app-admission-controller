@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Update cert apiVersion to v1.
+- Update `giantswarm/app` to `v4.2.0`.
 
 ## [0.3.0] - 2021-01-11
 

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Pause Management Cluster app reconciliation when App CR version is updated.
+
 ## [0.4.0] - 2021-01-12
 
 ### Added

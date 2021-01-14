@@ -73,6 +73,9 @@ func (m *Mutator) Mutate(request *v1beta1.AdmissionRequest) ([]mutator.PatchOper
 	if _, _, err := mutator.Deserializer.Decode(request.OldObject.Raw, nil, appOldCR); err != nil {
 		return nil, microerror.Maskf(parsingFailedError, "unable to parse app: %#v", err)
 	}
+	if appOldCR == nil {
+		appOldCR = &v1alpha1.App{}
+	}
 
 	m.logger.Debugf(ctx, "mutating app %#q in namespace %#q", appNewCR.Name, appNewCR.Namespace)
 
@@ -81,7 +84,7 @@ func (m *Mutator) Mutate(request *v1beta1.AdmissionRequest) ([]mutator.PatchOper
 		return nil, nil
 	}
 
-	result, err := m.MutateApp(ctx, *appNewCR, request.Operation)
+	result, err := m.MutateApp(ctx, *appOldCR, *appNewCR, request.Operation)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -91,7 +94,7 @@ func (m *Mutator) Mutate(request *v1beta1.AdmissionRequest) ([]mutator.PatchOper
 	return result, nil
 }
 
-func (m *Mutator) MutateApp(ctx context.Context, app v1alpha1.App, operation v1beta1.Operation) ([]mutator.PatchOperation, error) {
+func (m *Mutator) MutateApp(ctx context.Context, oldApp, app v1alpha1.App, operation v1beta1.Operation) ([]mutator.PatchOperation, error) {
 
 	var err error
 	var result []mutator.PatchOperation
@@ -137,7 +140,7 @@ func (m *Mutator) MutateApp(ctx context.Context, app v1alpha1.App, operation v1b
 	}
 
 	if key.VersionLabel(app) == uniqueAppCRVersion {
-		managementClusterAppPatches, err := m.mutateManagementClusterApp(ctx, app, operation, appVersionLabel)
+		managementClusterAppPatches, err := m.mutateManagementClusterApp(ctx, oldApp, app, operation, appVersionLabel)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -252,24 +255,29 @@ func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appVersion
 	return result, nil
 }
 
-func (m *Mutator) mutateManagementClusterApp(ctx context.Context, app v1alpha1.App, operation v1beta1.Operation, appVersionLabel string) ([]mutator.PatchOperation, error) {
+func (m *Mutator) mutateManagementClusterApp(ctx context.Context, oldApp, app v1alpha1.App, operation v1beta1.Operation, appVersionLabel string) ([]mutator.PatchOperation, error) {
 	var result []mutator.PatchOperation
 
-	// 1. Ensure config-controller.giantswarm.io/version label is set to
-	//    "0.0.0". If it is set and the operation is CREATE, return.
+	// 1. Ensure `config-controller.giantswarm.io/version: "0.0.0"` label.
 
 	v, ok := app.Labels[label.ConfigControllerVersion]
 	if !ok {
 		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.ConfigControllerVersion)), uniqueAppCRVersion))
 	} else if v != uniqueAppCRVersion {
 		result = append(result, mutator.PatchReplace(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.ConfigControllerVersion)), uniqueAppCRVersion))
-	} else if operation != v1beta1.Create {
+	} else if operation == v1beta1.Create {
+		// Fall trough. The App freshly created. It should be paused to
+		// generate its configuration.
+	} else if operation == v1beta1.Update && oldApp.Spec.Version != app.Spec.Version {
+		// Fall trough. The App version updated. It should be paused to
+		// re-generate its configuration.
+	} else {
+		// Cancel. Label set and up to date. The App should not be
+		// paused.
 		return nil, nil
 	}
 
-	// 2. If config-controller.giantswarm.io/version label was
-	//    created/updated or the event is CREATE set the
-	//    app-operator.giantswarm.io/paused annotation to "true".
+	// 2. Ensure `app-operator.giantswarm.io/paused: "true" annotation.
 
 	v, ok = app.Annotations[annotation.AppOperatorPaused]
 	if !ok {

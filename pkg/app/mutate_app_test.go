@@ -27,6 +27,7 @@ func Test_MutateApp(t *testing.T) {
 
 	tests := []struct {
 		name            string
+		oldObj          v1alpha1.App
 		obj             v1alpha1.App
 		apps            []*v1alpha1.App
 		configMaps      []*corev1.ConfigMap
@@ -36,7 +37,8 @@ func Test_MutateApp(t *testing.T) {
 		expectedErr     string
 	}{
 		{
-			name: "case 0: flawless flow",
+			name:   "case 0: flawless flow",
+			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "kiam",
@@ -82,7 +84,8 @@ func Test_MutateApp(t *testing.T) {
 			},
 		},
 		{
-			name: "case 1: no patches",
+			name:   "case 1: no patches",
+			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "kiam",
@@ -120,7 +123,8 @@ func Test_MutateApp(t *testing.T) {
 			},
 		},
 		{
-			name: "case 2: cluster secret set",
+			name:   "case 2: cluster secret set",
+			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "kiam",
@@ -159,7 +163,8 @@ func Test_MutateApp(t *testing.T) {
 			},
 		},
 		{
-			name: "case 3: different configmap for nginx-ingress-controller-app",
+			name:   "case 3: different configmap for nginx-ingress-controller-app",
+			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "nginx-ingress-controller-app",
@@ -196,7 +201,8 @@ func Test_MutateApp(t *testing.T) {
 			},
 		},
 		{
-			name: "case 4: set version label only",
+			name:   "case 4: set version label only",
+			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "kiam",
@@ -225,7 +231,8 @@ func Test_MutateApp(t *testing.T) {
 			},
 		},
 		{
-			name: "case 5: no config map patch if it doesn't exist",
+			name:   "case 5: no config map patch if it doesn't exist",
+			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "kiam",
@@ -254,14 +261,15 @@ func Test_MutateApp(t *testing.T) {
 			},
 		},
 		{
-			name: "case 6: set app-operator paused annotation and config-controller version label for MC app on CREATE",
+			name:   "case 6: for MC app: set app-operator paused annotation and config-controller version label for MC app on CREATE",
+			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "kiam",
 					Namespace: "eggs2",
 					Labels: map[string]string{
 						"app":                    "kiam",
-						label.AppOperatorVersion: "0.0.0",
+						label.AppOperatorVersion: "0.0.0", // MC App.
 					},
 				},
 			},
@@ -276,14 +284,15 @@ func Test_MutateApp(t *testing.T) {
 			},
 		},
 		{
-			name: "case 7: set app-operator paused annotation and config-controller version label for CM app on UPDATE",
+			name:   "case 7: for MC app: set app-operator paused annotation and config-controller version label for CM app on UPDATE",
+			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "kiam",
 					Namespace: "eggs2",
 					Labels: map[string]string{
 						"app":                    "kiam",
-						label.AppOperatorVersion: "0.0.0",
+						label.AppOperatorVersion: "0.0.0", // MC App.
 					},
 				},
 			},
@@ -298,14 +307,15 @@ func Test_MutateApp(t *testing.T) {
 			},
 		},
 		{
-			name: "case 8: set app-operator paused when config-controller version label is set for CM app on CREATE",
+			name:   "case 8: for MC app: set app-operator paused when config-controller version label is set for CM app on CREATE",
+			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "kiam",
 					Namespace: "eggs2",
 					Labels: map[string]string{
 						"app":                         "kiam",
-						label.AppOperatorVersion:      "0.0.0",
+						label.AppOperatorVersion:      "0.0.0", // MC App.
 						label.ConfigControllerVersion: "0.0.0",
 					},
 				},
@@ -320,14 +330,15 @@ func Test_MutateApp(t *testing.T) {
 			},
 		},
 		{
-			name: "case 9: do not set app-operator paused when config-controller version label is set for CM app on UPDATE",
+			name:   "case 9: for MC app: do not set app-operator paused when config-controller version label is set for CM app on UPDATE",
+			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "kiam",
 					Namespace: "eggs2",
 					Labels: map[string]string{
 						"app":                         "kiam",
-						label.AppOperatorVersion:      "0.0.0",
+						label.AppOperatorVersion:      "0.0.0", // MC App.
 						label.ConfigControllerVersion: "0.0.0",
 					},
 				},
@@ -341,14 +352,15 @@ func Test_MutateApp(t *testing.T) {
 			},
 		},
 		{
-			name: "case 10: set app-operator paused and update config-controller version label if it is not unique version on CREATE",
+			name:   "case 10: for MC app: set app-operator paused and update config-controller version label if it is not unique version on CREATE",
+			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "kiam",
 					Namespace: "eggs2",
 					Labels: map[string]string{
 						"app":                         "kiam",
-						label.AppOperatorVersion:      "0.0.0",
+						label.AppOperatorVersion:      "0.0.0", // MC App.
 						label.ConfigControllerVersion: "1.0.0-non-unique",
 					},
 				},
@@ -364,14 +376,15 @@ func Test_MutateApp(t *testing.T) {
 			},
 		},
 		{
-			name: "case 11: set app-operator paused and update config-controller version label if it is not unique version on UPDATE",
+			name:   "case 11: for MC app: set app-operator paused and update config-controller version label if it is not unique version on UPDATE",
+			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "kiam",
 					Namespace: "eggs2",
 					Labels: map[string]string{
 						"app":                         "kiam",
-						label.AppOperatorVersion:      "0.0.0",
+						label.AppOperatorVersion:      "0.0.0", // MC App.
 						label.ConfigControllerVersion: "1.0.0-non-unique",
 					},
 				},
@@ -383,6 +396,36 @@ func Test_MutateApp(t *testing.T) {
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchReplace("/metadata/labels/"+replaceToEscape("config-controller.giantswarm.io/version"), "0.0.0"),
+				mutator.PatchAdd("/metadata/annotations/"+replaceToEscape("app-operator.giantswarm.io/paused"), "true"),
+			},
+		},
+		{
+			name: "case 12: for MC app: set app-operator paused annotation if app version is changed on UPDATE",
+			oldObj: v1alpha1.App{
+				Spec: v1alpha1.AppSpec{
+					Version: "1.0.0", // The old object has version 1.0.0.
+				},
+			},
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "kiam",
+					Namespace: "eggs2",
+					Labels: map[string]string{
+						"app":                         "kiam",
+						label.AppOperatorVersion:      "0.0.0", // MC App.
+						label.ConfigControllerVersion: "0.0.0",
+					},
+				},
+				Spec: v1alpha1.AppSpec{
+					Version: "2.0.0", // The new object has version updated to 2.0.0.
+				},
+			},
+			configMaps: []*corev1.ConfigMap{
+				newTestConfigMap("other-app-values", "eggs2"),
+			},
+			operation: v1beta1.Update,
+			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchAdd("/metadata/annotations/"+replaceToEscape("app-operator.giantswarm.io/paused"), "true"),
 			},
 		},
@@ -422,7 +465,7 @@ func Test_MutateApp(t *testing.T) {
 				t.Fatalf("error == %#v, want nil", err)
 			}
 
-			patches, err := r.MutateApp(ctx, tc.obj, tc.operation)
+			patches, err := r.MutateApp(ctx, tc.oldObj, tc.obj, tc.operation)
 			switch {
 			case err != nil && tc.expectedErr == "":
 				t.Fatalf("error == %#v, want nil", err)

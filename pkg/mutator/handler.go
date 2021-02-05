@@ -114,6 +114,10 @@ func extractName(request *admissionv1.AdmissionRequest) string {
 
 func writeResponse(ctx context.Context, mutator Mutator, writer http.ResponseWriter, response *admissionv1.AdmissionResponse) {
 	resp, err := json.Marshal(admissionv1.AdmissionReview{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "AdmissionReview",
+			APIVersion: "admission.k8s.io/v1",
+		},
 		Response: response,
 	})
 	if err != nil {

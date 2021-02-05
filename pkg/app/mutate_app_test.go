@@ -13,7 +13,7 @@ import (
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclienttest"
 	"github.com/giantswarm/micrologger/microloggertest"
 	"github.com/google/go-cmp/cmp"
-	"k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -32,7 +32,7 @@ func Test_MutateApp(t *testing.T) {
 		apps            []*v1alpha1.App
 		configMaps      []*corev1.ConfigMap
 		secrets         []*corev1.Secret
-		operation       v1beta1.Operation
+		operation       admissionv1.Operation
 		expectedPatches []mutator.PatchOperation
 		expectedErr     string
 	}{
@@ -63,7 +63,7 @@ func Test_MutateApp(t *testing.T) {
 			secrets: []*corev1.Secret{
 				newTestSecret("eggs2-kubeconfig", "eggs2"),
 			},
-			operation: v1beta1.Create,
+			operation: admissionv1.Create,
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchAdd("/metadata/labels", map[string]string{}),
@@ -153,7 +153,7 @@ func Test_MutateApp(t *testing.T) {
 			configMaps: []*corev1.ConfigMap{
 				newTestConfigMap("eggs2-cluster-values", "eggs2"),
 			},
-			operation: v1beta1.Create,
+			operation: admissionv1.Create,
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchAdd("/spec/config/configMap", map[string]string{
@@ -190,7 +190,7 @@ func Test_MutateApp(t *testing.T) {
 			configMaps: []*corev1.ConfigMap{
 				newTestConfigMap("ingress-controller-values", "eggs2"),
 			},
-			operation: v1beta1.Create,
+			operation: admissionv1.Create,
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchAdd("/spec/config", map[string]string{}),
@@ -224,7 +224,7 @@ func Test_MutateApp(t *testing.T) {
 			apps: []*v1alpha1.App{
 				newTestApp("chart-operator", "eggs2", "3.1.0"),
 			},
-			operation: v1beta1.Create,
+			operation: admissionv1.Create,
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.1.0"),
@@ -255,7 +255,7 @@ func Test_MutateApp(t *testing.T) {
 			configMaps: []*corev1.ConfigMap{
 				newTestConfigMap("other-app-values", "eggs2"),
 			},
-			operation: v1beta1.Create,
+			operation: admissionv1.Create,
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 			},
@@ -276,7 +276,7 @@ func Test_MutateApp(t *testing.T) {
 			configMaps: []*corev1.ConfigMap{
 				newTestConfigMap("other-app-values", "eggs2"),
 			},
-			operation: v1beta1.Create,
+			operation: admissionv1.Create,
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchAdd("/metadata/labels/"+replaceToEscape("config-controller.giantswarm.io/version"), "0.0.0"),
@@ -299,7 +299,7 @@ func Test_MutateApp(t *testing.T) {
 			configMaps: []*corev1.ConfigMap{
 				newTestConfigMap("other-app-values", "eggs2"),
 			},
-			operation: v1beta1.Update,
+			operation: admissionv1.Update,
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchAdd("/metadata/labels/"+replaceToEscape("config-controller.giantswarm.io/version"), "0.0.0"),
@@ -323,7 +323,7 @@ func Test_MutateApp(t *testing.T) {
 			configMaps: []*corev1.ConfigMap{
 				newTestConfigMap("other-app-values", "eggs2"),
 			},
-			operation: v1beta1.Create,
+			operation: admissionv1.Create,
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchAdd("/metadata/annotations/"+replaceToEscape("app-operator.giantswarm.io/paused"), "true"),
@@ -346,7 +346,7 @@ func Test_MutateApp(t *testing.T) {
 			configMaps: []*corev1.ConfigMap{
 				newTestConfigMap("other-app-values", "eggs2"),
 			},
-			operation: v1beta1.Update,
+			operation: admissionv1.Update,
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 			},
@@ -368,7 +368,7 @@ func Test_MutateApp(t *testing.T) {
 			configMaps: []*corev1.ConfigMap{
 				newTestConfigMap("other-app-values", "eggs2"),
 			},
-			operation: v1beta1.Create,
+			operation: admissionv1.Create,
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchReplace("/metadata/labels/"+replaceToEscape("config-controller.giantswarm.io/version"), "0.0.0"),
@@ -392,7 +392,7 @@ func Test_MutateApp(t *testing.T) {
 			configMaps: []*corev1.ConfigMap{
 				newTestConfigMap("other-app-values", "eggs2"),
 			},
-			operation: v1beta1.Update,
+			operation: admissionv1.Update,
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchReplace("/metadata/labels/"+replaceToEscape("config-controller.giantswarm.io/version"), "0.0.0"),
@@ -423,7 +423,7 @@ func Test_MutateApp(t *testing.T) {
 			configMaps: []*corev1.ConfigMap{
 				newTestConfigMap("other-app-values", "eggs2"),
 			},
-			operation: v1beta1.Update,
+			operation: admissionv1.Update,
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchAdd("/metadata/annotations/"+replaceToEscape("app-operator.giantswarm.io/paused"), "true"),

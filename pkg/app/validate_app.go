@@ -10,7 +10,7 @@ import (
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
 
 	"github.com/giantswarm/app-admission-controller/pkg/validator"
 )
@@ -74,7 +74,7 @@ func (v *Validator) Resource() string {
 	return Name
 }
 
-func (v *Validator) Validate(request *v1beta1.AdmissionRequest) (bool, error) {
+func (v *Validator) Validate(request *admissionv1.AdmissionRequest) (bool, error) {
 	ctx := context.Background()
 
 	var app v1alpha1.App
@@ -85,7 +85,7 @@ func (v *Validator) Validate(request *v1beta1.AdmissionRequest) (bool, error) {
 
 	v.logger.Debugf(ctx, "validating app %#q in namespace %#q", app.Name, app.Namespace)
 
-	if request.Operation == v1beta1.Update && !app.DeletionTimestamp.IsZero() {
+	if request.Operation == admissionv1.Update && !app.DeletionTimestamp.IsZero() {
 		v.logger.Debugf(ctx, "skipping validation for UPDATE operation of app %#q in namespace %#q with non-zero deletion timestamp", app.Name, app.Namespace)
 		return true, nil
 	}

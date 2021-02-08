@@ -14,7 +14,7 @@ import (
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -55,7 +55,7 @@ func (m *Mutator) Errorf(ctx context.Context, err error, format string, params .
 	m.logger.WithIncreasedCallerDepth().Errorf(ctx, err, format, params...)
 }
 
-func (m *Mutator) Mutate(request *v1beta1.AdmissionRequest) ([]mutator.PatchOperation, error) {
+func (m *Mutator) Mutate(request *admissionv1.AdmissionRequest) ([]mutator.PatchOperation, error) {
 	ctx := context.Background()
 
 	var result []mutator.PatchOperation
@@ -79,7 +79,7 @@ func (m *Mutator) Mutate(request *v1beta1.AdmissionRequest) ([]mutator.PatchOper
 
 	m.logger.Debugf(ctx, "mutating app %#q in namespace %#q", appNewCR.Name, appNewCR.Namespace)
 
-	if request.Operation == v1beta1.Update && !appNewCR.DeletionTimestamp.IsZero() {
+	if request.Operation == admissionv1.Update && !appNewCR.DeletionTimestamp.IsZero() {
 		m.logger.Debugf(ctx, "skipping mutation for UPDATE operation of app %#q in namespace %#q with non-zero deletion timestamp", appNewCR.Name, appNewCR.Namespace)
 		return nil, nil
 	}
@@ -94,7 +94,7 @@ func (m *Mutator) Mutate(request *v1beta1.AdmissionRequest) ([]mutator.PatchOper
 	return result, nil
 }
 
-func (m *Mutator) MutateApp(ctx context.Context, oldApp, app v1alpha1.App, operation v1beta1.Operation) ([]mutator.PatchOperation, error) {
+func (m *Mutator) MutateApp(ctx context.Context, oldApp, app v1alpha1.App, operation admissionv1.Operation) ([]mutator.PatchOperation, error) {
 
 	var err error
 	var result []mutator.PatchOperation
@@ -255,7 +255,7 @@ func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appVersion
 	return result, nil
 }
 
-func (m *Mutator) mutateManagementClusterApp(ctx context.Context, oldApp, app v1alpha1.App, operation v1beta1.Operation, appVersionLabel string) ([]mutator.PatchOperation, error) {
+func (m *Mutator) mutateManagementClusterApp(ctx context.Context, oldApp, app v1alpha1.App, operation admissionv1.Operation, appVersionLabel string) ([]mutator.PatchOperation, error) {
 	var result []mutator.PatchOperation
 
 	// 1. Ensure `config-controller.giantswarm.io/version: "0.0.0"` label.
@@ -265,10 +265,10 @@ func (m *Mutator) mutateManagementClusterApp(ctx context.Context, oldApp, app v1
 		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.ConfigControllerVersion)), uniqueAppCRVersion))
 	} else if v != uniqueAppCRVersion {
 		result = append(result, mutator.PatchReplace(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.ConfigControllerVersion)), uniqueAppCRVersion))
-	} else if operation == v1beta1.Create {
+	} else if operation == admissionv1.Create {
 		// Fall trough. The App freshly created. It should be paused to
 		// generate its configuration.
-	} else if operation == v1beta1.Update && oldApp.Spec.Version != app.Spec.Version {
+	} else if operation == admissionv1.Update && oldApp.Spec.Version != app.Spec.Version {
 		// Fall trough. The App version updated. It should be paused to
 		// re-generate its configuration.
 	} else {

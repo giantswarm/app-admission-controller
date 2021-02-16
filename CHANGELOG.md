@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Update `k8s.io/api/admission` to v1.
 
+### Deleted
+
+- Remove setting `pause` annotation on `App` CR.
+
 ## [0.4.1] - 2021-01-14
 
 ### Fixed

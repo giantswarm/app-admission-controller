@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
-	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/apiextensions/v3/pkg/clientset/versioned"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
@@ -258,8 +257,6 @@ func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appVersion
 func (m *Mutator) mutateManagementClusterApp(ctx context.Context, oldApp, app v1alpha1.App, operation admissionv1.Operation, appVersionLabel string) ([]mutator.PatchOperation, error) {
 	var result []mutator.PatchOperation
 
-	// 1. Ensure `config-controller.giantswarm.io/version: "0.0.0"` label.
-
 	v, ok := app.Labels[label.ConfigControllerVersion]
 	if !ok {
 		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.ConfigControllerVersion)), uniqueAppCRVersion))
@@ -275,15 +272,6 @@ func (m *Mutator) mutateManagementClusterApp(ctx context.Context, oldApp, app v1
 		// Cancel. Label set and up to date. The App should not be
 		// paused.
 		return nil, nil
-	}
-
-	// 2. Ensure `app-operator.giantswarm.io/paused: "true" annotation.
-
-	v, ok = app.Annotations[annotation.AppOperatorPaused]
-	if !ok {
-		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/annotations/%s", replaceToEscape(annotation.AppOperatorPaused)), "true"))
-	} else if v != "true" {
-		result = append(result, mutator.PatchReplace(fmt.Sprintf("/metadata/annotations/%s", replaceToEscape(annotation.AppOperatorPaused)), "true"))
 	}
 
 	return result, nil

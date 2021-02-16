@@ -261,7 +261,7 @@ func Test_MutateApp(t *testing.T) {
 			},
 		},
 		{
-			name:   "case 6: for MC app: set app-operator paused annotation and config-controller version label for MC app on CREATE",
+			name:   "case 6: for MC app: set config-controller version label for MC app on CREATE",
 			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
@@ -280,11 +280,10 @@ func Test_MutateApp(t *testing.T) {
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchAdd("/metadata/labels/"+replaceToEscape("config-controller.giantswarm.io/version"), "0.0.0"),
-				mutator.PatchAdd("/metadata/annotations/"+replaceToEscape("app-operator.giantswarm.io/paused"), "true"),
 			},
 		},
 		{
-			name:   "case 7: for MC app: set app-operator paused annotation and config-controller version label for CM app on UPDATE",
+			name:   "case 7: for MC app: set config-controller version label for CM app on UPDATE",
 			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
@@ -303,56 +302,10 @@ func Test_MutateApp(t *testing.T) {
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchAdd("/metadata/labels/"+replaceToEscape("config-controller.giantswarm.io/version"), "0.0.0"),
-				mutator.PatchAdd("/metadata/annotations/"+replaceToEscape("app-operator.giantswarm.io/paused"), "true"),
 			},
 		},
 		{
-			name:   "case 8: for MC app: set app-operator paused when config-controller version label is set for CM app on CREATE",
-			oldObj: v1alpha1.App{},
-			obj: v1alpha1.App{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "kiam",
-					Namespace: "eggs2",
-					Labels: map[string]string{
-						"app":                         "kiam",
-						label.AppOperatorVersion:      "0.0.0", // MC App.
-						label.ConfigControllerVersion: "0.0.0",
-					},
-				},
-			},
-			configMaps: []*corev1.ConfigMap{
-				newTestConfigMap("other-app-values", "eggs2"),
-			},
-			operation: admissionv1.Create,
-			expectedPatches: []mutator.PatchOperation{
-				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
-				mutator.PatchAdd("/metadata/annotations/"+replaceToEscape("app-operator.giantswarm.io/paused"), "true"),
-			},
-		},
-		{
-			name:   "case 9: for MC app: do not set app-operator paused when config-controller version label is set for CM app on UPDATE",
-			oldObj: v1alpha1.App{},
-			obj: v1alpha1.App{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "kiam",
-					Namespace: "eggs2",
-					Labels: map[string]string{
-						"app":                         "kiam",
-						label.AppOperatorVersion:      "0.0.0", // MC App.
-						label.ConfigControllerVersion: "0.0.0",
-					},
-				},
-			},
-			configMaps: []*corev1.ConfigMap{
-				newTestConfigMap("other-app-values", "eggs2"),
-			},
-			operation: admissionv1.Update,
-			expectedPatches: []mutator.PatchOperation{
-				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
-			},
-		},
-		{
-			name:   "case 10: for MC app: set app-operator paused and update config-controller version label if it is not unique version on CREATE",
+			name:   "case 8: for MC app: update config-controller version label if it is not unique version on CREATE",
 			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
@@ -372,11 +325,10 @@ func Test_MutateApp(t *testing.T) {
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchReplace("/metadata/labels/"+replaceToEscape("config-controller.giantswarm.io/version"), "0.0.0"),
-				mutator.PatchAdd("/metadata/annotations/"+replaceToEscape("app-operator.giantswarm.io/paused"), "true"),
 			},
 		},
 		{
-			name:   "case 11: for MC app: set app-operator paused and update config-controller version label if it is not unique version on UPDATE",
+			name:   "case 9: for MC app: update config-controller version label if it is not unique version on UPDATE",
 			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
@@ -396,37 +348,6 @@ func Test_MutateApp(t *testing.T) {
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchReplace("/metadata/labels/"+replaceToEscape("config-controller.giantswarm.io/version"), "0.0.0"),
-				mutator.PatchAdd("/metadata/annotations/"+replaceToEscape("app-operator.giantswarm.io/paused"), "true"),
-			},
-		},
-		{
-			name: "case 12: for MC app: set app-operator paused annotation if app version is changed on UPDATE",
-			oldObj: v1alpha1.App{
-				Spec: v1alpha1.AppSpec{
-					Version: "1.0.0", // The old object has version 1.0.0.
-				},
-			},
-			obj: v1alpha1.App{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "kiam",
-					Namespace: "eggs2",
-					Labels: map[string]string{
-						"app":                         "kiam",
-						label.AppOperatorVersion:      "0.0.0", // MC App.
-						label.ConfigControllerVersion: "0.0.0",
-					},
-				},
-				Spec: v1alpha1.AppSpec{
-					Version: "2.0.0", // The new object has version updated to 2.0.0.
-				},
-			},
-			configMaps: []*corev1.ConfigMap{
-				newTestConfigMap("other-app-values", "eggs2"),
-			},
-			operation: admissionv1.Update,
-			expectedPatches: []mutator.PatchOperation{
-				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
-				mutator.PatchAdd("/metadata/annotations/"+replaceToEscape("app-operator.giantswarm.io/paused"), "true"),
 			},
 		},
 	}

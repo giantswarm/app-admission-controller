@@ -15,6 +15,7 @@ rules:
       - application.giantswarm.io
     resources:
       - appcatalogs
+      - appcatalogentries
     verbs:
       - "get"
   - apiGroups:

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Support app metadata validation.
+
 ## [0.5.1] - 2021-02-17
 
 ### Fixed

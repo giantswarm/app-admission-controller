@@ -35,6 +35,7 @@ spec:
             - ./app-admission-controller
             - --tls-cert-file=/certs/ca.crt
             - --tls-key-file=/certs/tls.key
+            - --provider={{ .Values.Installation.V1.Provider.Kind }}
           volumeMounts:
           - name: {{ include "name" . }}-certificates
             mountPath: "/certs"

@@ -187,6 +187,11 @@ func (m *Mutator) mutateConfig(ctx context.Context, app v1alpha1.App) ([]mutator
 		return nil, nil
 	}
 
+	// Return early if app is a Management Cluster app.
+	if key.VersionLabel(app) == uniqueAppCRVersion {
+		return nil, nil
+	}
+
 	// Return early if values configmap not found.
 	_, err := m.k8sClient.K8sClient().CoreV1().ConfigMaps(app.Namespace).Get(ctx, key.ClusterConfigMapName(app), metav1.GetOptions{})
 	if apierrors.IsNotFound(err) {

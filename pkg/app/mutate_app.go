@@ -193,6 +193,11 @@ func (m *Mutator) mutateConfig(ctx context.Context, app v1alpha1.App) ([]mutator
 		return nil, nil
 	}
 
+	// Return early if app is a Management Cluster app.
+	if key.VersionLabel(app) == uniqueAppCRVersion {
+		return nil, nil
+	}
+
 	// If there is no secret then create a patch for the config block.
 	if key.AppSecretName(app) == "" && key.AppSecretNamespace(app) == "" {
 		result = append(result, mutator.PatchAdd("/spec/config", map[string]string{}))

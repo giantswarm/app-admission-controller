@@ -12,6 +12,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/app-admission-controller/integration/env"
+	"github.com/giantswarm/app-admission-controller/integration/templates"
 )
 
 const (
@@ -49,10 +50,6 @@ func TestMain(m *testing.M) {
 	}
 
 	{
-		values := `Installation:
-  V1:
-    Registry:
-      Domain: quay.io`
 		apps := []apptest.App{
 			{
 				CatalogName:   prodCatalogName,
@@ -66,7 +63,7 @@ func TestMain(m *testing.M) {
 				Name:          "app-admission-controller",
 				Namespace:     "giantswarm",
 				SHA:           env.CircleSHA(),
-				ValuesYAML:    values,
+				ValuesYAML:    templates.AppAdmissionControllerValues,
 				WaitForDeploy: true,
 			},
 		}

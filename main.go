@@ -60,6 +60,8 @@ func mainWithError() error {
 		c := app.ValidatorConfig{
 			K8sClient: cfg.K8sClient,
 			Logger:    newLogger,
+
+			Provider: cfg.Provider,
 		}
 		appValidator, err = app.NewValidator(c)
 		if err != nil {

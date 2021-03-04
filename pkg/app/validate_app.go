@@ -24,6 +24,8 @@ const (
 type ValidatorConfig struct {
 	K8sClient k8sclient.Interface
 	Logger    micrologger.Logger
+
+	Provider string
 }
 
 type Validator struct {
@@ -39,6 +41,10 @@ func NewValidator(config ValidatorConfig) (*Validator, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
+	if config.Provider == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Provider must not be empty", config)
+	}
+
 	var err error
 
 	var appValidator *validation.Validator
@@ -47,6 +53,8 @@ func NewValidator(config ValidatorConfig) (*Validator, error) {
 			G8sClient: config.K8sClient.G8sClient(),
 			K8sClient: config.K8sClient.K8sClient(),
 			Logger:    config.Logger,
+
+			Provider: config.Provider,
 		}
 		appValidator, err = validation.NewValidator(c)
 		if err != nil {

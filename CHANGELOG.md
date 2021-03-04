@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Apply `compatibleProvider`,`namespace` metadata validation based on the relevant `AppCatalogEntry` CR.
+
 ### Fixed
 
 - Don't default `.spec.config` if app is a Management Cluster app.

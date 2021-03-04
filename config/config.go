@@ -66,7 +66,7 @@ func Parse() (Config, error) {
 	kingpin.Flag("metrics-address", "The metrics address for Prometheus").Default(defaultMetricsAddress).StringVar(&config.MetricsAddress)
 	kingpin.Flag("tls-cert-file", "File containing the certificate for HTTPS").Required().StringVar(&config.CertFile)
 	kingpin.Flag("tls-key-file", "File containing the private key for HTTPS").Required().StringVar(&config.KeyFile)
-	kingpin.Flag("provider", "the name of provider which this app-admission is running").Required().StringVar(&config.Provider)
+	kingpin.Flag("provider", "Provider of the management cluster. One of aws, azure, kvm").Required().StringVar(&config.Provider)
 
 	kingpin.Parse()
 

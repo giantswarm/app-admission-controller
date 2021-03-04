@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2021-03-04
+
 ### Added
 
 - Apply `compatibleProvider`,`namespace` metadata validation based on the relevant `AppCatalogEntry` CR.
@@ -80,7 +82,8 @@ allow app CR creation.
 - Add validation webhook that is enabled for app CRs with
 `app-operator.giantswarm.io/version` label value >= `3.0.0`.
 
-[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/giantswarm/app-admission-controller/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/giantswarm/app-admission-controller/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/giantswarm/app-admission-controller/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/giantswarm/app-admission-controller/compare/v0.4.0...v0.4.1

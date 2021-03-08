@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/giantswarm/template.svg?style=shield&circle-token=cbabd7d13186f190fca813db4f0c732b026f5f6c)](https://circleci.com/gh/giantswarm/template)
+[![CircleCI](https://circleci.com/gh/giantswarm/aop-admission-controller.svg?style=shield)](https://circleci.com/gh/giantswarm/app-admission-controller)
 
 # app-admission-controller
 

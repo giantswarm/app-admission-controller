@@ -4,3 +4,5 @@ description: A Helm chart for app-admission-controller
 home: https://github.com/giantswarm/app-admission-controller
 version: [[ .Version ]]
 appVersion: [[ .AppVersion ]]
+annotations:
+  application.giantswarm.io/team: "batman"

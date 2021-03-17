@@ -118,3 +118,16 @@ workflows:
               ignore: /.*/
             tags:
               only: /^v.*/
+
+      - architect/push-to-app-collection:
+          context: architect
+          name: push-app-admission-controller-to-vmware-app-collection
+          app_name: "app-admission-controller"
+          app_collection_repo: "vmware-app-collection"
+          requires:
+            - push-app-admission-controller-to-control-plane-catalog
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/

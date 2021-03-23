@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Update TLS minimum version as 1.2.
+
 ## [0.7.0] - 2021-03-19
 
 ### Added

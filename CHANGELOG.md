@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add validation for user configmap and secret names for apps in the default catalog.
+
 ### Changed
 
 - Update TLS minimum version as 1.2.

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- Stop adding obsolete `config-controller.giantswarm.io/version` label on App
+  CRs reconciled by unique app-operator.
+
 ## [0.8.0] - 2021-03-29
 
 ### Added

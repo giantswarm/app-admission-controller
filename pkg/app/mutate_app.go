@@ -138,16 +138,6 @@ func (m *Mutator) MutateApp(ctx context.Context, oldApp, app v1alpha1.App, opera
 		return nil, nil
 	}
 
-	if key.VersionLabel(app) == uniqueAppCRVersion {
-		managementClusterAppPatches, err := m.mutateManagementClusterApp(ctx, oldApp, app, operation, appVersionLabel)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		if len(managementClusterAppPatches) > 0 {
-			result = append(result, managementClusterAppPatches...)
-		}
-	}
-
 	labelPatches, err := m.mutateLabels(ctx, app, appVersionLabel)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -254,29 +244,6 @@ func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appVersion
 
 	if key.VersionLabel(app) == "" && appVersionLabel != "" {
 		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), appVersionLabel))
-	}
-
-	return result, nil
-}
-
-func (m *Mutator) mutateManagementClusterApp(ctx context.Context, oldApp, app v1alpha1.App, operation admissionv1.Operation, appVersionLabel string) ([]mutator.PatchOperation, error) {
-	var result []mutator.PatchOperation
-
-	v, ok := app.Labels[label.ConfigControllerVersion]
-	if !ok {
-		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.ConfigControllerVersion)), uniqueAppCRVersion))
-	} else if v != uniqueAppCRVersion {
-		result = append(result, mutator.PatchReplace(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.ConfigControllerVersion)), uniqueAppCRVersion))
-	} else if operation == admissionv1.Create {
-		// Fall trough. The App freshly created. It should be paused to
-		// generate its configuration.
-	} else if operation == admissionv1.Update && oldApp.Spec.Version != app.Spec.Version {
-		// Fall trough. The App version updated. It should be paused to
-		// re-generate its configuration.
-	} else {
-		// Cancel. Label set and up to date. The App should not be
-		// paused.
-		return nil, nil
 	}
 
 	return result, nil

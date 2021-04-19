@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add validation that `.metadata.name` is not longer than 53 chars due to limit
+on the length of Helm release names.
+
 ### Removed
 
 - Stop adding obsolete `config-controller.giantswarm.io/version` label on App

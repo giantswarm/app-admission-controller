@@ -6,7 +6,6 @@ import (
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	"github.com/giantswarm/app-admission-controller/internal/recorder"
 	"github.com/giantswarm/app/v4/pkg/key"
 	"github.com/giantswarm/app/v4/pkg/validation"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
@@ -14,6 +13,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	admissionv1 "k8s.io/api/admission/v1"
 
+	"github.com/giantswarm/app-admission-controller/internal/recorder"
 	"github.com/giantswarm/app-admission-controller/pkg/validator"
 )
 

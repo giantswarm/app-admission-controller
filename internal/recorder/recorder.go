@@ -18,7 +18,7 @@ type Config struct {
 	K8sClient k8sclient.Interface
 }
 
-type Recorder struct {
+type K8sEventsRecorder struct {
 	record.EventRecorder
 }
 
@@ -33,14 +33,14 @@ func New(c Config) Interface {
 			},
 		)
 	}
-	return &Recorder{
+	return &K8sEventsRecorder{
 		eventBroadcaster.NewRecorder(c.K8sClient.Scheme(), clientv1.EventSource{Component: c.Component}),
 	}
 }
 
 // Emit writes only informative events like status of creation or updates.
 // Error events will be handled by operatorkit when using microerror.
-func (r *Recorder) Emit(ctx context.Context, obj pkgruntime.Object, reason, message string, args ...interface{}) {
+func (r *K8sEventsRecorder) Emit(ctx context.Context, obj pkgruntime.Object, reason, message string, args ...interface{}) {
 	r.Eventf(obj, corev1.EventTypeNormal, reason, upper(message), args...)
 }
 

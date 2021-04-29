@@ -167,12 +167,14 @@ func (v *Validator) emitEvents(ctx context.Context, request *admissionv1.Admissi
 
 	for name, f := range compareFunc {
 		newValue := f(app)
-		if newValue != f(oldApp) {
-			if newValue == "/" {
-				v.event.Emit(ctx, &app, "AppUpdated", "%s has been reset", name)
-			} else {
-				v.event.Emit(ctx, &app, "AppUpdated", "%s has been changed to %#q", name, newValue)
-			}
+		if newValue == f(oldApp) {
+			continue
+		}
+
+		if newValue == "/" {
+			v.event.Emit(ctx, &app, "AppUpdated", "%s has been reset", name)
+		} else {
+			v.event.Emit(ctx, &app, "AppUpdated", "%s has been changed to %#q", name, newValue)
 		}
 	}
 

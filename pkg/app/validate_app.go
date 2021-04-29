@@ -169,7 +169,7 @@ func (v *Validator) emitEvents(ctx context.Context, request *admissionv1.Admissi
 		newValue := f(app)
 		if newValue != f(oldApp) {
 			if newValue == "/" {
-				v.event.Emit(ctx, &app, "AppUpdated", "%s has been resetted", name)
+				v.event.Emit(ctx, &app, "AppUpdated", "%s has been reset", name)
 			} else {
 				v.event.Emit(ctx, &app, "AppUpdated", "%s has been changed to %#q", name, newValue)
 			}

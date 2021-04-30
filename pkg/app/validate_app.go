@@ -126,7 +126,7 @@ func (v *Validator) Validate(request *admissionv1.AdmissionRequest) (bool, error
 		return false, microerror.Mask(err)
 	}
 
-	// Emit all events relevant to the app CR. (e.g. version changes, config changes)
+	// Emit all events relevant to the app CR. (e.g. version changes, config changes).
 	err = v.emitEvents(ctx, request, app)
 	if err != nil {
 		v.logger.Errorf(ctx, err, "app %#q has failed to emit events", app.Name)
@@ -139,7 +139,7 @@ func (v *Validator) Validate(request *admissionv1.AdmissionRequest) (bool, error
 
 func (v *Validator) emitEvents(ctx context.Context, request *admissionv1.AdmissionRequest, app v1alpha1.App) error {
 	if request.Operation != admissionv1.Update {
-		// no-op when it's not update
+		// no-op when it's not an update
 		return nil
 	}
 

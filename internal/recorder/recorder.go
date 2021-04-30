@@ -6,7 +6,6 @@ import (
 
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclienttest"
-	clientv1 "k8s.io/api/core/v1"
 	corev1 "k8s.io/api/core/v1"
 	pkgruntime "k8s.io/apimachinery/pkg/runtime"
 	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
@@ -38,7 +37,7 @@ func New(c Config) Interface {
 	}
 }
 
-// Emit writes only informative events like status of creation or updates.
+// Emit writes only informative events like the status of creation or updates.
 // Error events will be handled by operatorkit when using microerror.
 func (r *K8sEventsRecorder) Emit(ctx context.Context, obj pkgruntime.Object, reason, message string, args ...interface{}) {
 	r.Eventf(obj, corev1.EventTypeNormal, reason, upper(message), args...)

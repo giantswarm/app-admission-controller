@@ -1,18 +1,18 @@
 
 ## Emit events
 
-At the end of successful validation of app CRs, app-admission-controllers check the changes from the following specs and emit each of events.
-- `.sepc.version` 
+At the end of each successful validation of an app CR, app-admission-controller checks the changes for the following fields and emits an event.
+
+- `.spec.version` 
 - `.sepc.catalog`
 - `.sepc.userConfig.configMap`
 - `.sepc.userConfig.secret`
 - `.sepc.config.configMap`
 - `.sepc.config.secret`
 
-To see where comparison occurs, see [validate_app.go](../app-admission-controller/pkg/admission/validate_app.go).
+The comparison occurs here [validate_app.go](../app-admission-controller/pkg/admission/validate_app.go).
 
-
-If you describe the app CR objects in kubectl, you can see the `AppUpdated` events as below.
+If you describe the app CR with kubectl you can see the events e.g.
 
 ```
 kubectl -n giantswarm describe apps userd-unique

@@ -33,7 +33,7 @@ func New(c Config) Interface {
 		)
 	}
 	return &K8sEventsRecorder{
-		eventBroadcaster.NewRecorder(c.K8sClient.Scheme(), clientv1.EventSource{Component: c.Component}),
+		eventBroadcaster.NewRecorder(c.K8sClient.Scheme(), corev1.EventSource{Component: c.Component}),
 	}
 }
 

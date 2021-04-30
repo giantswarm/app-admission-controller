@@ -6,7 +6,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/dyson/certman v0.2.1
 	github.com/giantswarm/apiextensions/v3 v3.22.0
-	github.com/giantswarm/app/v4 v4.10.0
+	github.com/giantswarm/app/v4 v4.11.0
 	github.com/giantswarm/apptest v0.10.3
 	github.com/giantswarm/backoff v0.2.0
 	github.com/giantswarm/k8sclient/v5 v5.11.0
@@ -25,6 +25,7 @@ replace (
 	github.com/Microsoft/hcsshim v0.8.7 => github.com/Microsoft/hcsshim v0.8.10
 	// Apply fix for CVE-2020-15114 not yet released in github.com/spf13/viper.
 	github.com/bketelsen/crypt => github.com/bketelsen/crypt v0.0.3
+	github.com/dgrijalva/jwt-go => github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
 	// Use v1.3.2 of gogo/protobuf to fix nancy alert.
 	github.com/gogo/protobuf v1.3.1 => github.com/gogo/protobuf v1.3.2
 	// Use v1.4.2 of gorilla/websocket to fix nancy alert.

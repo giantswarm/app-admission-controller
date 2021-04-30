@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Emit events when App CR version is updated.
+
 ## [0.9.0] - 2021-04-19
 
 ### Added

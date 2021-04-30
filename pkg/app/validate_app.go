@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
@@ -12,6 +13,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	admissionv1 "k8s.io/api/admission/v1"
 
+	"github.com/giantswarm/app-admission-controller/internal/recorder"
 	"github.com/giantswarm/app-admission-controller/pkg/validator"
 )
 
@@ -22,6 +24,7 @@ const (
 )
 
 type ValidatorConfig struct {
+	Event     recorder.Interface
 	K8sClient k8sclient.Interface
 	Logger    micrologger.Logger
 
@@ -30,10 +33,14 @@ type ValidatorConfig struct {
 
 type Validator struct {
 	appValidator *validation.Validator
+	event        recorder.Interface
 	logger       micrologger.Logger
 }
 
 func NewValidator(config ValidatorConfig) (*Validator, error) {
+	if config.Event == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Event must not be empty", config)
+	}
 	if config.K8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
 	}
@@ -62,12 +69,13 @@ func NewValidator(config ValidatorConfig) (*Validator, error) {
 		}
 	}
 
-	validator := &Validator{
+	v := &Validator{
 		appValidator: appValidator,
+		event:        config.Event,
 		logger:       config.Logger,
 	}
 
-	return validator, nil
+	return v, nil
 }
 
 func (v *Validator) Debugf(ctx context.Context, format string, params ...interface{}) {
@@ -118,7 +126,58 @@ func (v *Validator) Validate(request *admissionv1.AdmissionRequest) (bool, error
 		return false, microerror.Mask(err)
 	}
 
+	// Emit all events relevant to the app CR. (e.g. version changes, config changes).
+	err = v.emitEvents(ctx, request, app)
+	if err != nil {
+		v.logger.Errorf(ctx, err, "app %#q has failed to emit events", app.Name)
+	}
+
 	v.logger.Debugf(ctx, "admitted app %#q in namespace %#q", app.Name, app.Namespace)
 
 	return appAllowed, nil
+}
+
+func (v *Validator) emitEvents(ctx context.Context, request *admissionv1.AdmissionRequest, app v1alpha1.App) error {
+	if request.Operation != admissionv1.Update {
+		// no-op when it's not an update
+		return nil
+	}
+
+	var oldApp v1alpha1.App
+
+	if _, _, err := validator.Deserializer.Decode(request.OldObject.Raw, nil, &oldApp); err != nil {
+		return microerror.Maskf(parsingFailedError, "unable to parse app: %#v", err)
+	}
+
+	compareFunc := map[string]func(v1alpha1.App) string{
+		"appCatalog": key.CatalogName,
+		"appConfigMap": func(app v1alpha1.App) string {
+			return fmt.Sprintf("%s/%s", key.AppConfigMapNamespace(app), key.AppConfigMapName(app))
+		},
+		"appSecret": func(app v1alpha1.App) string {
+			return fmt.Sprintf("%s/%s", key.AppSecretNamespace(app), key.AppSecretName(app))
+		},
+		"userConfigMap": func(app v1alpha1.App) string {
+			return fmt.Sprintf("%s/%s", key.UserConfigMapNamespace(app), key.UserConfigMapName(app))
+		},
+		"userSecret": func(app v1alpha1.App) string {
+			return fmt.Sprintf("%s/%s", key.UserSecretNamespace(app), key.UserSecretName(app))
+		},
+		"version": key.Version,
+	}
+
+	for name, f := range compareFunc {
+		newValue := f(app)
+		if newValue == f(oldApp) {
+			continue
+		}
+
+		if newValue == "/" {
+			v.event.Emit(ctx, &app, "AppUpdated", "%s has been reset", name)
+		} else {
+			v.event.Emit(ctx, &app, "AppUpdated", "%s has been changed to %#q", name, newValue)
+		}
+	}
+
+	return nil
 }

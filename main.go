@@ -15,6 +15,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/giantswarm/app-admission-controller/config"
+	"github.com/giantswarm/app-admission-controller/internal/recorder"
 	"github.com/giantswarm/app-admission-controller/pkg/app"
 	"github.com/giantswarm/app-admission-controller/pkg/mutator"
 	"github.com/giantswarm/app-admission-controller/pkg/validator"
@@ -43,6 +44,17 @@ func mainWithError() error {
 		}
 	}
 
+	var event recorder.Interface
+	{
+		c := recorder.Config{
+			K8sClient: cfg.K8sClient,
+
+			Component: "app-admission-controller",
+		}
+
+		event = recorder.New(c)
+	}
+
 	var appMutator *app.Mutator
 	{
 		c := app.MutatorConfig{
@@ -58,6 +70,7 @@ func mainWithError() error {
 	var appValidator *app.Validator
 	{
 		c := app.ValidatorConfig{
+			Event:     event,
 			K8sClient: cfg.K8sClient,
 			Logger:    newLogger,
 

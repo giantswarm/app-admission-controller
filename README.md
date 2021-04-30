@@ -22,6 +22,6 @@ contribution workflow as well as reporting bugs.
 
 See [docs/webhook.md](https://github.com/giantswarm/app-admission-controller/blob/master/docs/webhook.md)
 
-## Writing tests
+## Emit Events
 
-See [docs/tests.md](https://github.com/giantswarm/app-admission-controller/blob/master/docs/tests.md)
+See [docs/events.md](https://github.com/giantswarm/app-admission-controller/blob/master/docs/events.md)

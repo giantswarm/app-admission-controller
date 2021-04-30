@@ -150,20 +150,20 @@ func (v *Validator) emitEvents(ctx context.Context, request *admissionv1.Admissi
 	}
 
 	compareFunc := map[string]func(v1alpha1.App) string{
-		"version":    key.Version,
 		"appCatalog": key.CatalogName,
-		"userConfigMap": func(app v1alpha1.App) string {
-			return fmt.Sprintf("%s/%s", key.UserConfigMapNamespace(app), key.UserConfigMapName(app))
-		},
-		"userSecret": func(app v1alpha1.App) string {
-			return fmt.Sprintf("%s/%s", key.UserSecretNamespace(app), key.UserSecretName(app))
-		},
 		"appConfigMap": func(app v1alpha1.App) string {
 			return fmt.Sprintf("%s/%s", key.AppConfigMapNamespace(app), key.AppConfigMapName(app))
 		},
 		"appSecret": func(app v1alpha1.App) string {
 			return fmt.Sprintf("%s/%s", key.AppSecretNamespace(app), key.AppSecretName(app))
 		},
+		"userConfigMap": func(app v1alpha1.App) string {
+			return fmt.Sprintf("%s/%s", key.UserConfigMapNamespace(app), key.UserConfigMapName(app))
+		},
+		"userSecret": func(app v1alpha1.App) string {
+			return fmt.Sprintf("%s/%s", key.UserSecretNamespace(app), key.UserSecretName(app))
+		},
+		"version": key.Version,
 	}
 
 	for name, f := range compareFunc {

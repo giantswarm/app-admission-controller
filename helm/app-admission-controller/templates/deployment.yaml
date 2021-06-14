@@ -30,12 +30,12 @@ spec:
         runAsGroup: 1000
       containers:
         - name: {{ include "name" . }}
-          image: "{{ .Values.Installation.V1.Registry.Domain }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.registry.domain }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
           args:
             - ./app-admission-controller
             - --tls-cert-file=/certs/ca.crt
             - --tls-key-file=/certs/tls.key
-            - --provider={{ .Values.Installation.V1.Provider.Kind }}
+            - --provider={{ .Values.provider.kind }}
           volumeMounts:
           - name: {{ include "name" . }}-certificates
             mountPath: "/certs"

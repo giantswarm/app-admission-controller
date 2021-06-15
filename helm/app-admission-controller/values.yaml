@@ -1,3 +1,6 @@
+provider:
+  kind: ""
+
 image:
   name: "giantswarm/app-admission-controller"
   tag: "[[ .Version ]]"

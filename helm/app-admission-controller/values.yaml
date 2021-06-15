@@ -1,11 +1,12 @@
+provider:
+  kind: ""
+
 image:
   name: "giantswarm/app-admission-controller"
   tag: "[[ .Version ]]"
 
-Installation:
-  V1:
-    Registry:
-      Domain: quay.io
+registry:
+  domain: docker.io
 
 project:
   branch: "[[ .Branch ]]"

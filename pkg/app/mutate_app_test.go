@@ -260,6 +260,37 @@ func Test_MutateApp(t *testing.T) {
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 			},
 		},
+		{
+			name:   "case 5: replace version label when it has legacy value 1.0.0",
+			oldObj: v1alpha1.App{},
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "kiam",
+					Namespace: "eggs2",
+					Labels: map[string]string{
+						"app":                    "kiam",
+						label.AppOperatorVersion: "1.0.0",
+					},
+				},
+				Spec: v1alpha1.AppSpec{
+					Catalog:   "giantswarm",
+					Name:      "kiam",
+					Namespace: "kube-system",
+					KubeConfig: v1alpha1.AppSpecKubeConfig{
+						InCluster: true,
+					},
+					Version: "1.4.0",
+				},
+			},
+			apps: []*v1alpha1.App{
+				newTestApp("chart-operator", "eggs2", "3.1.0"),
+			},
+			operation: admissionv1.Create,
+			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.1.0"),
+			},
+		},
 	}
 
 	for _, tc := range tests {

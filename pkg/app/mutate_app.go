@@ -20,6 +20,10 @@ import (
 	"github.com/giantswarm/app-admission-controller/pkg/mutator"
 )
 
+// legacyAppVersion was used for app CR version labels deployed with Helm 2.
+// We now always need to default to the app-operator version in the release.
+const legacyAppVersion = "1.0.0"
+
 type MutatorConfig struct {
 	K8sClient k8sclient.Interface
 	Logger    micrologger.Logger
@@ -94,7 +98,6 @@ func (m *Mutator) Mutate(request *admissionv1.AdmissionRequest) ([]mutator.Patch
 }
 
 func (m *Mutator) MutateApp(ctx context.Context, oldApp, app v1alpha1.App, operation admissionv1.Operation) ([]mutator.PatchOperation, error) {
-
 	var err error
 	var result []mutator.PatchOperation
 
@@ -110,10 +113,9 @@ func (m *Mutator) MutateApp(ctx context.Context, oldApp, app v1alpha1.App, opera
 	}
 
 	appVersionLabel := key.VersionLabel(app)
-	if appVersionLabel == "" {
-		// If there is no version label check the value for the chart-operator
-		// app CR. This is the version we need and means we don't need to check
-		// for a cluster CR.
+	if appVersionLabel == "" || appVersionLabel == legacyAppVersion {
+		// We default to the same version as the chart-operator app CR
+		// which means we don't need to check for a cluster CR.
 		appVersionLabel, err = getChartOperatorAppVersion(ctx, m.k8sClient.G8sClient(), app.Namespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
@@ -124,19 +126,7 @@ func (m *Mutator) MutateApp(ctx context.Context, oldApp, app v1alpha1.App, opera
 		}
 	}
 
-	ver, err := semver.NewVersion(appVersionLabel)
-	if err != nil {
-		m.logger.Debugf(ctx, "skipping mutation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appVersionLabel)
-		return nil, nil
-	}
-
-	// If the app CR does not have the unique version and is < 3.0.0 we skip
-	// the defaulting logic. This is so the admission controller is not enabled
-	// for existing platform releases.
-	if key.VersionLabel(app) != uniqueAppCRVersion && ver.Major() < 3 {
-		m.logger.Debugf(ctx, "skipping mutation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appVersionLabel)
-		return nil, nil
-	}
+	var patchLabels bool
 
 	labelPatches, err := m.mutateLabels(ctx, app, appVersionLabel)
 	if err != nil {
@@ -144,6 +134,26 @@ func (m *Mutator) MutateApp(ctx context.Context, oldApp, app v1alpha1.App, opera
 	}
 	if len(labelPatches) > 0 {
 		result = append(result, labelPatches...)
+		patchLabels = true
+	}
+
+	ver, err := semver.NewVersion(appVersionLabel)
+	if err != nil {
+		m.logger.Debugf(ctx, "skipping mutation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appVersionLabel)
+		return nil, nil
+	}
+
+	// If the app CR does not have the unique version and is < 3.0.0 we skip
+	// the defaulting logic apart from the labels. This is so the admission
+	// controller is not enabled for existing platform releases.
+	if key.VersionLabel(app) != uniqueAppCRVersion && ver.Major() < 3 {
+		if patchLabels {
+			m.logger.Debugf(ctx, "mutating version labels only of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appVersionLabel)
+			return result, nil
+		} else {
+			m.logger.Debugf(ctx, "skipping mutation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appVersionLabel)
+			return nil, nil
+		}
 	}
 
 	configPatches, err := m.mutateConfig(ctx, app)
@@ -242,7 +252,7 @@ func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appVersion
 		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), key.AppName(app)))
 	}
 
-	if key.VersionLabel(app) == "" && appVersionLabel != "" {
+	if (key.VersionLabel(app) == "" || key.VersionLabel(app) == legacyAppVersion) && appVersionLabel != "" {
 		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), appVersionLabel))
 	}
 

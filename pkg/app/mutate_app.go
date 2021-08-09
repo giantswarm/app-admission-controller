@@ -20,10 +20,6 @@ import (
 	"github.com/giantswarm/app-admission-controller/pkg/mutator"
 )
 
-// legacyAppVersion was used for app CR version labels deployed with Helm 2.
-// We now always need to default to the app-operator version in the release.
-const legacyAppVersion = "1.0.0"
-
 type MutatorConfig struct {
 	K8sClient k8sclient.Interface
 	Logger    micrologger.Logger
@@ -113,7 +109,7 @@ func (m *Mutator) MutateApp(ctx context.Context, oldApp, app v1alpha1.App, opera
 	}
 
 	appVersionLabel := key.VersionLabel(app)
-	if appVersionLabel == "" || appVersionLabel == legacyAppVersion {
+	if appVersionLabel == "" || appVersionLabel == key.LegacyAppVersionLabel {
 		// We default to the same version as the chart-operator app CR
 		// which means we don't need to check for a cluster CR.
 		appVersionLabel, err = getChartOperatorAppVersion(ctx, m.k8sClient.G8sClient(), app.Namespace)
@@ -252,7 +248,7 @@ func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appVersion
 		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), key.AppName(app)))
 	}
 
-	if (key.VersionLabel(app) == "" || key.VersionLabel(app) == legacyAppVersion) && appVersionLabel != "" {
+	if (key.VersionLabel(app) == "" || key.VersionLabel(app) == key.LegacyAppVersionLabel) && appVersionLabel != "" {
 		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), appVersionLabel))
 	}
 

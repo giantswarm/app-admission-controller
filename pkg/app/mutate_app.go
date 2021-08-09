@@ -144,7 +144,7 @@ func (m *Mutator) MutateApp(ctx context.Context, oldApp, app v1alpha1.App, opera
 	// controller is not enabled for existing platform releases.
 	if key.VersionLabel(app) != uniqueAppCRVersion && ver.Major() < 3 {
 		if patchLabels {
-			m.logger.Debugf(ctx, "mutating version labels only of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appVersionLabel)
+			m.logger.Debugf(ctx, "mutating only labels of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appVersionLabel)
 			return result, nil
 		} else {
 			m.logger.Debugf(ctx, "skipping mutation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appVersionLabel)

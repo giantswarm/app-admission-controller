@@ -146,10 +146,10 @@ func (m *Mutator) MutateApp(ctx context.Context, oldApp, app v1alpha1.App, opera
 		if patchLabels {
 			m.logger.Debugf(ctx, "mutating only labels of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appVersionLabel)
 			return result, nil
-		} else {
-			m.logger.Debugf(ctx, "skipping mutation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appVersionLabel)
-			return nil, nil
 		}
+
+		m.logger.Debugf(ctx, "skipping mutation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appVersionLabel)
+		return nil, nil
 	}
 
 	configPatches, err := m.mutateConfig(ctx, app)

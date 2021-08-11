@@ -25,4 +25,3 @@ See [docs/webhook.md](https://github.com/giantswarm/app-admission-controller/blo
 ## Emit Events
 
 See [docs/events.md](https://github.com/giantswarm/app-admission-controller/blob/master/docs/events.md)
-

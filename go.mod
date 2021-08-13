@@ -28,6 +28,8 @@ replace (
 	// Apply fix for CVE-2020-15114 not yet released in github.com/spf13/viper.
 	github.com/bketelsen/crypt => github.com/bketelsen/crypt v0.0.3
 	github.com/dgrijalva/jwt-go => github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
+	// Use go-logr/logr v0.1.0 due to breaking changes in v0.2.0 that can't be applied.
+	github.com/go-logr/logr v0.2.0 => github.com/go-logr/logr v0.1.0
 	// Use v1.3.2 of gogo/protobuf to fix nancy alert.
 	github.com/gogo/protobuf v1.3.1 => github.com/gogo/protobuf v1.3.2
 	// Use v1.4.2 of gorilla/websocket to fix nancy alert.
@@ -36,6 +38,8 @@ replace (
 	github.com/opencontainers/runc v0.1.1 => github.com/opencontainers/runc v1.0.0-rc7
 	// Use v1.7.1 of viper to fix nancy alert.
 	github.com/spf13/viper => github.com/spf13/viper v1.7.1
+	// Same as go-logr/logr, klog/v2 is using logr v0.2.0
+	k8s.io/klog/v2 v2.4.0 => k8s.io/klog/v2 v2.0.0
 	// Use fork of CAPI with Kubernetes 1.18 support.
 	sigs.k8s.io/cluster-api => github.com/giantswarm/cluster-api v0.3.10-gs
 )

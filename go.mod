@@ -6,7 +6,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/dyson/certman v0.2.1
 	github.com/giantswarm/apiextensions/v3 v3.32.0
-	github.com/giantswarm/app/v5 v5.2.0
+	github.com/giantswarm/app/v5 v5.2.1-0.20210816122947-45b9be3b01de
 	github.com/giantswarm/apptest v0.11.0
 	github.com/giantswarm/backoff v0.2.0
 	github.com/giantswarm/k8sclient/v5 v5.12.0
@@ -16,9 +16,9 @@ require (
 	github.com/google/go-cmp v0.5.6
 	github.com/prometheus/client_golang v1.11.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
-	k8s.io/api v0.20.10
-	k8s.io/apimachinery v0.20.10
-	k8s.io/client-go v0.20.10
+	k8s.io/api v0.18.19
+	k8s.io/apimachinery v0.18.19
+	k8s.io/client-go v0.18.19
 )
 
 replace (

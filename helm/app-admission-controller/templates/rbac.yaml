@@ -16,6 +16,7 @@ rules:
     resources:
       - appcatalogs
       - appcatalogentries
+      - catalogs
     verbs:
       - "get"
   - apiGroups:

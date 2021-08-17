@@ -147,6 +147,23 @@ func createTestResources(ctx context.Context) error {
 		},
 	}
 
+	// TODO: Remove once apptestctl creates catalog CRs.
+	catalogCR := &v1alpha1.Catalog{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      catalog,
+			Namespace: "default",
+		},
+		Spec: v1alpha1.CatalogSpec{
+			Description: "This catalog holds Apps exclusively running on Giant Swarm control planes.",
+			LogoURL:     "/images/repo_icons/giantswarm.png",
+			Storage: v1alpha1.CatalogSpecStorage{
+				URL:  "",
+				Type: "helm",
+			},
+			Title: catalog,
+		},
+	}
+
 	app := &v1alpha1.App{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      appName,
@@ -182,6 +199,14 @@ func createTestResources(ctx context.Context) error {
 		}
 
 		_, err = appTest.K8sClient().CoreV1().ConfigMaps(namespace).Create(ctx, cm, metav1.CreateOptions{})
+		if apierrors.IsAlreadyExists(err) {
+			// fall through
+			return nil
+		} else if err != nil {
+			return microerror.Mask(err)
+		}
+
+		err = appTest.CtrlClient().Create(ctx, catalogCR)
 		if apierrors.IsAlreadyExists(err) {
 			// fall through
 			return nil

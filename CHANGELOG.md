@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Don't restrict user values configmap name for NGINX Ingress Controller
+
 ## [0.11.0] - 2021-08-17
 
 ### Changed

@@ -16,6 +16,7 @@ import (
 	admissionv1 "k8s.io/api/admission/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/app-admission-controller/pkg/mutator"
 )
@@ -220,9 +221,12 @@ func (m *Mutator) mutateKubeConfig(ctx context.Context, app v1alpha1.App) ([]mut
 		return nil, nil
 	}
 
-	// Return early if kubeconfig not found.
-	_, err := m.k8sClient.K8sClient().CoreV1().Secrets(app.Namespace).Get(ctx, key.ClusterKubeConfigSecretName(app), metav1.GetOptions{})
-	if apierrors.IsNotFound(err) {
+	kubeConfigNamespace, err := findKubeConfigNamespace(ctx, m.k8sClient.K8sClient(), app.Namespace, key.KubeConfigSecretName(app))
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	if kubeConfigNamespace == "" {
+		// Return early if we can't find a kubeconfig.
 		return nil, nil
 	}
 
@@ -233,7 +237,7 @@ func (m *Mutator) mutateKubeConfig(ctx context.Context, app v1alpha1.App) ([]mut
 	}
 
 	result = append(result, mutator.PatchAdd("/spec/kubeConfig/secret", map[string]string{
-		"namespace": app.Namespace,
+		"namespace": kubeConfigNamespace,
 		"name":      key.ClusterKubeConfigSecretName(app),
 	}))
 
@@ -253,6 +257,31 @@ func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appVersion
 	}
 
 	return result, nil
+}
+
+func findKubeConfigNamespace(ctx context.Context, k8sClient kubernetes.Interface, appNamespace, kubeConfigName string) (string, error) {
+	// Check for kubeconfig in the same namespace as the app CR.
+	_, err := k8sClient.CoreV1().Secrets(appNamespace).Get(ctx, kubeConfigName, metav1.GetOptions{})
+	if apierrors.IsNotFound(err) {
+		// If its not found this may be a CAPI cluster.
+		lo := metav1.ListOptions{
+			LabelSelector: fmt.Sprintf("%s=%s", "cluster.x-k8s.io/cluster-name", appNamespace),
+		}
+		secrets, err := k8sClient.CoreV1().Secrets(metav1.NamespaceAll).List(ctx, lo)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+
+		for _, secret := range secrets.Items {
+			if secret.Name == kubeConfigName {
+				return secret.Namespace, nil
+			}
+		}
+
+		return "", nil
+	}
+
+	return appNamespace, nil
 }
 
 func getChartOperatorAppVersion(ctx context.Context, g8sClient versioned.Interface, namespace string) (string, error) {

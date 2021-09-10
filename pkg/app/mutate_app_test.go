@@ -49,7 +49,14 @@ func Test_MutateApp(t *testing.T) {
 					Name:      "kiam",
 					Namespace: "kube-system",
 					KubeConfig: v1alpha1.AppSpecKubeConfig{
+						Context: v1alpha1.AppSpecKubeConfigContext{
+							Name: "eggs2",
+						},
 						InCluster: false,
+						Secret: v1alpha1.AppSpecKubeConfigSecret{
+							Namespace: "eggs2",
+							Name:      "eggs2-kubeconfig",
+						},
 					},
 					Version: "1.4.0",
 				},
@@ -73,13 +80,6 @@ func Test_MutateApp(t *testing.T) {
 				mutator.PatchAdd("/spec/config/configMap", map[string]string{
 					"namespace": "eggs2",
 					"name":      "eggs2-cluster-values",
-				}),
-				mutator.PatchAdd("/spec/kubeConfig/context", map[string]string{
-					"name": "eggs2",
-				}),
-				mutator.PatchAdd("/spec/kubeConfig/secret", map[string]string{
-					"namespace": "eggs2",
-					"name":      "eggs2-kubeconfig",
 				}),
 			},
 		},

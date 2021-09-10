@@ -262,16 +262,11 @@ func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appVersion
 func findKubeConfigNamespace(ctx context.Context, k8sClient kubernetes.Interface, appNamespace, kubeConfigName string) (string, error) {
 	// Check for kubeconfig in the same namespace as the app CR.
 	_, err := k8sClient.CoreV1().Secrets(appNamespace).Get(ctx, kubeConfigName, metav1.GetOptions{})
-
-	fmt.Printf("GETTING KUBECONFIG %s/%s\n", appNamespace, kubeConfigName)
-
 	if apierrors.IsNotFound(err) {
 		// If its not found this may be a CAPI cluster.
 		lo := metav1.ListOptions{
 			LabelSelector: fmt.Sprintf("%s=%s", "cluster.x-k8s.io/cluster-name", appNamespace),
 		}
-
-		fmt.Printf("LISTING NAMESPACES\n")
 
 		secrets, err := k8sClient.CoreV1().Secrets(metav1.NamespaceAll).List(ctx, lo)
 		if err != nil {
@@ -279,18 +274,16 @@ func findKubeConfigNamespace(ctx context.Context, k8sClient kubernetes.Interface
 		}
 
 		for _, secret := range secrets.Items {
-			fmt.Printf("FOUND SECRET %s/%s\n", secret.Namespace, secret.Name)
 			if secret.Name == kubeConfigName {
-				fmt.Printf("RETURN NAMESPACE %s\n", secret.Namespace)
 				return secret.Namespace, nil
 			}
 		}
 
-		fmt.Printf("RETURN EMPTY\n")
+		// Return empty as we can't find a kubeconfig.
 		return "", nil
 	}
 
-	fmt.Printf("RETURN NAMESPACE %s\n", appNamespace)
+	// kubeconfig is in the same namespace as the app CR.
 	return appNamespace, nil
 }
 

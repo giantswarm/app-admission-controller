@@ -221,7 +221,7 @@ func (m *Mutator) mutateKubeConfig(ctx context.Context, app v1alpha1.App) ([]mut
 		return nil, nil
 	}
 
-	kubeConfigNamespace, err := findKubeConfigNamespace(ctx, m.k8sClient.K8sClient(), app.Namespace, key.KubeConfigSecretName(app))
+	kubeConfigNamespace, err := findKubeConfigNamespace(ctx, m.k8sClient.K8sClient(), app.Namespace, key.ClusterKubeConfigSecretName(app))
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

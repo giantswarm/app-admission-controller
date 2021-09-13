@@ -261,6 +261,10 @@ func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appVersion
 
 func findKubeConfigNamespace(ctx context.Context, k8sClient kubernetes.Interface, appNamespace, kubeConfigName string) (string, error) {
 	_, err := k8sClient.CoreV1().Secrets(appNamespace).Get(ctx, kubeConfigName, metav1.GetOptions{})
+	if err == nil {
+		// kubeconfig is in the same namespace as the app CR.
+		return appNamespace, nil
+	}
 	if apierrors.IsNotFound(err) {
 		// If its not in the app CR namespace this may be a CAPI cluster.
 		lo := metav1.ListOptions{
@@ -277,13 +281,10 @@ func findKubeConfigNamespace(ctx context.Context, k8sClient kubernetes.Interface
 				return secret.Namespace, nil
 			}
 		}
-
-		// Return empty as we can't find a kubeconfig.
-		return "", nil
 	}
 
-	// kubeconfig is in the same namespace as the app CR.
-	return appNamespace, nil
+	// Empty return as we can't find a kubeconfig.
+	return "", nil
 }
 
 func getChartOperatorAppVersion(ctx context.Context, g8sClient versioned.Interface, namespace string) (string, error) {

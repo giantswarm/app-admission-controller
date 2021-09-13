@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add support for defaulting the kubeconfig secret for CAPI clusters.
+
 ### Fixed
 
 - Don't restrict user values configmap name for NGINX Ingress Controller

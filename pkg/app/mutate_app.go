@@ -60,9 +60,11 @@ func (m *Mutator) Mutate(request *admissionv1.AdmissionRequest) ([]mutator.Patch
 
 	var result []mutator.PatchOperation
 
-	if request.DryRun != nil && *request.DryRun {
-		return result, nil
-	}
+	/*
+		if request.DryRun != nil && *request.DryRun {
+			return result, nil
+		}
+	*/
 
 	appNewCR := &v1alpha1.App{}
 	if _, _, err := mutator.Deserializer.Decode(request.Object.Raw, nil, appNewCR); err != nil {

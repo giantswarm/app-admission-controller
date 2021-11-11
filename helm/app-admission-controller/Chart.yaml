@@ -5,5 +5,5 @@ home: https://github.com/giantswarm/app-admission-controller
 version: [[ .Version ]]
 appVersion: [[ .AppVersion ]]
 annotations:
-  application.giantswarm.io/team: "batman"
+  application.giantswarm.io/team: "honeybadger"
   config.giantswarm.io/version: 1.x.x

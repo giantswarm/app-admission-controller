@@ -122,7 +122,7 @@ workflows:
 
       - architect/push-to-app-collection:
           context: architect
-          name: push-app-admission-controller-to-aws-app-collection
+          name: push-app-admission-controller-to-openstack-app-collection
           app_name: "app-admission-controller"
           app_collection_repo: "openstack-app-collection"
           requires:

@@ -6,6 +6,7 @@ import (
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
+	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/app/v5/pkg/key"
 	"github.com/giantswarm/app/v5/pkg/validation"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
@@ -14,6 +15,7 @@ import (
 	admissionv1 "k8s.io/api/admission/v1"
 
 	"github.com/giantswarm/app-admission-controller/internal/recorder"
+	"github.com/giantswarm/app-admission-controller/pkg/project"
 	"github.com/giantswarm/app-admission-controller/pkg/validator"
 )
 
@@ -61,7 +63,8 @@ func NewValidator(config ValidatorConfig) (*Validator, error) {
 			K8sClient: config.K8sClient.K8sClient(),
 			Logger:    config.Logger,
 
-			Provider: config.Provider,
+			ProjectName: project.Name(),
+			Provider:    config.Provider,
 		}
 		appValidator, err = validation.NewValidator(c)
 		if err != nil {
@@ -117,6 +120,11 @@ func (v *Validator) Validate(request *admissionv1.AdmissionRequest) (bool, error
 	// enabled for existing platform releases.
 	if key.VersionLabel(app) != uniqueAppCRVersion && ver.Major() < 3 {
 		v.logger.Debugf(ctx, "skipping validation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, key.VersionLabel(app))
+		return true, nil
+	}
+
+	if key.IsManagedByFlux(app, project.Name()) {
+		v.logger.Debugf(ctx, "skipping validation of '%s/%s' app dependencies due to '%s=%s'", app.Namespace, app.Name, label.ManagedBy, key.ManagedByLabel(app))
 		return true, nil
 	}
 

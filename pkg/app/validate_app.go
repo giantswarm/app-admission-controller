@@ -124,7 +124,7 @@ func (v *Validator) Validate(request *admissionv1.AdmissionRequest) (bool, error
 	}
 
 	if key.IsManagedByFlux(app, project.Name()) {
-		v.logger.Debugf(ctx, "skipping validation of '%s/%s' app dependencies due to '%s=%s'", app.Namespace, app.Name, label.ManagedBy, key.ManagedByLabel(app))
+		v.logger.Debugf(ctx, "skipping validation of app '%s/%s' dependencies due to '%s=%s' label", app.Namespace, app.Name, label.ManagedBy, key.ManagedByLabel(app))
 		return true, nil
 	}
 

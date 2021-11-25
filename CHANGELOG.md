@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Skip validation of configmap and secret names when `giantswarm.io/managedby`
+label is set to flux.
+
 ## [0.12.0] - 2021-09-13
 
 ### Added

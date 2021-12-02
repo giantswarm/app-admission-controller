@@ -5,11 +5,11 @@ import (
 	"fmt"
 
 	"github.com/Masterminds/semver/v3"
-	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	"github.com/giantswarm/apiextensions/v3/pkg/label"
-	"github.com/giantswarm/app/v5/pkg/key"
-	"github.com/giantswarm/app/v5/pkg/validation"
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
+	"github.com/giantswarm/app/v6/pkg/key"
+	"github.com/giantswarm/app/v6/pkg/validation"
+	"github.com/giantswarm/k8sclient/v6/pkg/k8sclient"
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	admissionv1 "k8s.io/api/admission/v1"
@@ -59,7 +59,7 @@ func NewValidator(config ValidatorConfig) (*Validator, error) {
 	var appValidator *validation.Validator
 	{
 		c := validation.Config{
-			G8sClient: config.K8sClient.G8sClient(),
+			G8sClient: config.K8sClient.CtrlClient(),
 			K8sClient: config.K8sClient.K8sClient(),
 			Logger:    config.Logger,
 

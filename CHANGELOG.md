@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Use apiextensions-application instead of apiextensions for CRDs to remove CAPI dependency.
+
 ## [0.13.0] - 2021-11-25
 
 ### Changed

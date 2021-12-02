@@ -5,20 +5,22 @@ go 1.16
 require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/dyson/certman v0.2.1
-	github.com/giantswarm/apiextensions/v3 v3.38.0
-	github.com/giantswarm/app/v5 v5.5.0
-	github.com/giantswarm/apptest v0.12.0
+	github.com/giantswarm/apiextensions-application v0.1.0
+	github.com/giantswarm/app/v6 v6.0.0
+	github.com/giantswarm/apptest v1.0.0
 	github.com/giantswarm/backoff v0.2.0
-	github.com/giantswarm/k8sclient/v5 v5.12.0
+	github.com/giantswarm/k8sclient/v6 v6.0.0
 	github.com/giantswarm/k8smetadata v0.6.0
 	github.com/giantswarm/microerror v0.3.0
 	github.com/giantswarm/micrologger v0.5.0
 	github.com/google/go-cmp v0.5.6
 	github.com/prometheus/client_golang v1.11.0
+	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
-	k8s.io/api v0.20.13
-	k8s.io/apimachinery v0.20.13
-	k8s.io/client-go v0.20.13
+	k8s.io/api v0.21.4
+	k8s.io/apimachinery v0.21.4
+	k8s.io/client-go v0.21.4
+	sigs.k8s.io/controller-runtime v0.9.7
 )
 
 replace (
@@ -39,6 +41,4 @@ replace (
 	github.com/spf13/viper => github.com/spf13/viper v1.7.1
 	// Same as go-logr/logr, klog/v2 is using logr v0.2.0
 	k8s.io/klog/v2 v2.4.0 => k8s.io/klog/v2 v2.0.0
-	// Use fork of CAPI with Kubernetes 1.18 support.
-	sigs.k8s.io/cluster-api => github.com/giantswarm/cluster-api v0.3.10-gs
 )

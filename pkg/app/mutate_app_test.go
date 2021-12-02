@@ -7,9 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	"github.com/giantswarm/apiextensions/v3/pkg/clientset/versioned/fake"
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclienttest"
+	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
+	"github.com/giantswarm/k8sclient/v6/pkg/k8sclienttest"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/micrologger/microloggertest"
 	"github.com/google/go-cmp/cmp"
@@ -18,6 +17,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgofake "k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/kubernetes/scheme"
+	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
 	"github.com/giantswarm/app-admission-controller/pkg/mutator"
 )
@@ -319,6 +320,14 @@ func Test_MutateApp(t *testing.T) {
 		},
 	}
 
+	appSchemeBuilder := runtime.SchemeBuilder(schemeBuilder{
+		v1alpha1.AddToScheme,
+	})
+	err := appSchemeBuilder.AddToScheme(scheme.Scheme)
+	if err != nil {
+		t.Fatalf("error == %#v, want nil", err)
+	}
+
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Log(tc.name)
@@ -340,7 +349,10 @@ func Test_MutateApp(t *testing.T) {
 			}
 
 			k8sClient := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
-				G8sClient: fake.NewSimpleClientset(g8sObjs...),
+				CtrlClient: fake.NewClientBuilder().
+					WithScheme(scheme.Scheme).
+					WithRuntimeObjects(g8sObjs...).
+					Build(),
 				K8sClient: clientgofake.NewSimpleClientset(k8sObjs...),
 			})
 
@@ -408,3 +420,5 @@ func newTestSecret(name, namespace string) *corev1.Secret {
 		},
 	}
 }
+
+type schemeBuilder []func(*runtime.Scheme) error

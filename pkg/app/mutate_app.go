@@ -6,16 +6,16 @@ import (
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
-	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	"github.com/giantswarm/apiextensions/v3/pkg/clientset/versioned"
-	"github.com/giantswarm/app/v5/pkg/key"
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
+	"github.com/giantswarm/app/v6/pkg/key"
+	"github.com/giantswarm/k8sclient/v6/pkg/k8sclient"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	admissionv1 "k8s.io/api/admission/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/app-admission-controller/pkg/mutator"
@@ -113,7 +113,7 @@ func (m *Mutator) MutateApp(ctx context.Context, oldApp, app v1alpha1.App, opera
 	if appVersionLabel == "" || appVersionLabel == key.LegacyAppVersionLabel {
 		// We default to the same version as the chart-operator app CR
 		// which means we don't need to check for a cluster CR.
-		appVersionLabel, err = getChartOperatorAppVersion(ctx, m.k8sClient.G8sClient(), app.Namespace)
+		appVersionLabel, err = m.getChartOperatorAppVersion(ctx, app.Namespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -174,6 +174,22 @@ func (m *Mutator) MutateApp(ctx context.Context, oldApp, app v1alpha1.App, opera
 
 func (m *Mutator) Resource() string {
 	return Name
+}
+
+func (m *Mutator) getChartOperatorAppVersion(ctx context.Context, namespace string) (string, error) {
+	var chartOperatorApp v1alpha1.App
+
+	err := m.k8sClient.CtrlClient().Get(
+		ctx,
+		types.NamespacedName{Name: key.ChartOperatorAppName, Namespace: namespace},
+		&chartOperatorApp)
+	if apierrors.IsNotFound(err) {
+		return "", nil
+	} else if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	return key.VersionLabel(chartOperatorApp), nil
 }
 
 func (m *Mutator) mutateConfig(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
@@ -285,17 +301,6 @@ func findKubeConfigNamespace(ctx context.Context, k8sClient kubernetes.Interface
 
 	// Empty return as we can't find a kubeconfig.
 	return "", nil
-}
-
-func getChartOperatorAppVersion(ctx context.Context, g8sClient versioned.Interface, namespace string) (string, error) {
-	chartOperatorApp, err := g8sClient.ApplicationV1alpha1().Apps(namespace).Get(ctx, "chart-operator", metav1.GetOptions{})
-	if apierrors.IsNotFound(err) {
-		return "", nil
-	} else if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	return key.VersionLabel(*chartOperatorApp), nil
 }
 
 func replaceToEscape(from string) string {

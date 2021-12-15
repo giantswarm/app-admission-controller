@@ -5,14 +5,14 @@ go 1.16
 require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/dyson/certman v0.2.1
-	github.com/giantswarm/apiextensions-application v0.1.0
-	github.com/giantswarm/app/v6 v6.0.0
+	github.com/giantswarm/apiextensions-application v0.2.0
+	github.com/giantswarm/app/v6 v6.1.0
 	github.com/giantswarm/apptest v1.0.0
 	github.com/giantswarm/backoff v0.2.0
 	github.com/giantswarm/k8sclient/v6 v6.0.0
-	github.com/giantswarm/k8smetadata v0.6.0
-	github.com/giantswarm/microerror v0.3.0
-	github.com/giantswarm/micrologger v0.5.0
+	github.com/giantswarm/k8smetadata v0.7.1
+	github.com/giantswarm/microerror v0.4.0
+	github.com/giantswarm/micrologger v0.6.0
 	github.com/google/go-cmp v0.5.6
 	github.com/prometheus/client_golang v1.11.0
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect

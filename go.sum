@@ -92,6 +92,8 @@ github.com/blang/semver v3.5.1+incompatible/go.mod h1:kRBLl5iJ+tD4TcOOxsy/0fnweb
 github.com/casbin/casbin/v2 v2.1.2/go.mod h1:YcPU1XXisHhLzuxH9coDNf2FbKpjGlbCg3n9yuLkIJQ=
 github.com/cenkalti/backoff v2.2.1+incompatible h1:tNowT99t7UNflLxfYYSlKYsBpXdEet03Pg2g16Swow4=
 github.com/cenkalti/backoff v2.2.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
+github.com/cenkalti/backoff/v4 v4.1.2 h1:6Yo7N8UP2K6LWZnW94DLVSSrbobcWdVzAYOisuDPIFo=
+github.com/cenkalti/backoff/v4 v4.1.2/go.mod h1:scbssz8iZGpm3xbr14ovlUdkxfGXNInqkPWOWmG2CLw=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/cespare/xxhash v1.1.0 h1:a6HrQnmkObjyL+Gs60czilIUGqrzKutQD6XZog3p+ko=
 github.com/cespare/xxhash v1.1.0/go.mod h1:XrSqR1VqqWfGrhpAt58auRo0WTKS1nRRg3ghfAqPWnc=
@@ -177,8 +179,9 @@ github.com/giantswarm/appcatalog v0.6.0 h1:lJMmiPK2pyWQtOaLlBwq0Ut1XrMhcnGeA+3j4
 github.com/giantswarm/appcatalog v0.6.0/go.mod h1:MaglaykZAeFukjpD/jVHrm/zZFwa9uusuN6BgT4NXpY=
 github.com/giantswarm/apptest v1.0.0 h1:M4O9A/yOMrsrUgR5rfSSFY8rlr3eGo2/8ztnsAEiupw=
 github.com/giantswarm/apptest v1.0.0/go.mod h1:9YLX2bnlIM1TGjt8dvARYmcYd0ChQLcCD+40fD2+VRI=
-github.com/giantswarm/backoff v0.2.0 h1:kdfAf83pZ/l8X0KiA2dJ2Wq19nS9hISijVn7ZRdFhfU=
 github.com/giantswarm/backoff v0.2.0/go.mod h1:Z3WRsFilSJ5H5VlFa4XhraoPr+9pmZgYasoY2OSfNOk=
+github.com/giantswarm/backoff v1.0.0 h1:1oeTvyPsm1tJrHlSmfxbIWuoCNWPOkWJCb8kfLvE2T0=
+github.com/giantswarm/backoff v1.0.0/go.mod h1:l/WqbggvG5Ndxxws0LUgVEvP5E82Qj5/PF8SMip/1QM=
 github.com/giantswarm/exporterkit v0.2.1/go.mod h1:LkZNK+2qTcbHspbizA6JBBXpQW99u7u7UisUaWrSoVY=
 github.com/giantswarm/k8sclient/v6 v6.0.0 h1:jVrB8/q12/yPDv/tv8cwj4Z11hFGvGuNO2n9O1s+xGo=
 github.com/giantswarm/k8sclient/v6 v6.0.0/go.mod h1:mF0FgQHqCrAhk5EGiyN7RfgMMsz7CP3GoaFsfZ5KHps=

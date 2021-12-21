@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.0] - 2021-12-21
+
 ### Added
 
 - Support for App CRs with a `v` prefixed version. This enables Flux to automatically update the version based on its image tag.
@@ -156,7 +158,8 @@ allow app CR creation.
 - Add validation webhook that is enabled for app CRs with
 `app-operator.giantswarm.io/version` label value >= `3.0.0`.
 
-[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/giantswarm/app-admission-controller/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/giantswarm/app-admission-controller/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/giantswarm/app-admission-controller/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/giantswarm/app-admission-controller/compare/v0.10.1...v0.11.0

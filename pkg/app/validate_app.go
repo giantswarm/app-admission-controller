@@ -138,7 +138,9 @@ func (v *Validator) Validate(request *admissionv1.AdmissionRequest) (bool, error
 
 	if request.Operation == admissionv1.Update {
 		if _, _, err := validator.Deserializer.Decode(request.OldObject.Raw, nil, &currentApp); err != nil {
-			return false, microerror.Maskf(parsingFailedError, "unable to parse current app: %#v", err)
+			// We can't compare with the current app. So we allow
+			// the update but still log the error.
+			return true, microerror.Maskf(parsingFailedError, "unable to parse current app: %#v", err)
 		}
 
 		_, err := v.appValidator.ValidateAppUpdate(ctx, app, currentApp)

@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Support for App CRs with a `v` prefixed version. This enables Flux to automatically update the version based on its image tag.
+- Ensure `.spec.Namespace` in App CRs is immutable.
 
 ### Changed
 

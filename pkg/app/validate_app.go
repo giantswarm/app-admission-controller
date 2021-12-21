@@ -134,6 +134,22 @@ func (v *Validator) Validate(request *admissionv1.AdmissionRequest) (bool, error
 		return false, microerror.Mask(err)
 	}
 
+	var currentApp v1alpha1.App
+
+	if request.Operation == admissionv1.Update {
+		if _, _, err := validator.Deserializer.Decode(request.OldObject.Raw, nil, &currentApp); err != nil {
+			// We can't compare with the current app. So we allow
+			// the update but still log the error.
+			return true, microerror.Maskf(parsingFailedError, "unable to parse current app: %#v", err)
+		}
+
+		_, err := v.appValidator.ValidateAppUpdate(ctx, app, currentApp)
+		if err != nil {
+			v.logger.Errorf(ctx, err, "rejected update of app %#q in namespace %#q", app.Name, app.Namespace)
+			return false, microerror.Mask(err)
+		}
+	}
+
 	// Emit all events relevant to the app CR. (e.g. version changes, config changes).
 	err = v.emitEvents(ctx, request, app)
 	if err != nil {

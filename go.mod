@@ -5,11 +5,11 @@ go 1.16
 require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/dyson/certman v0.2.1
-	github.com/giantswarm/apiextensions-application v0.2.0
+	github.com/giantswarm/apiextensions-application v0.3.0
 	github.com/giantswarm/app/v6 v6.2.0
 	github.com/giantswarm/apptest v1.0.0
 	github.com/giantswarm/backoff v1.0.0
-	github.com/giantswarm/k8sclient/v6 v6.0.0
+	github.com/giantswarm/k8sclient/v6 v6.1.0
 	github.com/giantswarm/k8smetadata v0.7.1
 	github.com/giantswarm/microerror v0.4.0
 	github.com/giantswarm/micrologger v0.6.0

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Ensure users are not allowed to create in-cluster Apps outside the org- and WC-related namespaces.
+
 ## [0.14.0] - 2021-12-21
 
 ### Added

@@ -9,7 +9,6 @@ import (
 	"github.com/giantswarm/app/v6/pkg/key"
 	"github.com/giantswarm/app/v6/pkg/validation"
 	"github.com/giantswarm/k8sclient/v6/pkg/k8sclient"
-	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	admissionv1 "k8s.io/api/admission/v1"
@@ -120,11 +119,6 @@ func (v *Validator) Validate(request *admissionv1.AdmissionRequest) (bool, error
 	// enabled for existing platform releases.
 	if key.VersionLabel(app) != uniqueAppCRVersion && ver.Major() < 3 {
 		v.logger.Debugf(ctx, "skipping validation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, key.VersionLabel(app))
-		return true, nil
-	}
-
-	if key.IsManagedByFlux(app, project.Name()) {
-		v.logger.Debugf(ctx, "skipping validation of app '%s/%s' dependencies due to '%s=%s' label", app.Namespace, app.Name, label.ManagedBy, key.ManagedByLabel(app))
 		return true, nil
 	}
 

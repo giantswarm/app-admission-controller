@@ -62,8 +62,9 @@ func NewValidator(config ValidatorConfig) (*Validator, error) {
 			K8sClient: config.K8sClient.K8sClient(),
 			Logger:    config.Logger,
 
-			ProjectName: project.Name(),
-			Provider:    config.Provider,
+			ProjectName:            project.Name(),
+			Provider:               config.Provider,
+			ValidateResourcesExist: true,
 		}
 		appValidator, err = validation.NewValidator(c)
 		if err != nil {

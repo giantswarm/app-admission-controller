@@ -174,13 +174,12 @@ github.com/giantswarm/apiextensions-application v0.1.0/go.mod h1:O6mg+EdXC9CyTLg
 github.com/giantswarm/apiextensions-application v0.3.0 h1:U1dQPNo7DXdH4VAFXdPhAWZNI98XE4nMonaUFhclIqo=
 github.com/giantswarm/apiextensions-application v0.3.0/go.mod h1:O6mg+EdXC9CyTLgi0d3rf6QTXrQX/79iw4kjMJRinig=
 github.com/giantswarm/app/v6 v6.0.0/go.mod h1:oq9qBedss6ctqFAyEgLkBwjKAik+D5C+0LDNQOicLGA=
-<<<<<<< HEAD
-github.com/giantswarm/app/v6 v6.4.0 h1:vFAKysVuEjqFQMCZKrBgwlBJ64W1/KVFtUE0u46tpKQ=
-github.com/giantswarm/app/v6 v6.4.0/go.mod h1:kqVk28i/32j/ngeqrDx4dBL4JX70ZO3tIp/cLfAfrUk=
-=======
 github.com/giantswarm/app/v6 v6.4.1-0.20220118182959-bcbcc43d4756 h1:sIZPZR7ubR/cg3FXFL4VNJ30DeRoug87O48nZLISO8U=
 github.com/giantswarm/app/v6 v6.4.1-0.20220118182959-bcbcc43d4756/go.mod h1:kqVk28i/32j/ngeqrDx4dBL4JX70ZO3tIp/cLfAfrUk=
->>>>>>> 9aa08c0 (Removing checking for Flux label)
+=======
+github.com/giantswarm/app/v6 v6.4.1-0.20220119154624-a75788afb6d1 h1:scN21+Tyb74dSKEo2Hbe3/8XynbdBZXwyiLPufdtPyM=
+github.com/giantswarm/app/v6 v6.4.1-0.20220119154624-a75788afb6d1/go.mod h1:kqVk28i/32j/ngeqrDx4dBL4JX70ZO3tIp/cLfAfrUk=
+>>>>>>> 3fc841e (Bumping deps)
 github.com/giantswarm/appcatalog v0.6.0 h1:lJMmiPK2pyWQtOaLlBwq0Ut1XrMhcnGeA+3j4OMHyfU=
 github.com/giantswarm/appcatalog v0.6.0/go.mod h1:MaglaykZAeFukjpD/jVHrm/zZFwa9uusuN6BgT4NXpY=
 github.com/giantswarm/apptest v1.0.0 h1:M4O9A/yOMrsrUgR5rfSSFY8rlr3eGo2/8ztnsAEiupw=

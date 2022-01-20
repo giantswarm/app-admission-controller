@@ -62,8 +62,12 @@ func NewValidator(config ValidatorConfig) (*Validator, error) {
 			K8sClient: config.K8sClient.K8sClient(),
 			Logger:    config.Logger,
 
-			ProjectName:            project.Name(),
-			Provider:               config.Provider,
+			ProjectName: project.Name(),
+			Provider:    config.Provider,
+
+			// `ValidateResourcesExist` influences ConfigMaps and Secrets existence
+			// part of the validation. When `true` the `managed-by` labels
+			// are respected, otherwise these labels do not influence validation.
 			ValidateResourcesExist: true,
 		}
 		appValidator, err = validation.NewValidator(c)

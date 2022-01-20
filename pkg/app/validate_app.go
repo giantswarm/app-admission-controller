@@ -65,10 +65,11 @@ func NewValidator(config ValidatorConfig) (*Validator, error) {
 			ProjectName: project.Name(),
 			Provider:    config.Provider,
 
-			// `ValidateResourcesExist` influences ConfigMaps and Secrets existence
-			// part of the validation. When `true` the `managed-by` labels
-			// are respected, otherwise these labels do not influence validation.
-			ValidateResourcesExist: true,
+			// `EnableManagedByLabel` enables skipping checks for
+			// ConfigMap and Secret existence when the `giantswarm.io/managed-by`
+			// label is present. This is used when app CRs are managed
+			// with gitops tools like flux.
+			EnableManagedByLabel: true,
 		}
 		appValidator, err = validation.NewValidator(c)
 		if err != nil {

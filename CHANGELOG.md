@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Remove `key.IsManagedByFlux` check and move it to `github.com/giantswarm/app` package.
+
 ## [0.15.0] - 2022-01-13
 
 ### Added

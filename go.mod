@@ -13,8 +13,8 @@ require (
 	github.com/giantswarm/k8smetadata v0.8.0
 	github.com/giantswarm/microerror v0.4.0
 	github.com/giantswarm/micrologger v0.6.0
-	github.com/google/go-cmp v0.5.6
-	github.com/prometheus/client_golang v1.11.0
+	github.com/google/go-cmp v0.5.7
+	github.com/prometheus/client_golang v1.12.0
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	k8s.io/api v0.21.4

@@ -98,6 +98,8 @@ func (m *Mutator) MutateApp(ctx context.Context, oldApp, app v1alpha1.App, opera
 	var err error
 	var result []mutator.PatchOperation
 
+	isManagedInOrg := !key.InCluster(app) && key.IsInOrgNamespace(app)
+
 	// Set empty labels and annotations in case they are not set. This is
 	// in case we add new entries to null JSON objects. We don't want to do
 	// this as needed because it can be potentially overwritten if set
@@ -110,7 +112,7 @@ func (m *Mutator) MutateApp(ctx context.Context, oldApp, app v1alpha1.App, opera
 	}
 
 	appVersionLabel := key.VersionLabel(app)
-	if appVersionLabel == "" || appVersionLabel == key.LegacyAppVersionLabel {
+	if !isManagedInOrg && (appVersionLabel == "" || appVersionLabel == key.LegacyAppVersionLabel) {
 		// We default to the same version as the chart-operator app CR
 		// which means we don't need to check for a cluster CR.
 		appVersionLabel, err = m.getChartOperatorAppVersion(ctx, app.Namespace)
@@ -135,7 +137,7 @@ func (m *Mutator) MutateApp(ctx context.Context, oldApp, app v1alpha1.App, opera
 	}
 
 	ver, err := semver.NewVersion(appVersionLabel)
-	if err != nil {
+	if !isManagedInOrg && err != nil {
 		m.logger.Debugf(ctx, "skipping mutation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appVersionLabel)
 		return nil, nil
 	}
@@ -143,7 +145,7 @@ func (m *Mutator) MutateApp(ctx context.Context, oldApp, app v1alpha1.App, opera
 	// If the app CR does not have the unique version and is < 3.0.0 we skip
 	// the defaulting logic apart from the labels. This is so the admission
 	// controller is not enabled for existing platform releases.
-	if key.VersionLabel(app) != uniqueAppCRVersion && ver.Major() < 3 {
+	if !isManagedInOrg && key.VersionLabel(app) != uniqueAppCRVersion && ver.Major() < 3 {
 		if patchLabels {
 			m.logger.Debugf(ctx, "mutating only labels of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, appVersionLabel)
 			return result, nil
@@ -246,9 +248,16 @@ func (m *Mutator) mutateKubeConfig(ctx context.Context, app v1alpha1.App) ([]mut
 		return nil, nil
 	}
 
+	contextName := app.Namespace
+
+	isManagedInOrg := !key.InCluster(app) && key.IsInOrgNamespace(app)
+	if isManagedInOrg {
+		contextName = key.ClusterLabel(app)
+	}
+
 	if key.KubeConfigContextName(app) == "" {
 		result = append(result, mutator.PatchAdd("/spec/kubeConfig/context", map[string]string{
-			"name": app.Namespace,
+			"name": contextName,
 		}))
 	}
 
@@ -268,6 +277,8 @@ func (m *Mutator) mutateLabels(ctx context.Context, app v1alpha1.App, appVersion
 		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), key.AppName(app)))
 	}
 
+	// For org-namespaced Apps `appVersionLabel` is empty, so we do not need to
+	// worry for version label being unexpectedly added here.
 	if (key.VersionLabel(app) == "" || key.VersionLabel(app) == key.LegacyAppVersionLabel) && appVersionLabel != "" {
 		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), appVersionLabel))
 	}

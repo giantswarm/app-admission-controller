@@ -143,7 +143,7 @@ func Test_ValidateApp(t *testing.T) {
     							"name": "kiam",
     							"namespace": "org-eggs2",
     							"labels": {
-        							"app-operator.giantswarm.io/version": "2.6.0"
+									"app-operator.giantswarm.io/version": "2.6.0"
     							}
 							},
 							"spec": {
@@ -151,16 +151,16 @@ func Test_ValidateApp(t *testing.T) {
     							"name": "kiam",
     							"namespace": "kube-system",
     							"kubeConfig": {
-        							"context": {
-            							"name": "eggs2-kubeconfig"
-        							},
-        							"inCluster": false,
-        							"secret": {
-            							"name": "eggs2-kubeconfig",
-            							"namespace": "org-eggs2"
-        							}
-    							},
-    							"version": "1.4.0"
+									"context": {
+										"name": "eggs2-kubeconfig"
+									},
+									"inCluster": false,
+									"secret": {
+										"name": "eggs2-kubeconfig",
+										"namespace": "org-eggs2"
+									}
+								},
+								"version": "1.4.0"
 							}
 						}
 					`),

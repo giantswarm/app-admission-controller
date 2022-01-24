@@ -40,7 +40,7 @@ func Test_ValidateApp(t *testing.T) {
     							"name": "kiam",
     							"namespace": "eggs2",
     							"labels": {
-        							"app-operator.giantswarm.io/version": "5.5.0"
+									"app-operator.giantswarm.io/version": "5.5.0"
     							}
 							},
 							"spec": {
@@ -48,11 +48,11 @@ func Test_ValidateApp(t *testing.T) {
     							"name": "kiam",
     							"namespace": "kube-system",
     							"config": {
-        							"configMap": {
-            							"name": "eggs2-cluster-values",
-            							"namespace": "eggs2"
-        							}
-    							},
+									"configMap": {
+										"name": "eggs2-cluster-values",
+										"namespace": "eggs2"
+									}
+								},
     							"kubeConfig": {
 									"context": {
 										"name": "eggs2-kubeconfig"
@@ -104,20 +104,20 @@ func Test_ValidateApp(t *testing.T) {
     							}
 							},
 							"spec": {
-    							"catalog": "giantswarm",
-    							"name": "kiam",
-    							"namespace": "kube-system",
-    							"kubeConfig": {
-        							"context": {
-            							"name": "eggs2-kubeconfig"
-        							},
-        							"inCluster": false,
-        							"secret": {
-            							"name": "eggs2-kubeconfig",
-            							"namespace": "org-eggs2"
+								"catalog": "giantswarm",
+								"name": "kiam",
+								"namespace": "kube-system",
+								"kubeConfig": {
+									"context": {
+										"name": "eggs2-kubeconfig"
+									},
+									"inCluster": false,
+									"secret": {
+										"name": "eggs2-kubeconfig",
+										"namespace": "org-eggs2"
 									}
-    							},
-    							"version": "1.4.0"
+								},
+								"version": "1.4.0"
 							}
 						}
 					`),

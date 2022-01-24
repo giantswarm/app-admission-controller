@@ -114,8 +114,10 @@ func (v *Validator) Validate(request *admissionv1.AdmissionRequest) (bool, error
 		return true, nil
 	}
 
+	isManagedInOrg := !key.InCluster(app) && key.IsInOrgNamespace(app)
+
 	ver, err := semver.NewVersion(key.VersionLabel(app))
-	if err != nil {
+	if !isManagedInOrg && err != nil {
 		v.logger.Debugf(ctx, "skipping validation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, key.VersionLabel(app))
 		return true, nil
 	}
@@ -123,7 +125,7 @@ func (v *Validator) Validate(request *admissionv1.AdmissionRequest) (bool, error
 	// If the app CR does not have the unique version and is < 3.0.0 we skip
 	// the validation logic. This is so the admission controller is not
 	// enabled for existing platform releases.
-	if key.VersionLabel(app) != uniqueAppCRVersion && ver.Major() < 3 {
+	if !isManagedInOrg && key.VersionLabel(app) != uniqueAppCRVersion && ver.Major() < 3 {
 		v.logger.Debugf(ctx, "skipping validation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, key.VersionLabel(app))
 		return true, nil
 	}

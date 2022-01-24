@@ -99,7 +99,7 @@ func Test_ValidateApp(t *testing.T) {
     							"name": "kiam",
     							"namespace": "org-eggs2",
     							"labels": {
-        							"app-operator.giantswarm.io/version": "2.6.0",
+									"app-operator.giantswarm.io/version": "2.6.0",
 									"giantswarm.io/cluster": "eggs2"
     							}
 							},

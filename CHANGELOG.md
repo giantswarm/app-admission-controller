@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add support for validating `giantswarm.io/cluster` label for org-namespaced App CRs.
+
 ## [0.15.1] - 2022-01-20
 
 ### Fixed

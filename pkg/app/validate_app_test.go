@@ -54,22 +54,22 @@ func Test_ValidateApp(t *testing.T) {
         							}
     							},
     							"kubeConfig": {
-        							"context": {
-            							"name": "eggs2-kubeconfig"
-        							},
-        							"inCluster": false,
-        							"secret": {
-            							"name": "eggs2-kubeconfig",
-            							"namespace": "eggs2"
-        							}
-    							},
+									"context": {
+										"name": "eggs2-kubeconfig"
+									},
+									"inCluster": false,
+									"secret": {
+										"name": "eggs2-kubeconfig",
+										"namespace": "eggs2"
+									}
+								},
 								"userConfig": {
 									"configMap": {
 										"name": "kiam-user-values",
 										"namespace": "eggs2"
 									}
 								},
-    							"version": "1.4.0"
+								"version": "1.4.0"
 							}
 						}
 					`),
@@ -115,7 +115,7 @@ func Test_ValidateApp(t *testing.T) {
         							"secret": {
             							"name": "eggs2-kubeconfig",
             							"namespace": "org-eggs2"
-        							}
+									}
     							},
     							"version": "1.4.0"
 							}

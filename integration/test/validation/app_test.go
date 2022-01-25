@@ -24,7 +24,10 @@ const (
 	catalog       = "control-plane-catalog"
 	configMapName = "dex-config"
 	namespace     = "test"
-	orgNamespace  = "org-acme"
+
+	// stuff for org-namespaced apps
+	orgKubeconfigSecret = "test-kubeconfig"
+	orgNamespace        = "org-acme"
 )
 
 // TestFailWhenCatalogNotFound tests that the app CR is rejected if the
@@ -85,10 +88,9 @@ func TestFailWhenClusterLabelNotFound(t *testing.T) {
 
 	var err error
 
-	ns := &corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: orgNamespace,
-		},
+	err = createTestOrgResources(ctx)
+	if err != nil {
+		t.Fatalf("expected nil but got error %#v", err)
 	}
 
 	app := &v1alpha1.App{
@@ -101,7 +103,14 @@ func TestFailWhenClusterLabelNotFound(t *testing.T) {
 			Name:      appName,
 			Namespace: "default",
 			KubeConfig: v1alpha1.AppSpecKubeConfig{
+				Context: v1alpha1.AppSpecKubeConfigContext{
+					Name: "test-kubeconfig",
+				},
 				InCluster: false,
+				Secret: v1alpha1.AppSpecKubeConfigSecret{
+					Name:      "test-kubeconfig",
+					Namespace: "org-acme",
+				},
 			},
 			Version: "1.2.2",
 		},
@@ -111,14 +120,6 @@ func TestFailWhenClusterLabelNotFound(t *testing.T) {
 	logger.Debugf(ctx, "waiting for failed app creation")
 
 	o := func() error {
-		_, err = appTest.K8sClient().CoreV1().Namespaces().Create(ctx, ns, metav1.CreateOptions{})
-		if apierrors.IsAlreadyExists(err) {
-			// fall through
-			return nil
-		} else if err != nil {
-			return microerror.Mask(err)
-		}
-
 		err = appTest.CtrlClient().Create(ctx, app)
 		if err == nil {
 			return microerror.Maskf(executionFailedError, "expected error but got nil")
@@ -138,6 +139,49 @@ func TestFailWhenClusterLabelNotFound(t *testing.T) {
 	}
 
 	logger.Debugf(ctx, "waited for failed app creation")
+}
+
+func createTestOrgResources(ctx context.Context) error {
+	var err error
+
+	ns := &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: orgNamespace,
+		},
+	}
+
+	secret := &corev1.Secret{
+		Data: map[string][]byte{
+			"kubeconfig": []byte("cluster: yaml\n"),
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      orgKubeconfigSecret,
+			Namespace: orgNamespace,
+		},
+	}
+
+	o := func() error {
+		_, err = appTest.K8sClient().CoreV1().Namespaces().Create(ctx, ns, metav1.CreateOptions{})
+		if !apierrors.IsAlreadyExists(err) && err != nil {
+			return microerror.Mask(err)
+		}
+
+		_, err = appTest.K8sClient().CoreV1().Secrets(orgNamespace).Create(ctx, secret, metav1.CreateOptions{})
+		if !apierrors.IsAlreadyExists(err) && err != nil {
+			return microerror.Mask(err)
+		}
+
+		return nil
+	}
+	b := backoff.NewConstant(5*time.Minute, 10*time.Second)
+	n := backoff.NewNotifier(logger, ctx)
+
+	err = backoff.RetryNotify(o, b, n)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
 }
 
 // TestSkipValidationOnNamespaceDeletion tests that when the namespace

@@ -5,6 +5,7 @@ go 1.16
 require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/dyson/certman v0.2.1
+	github.com/gardener/controller-manager-library v0.2.0
 	github.com/giantswarm/apiextensions-application v0.3.0
 	github.com/giantswarm/app/v6 v6.6.1-0.20220124174002-bbee3fb8e5ba
 	github.com/giantswarm/apptest v1.0.0

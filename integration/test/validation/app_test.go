@@ -85,6 +85,12 @@ func TestFailWhenClusterLabelNotFound(t *testing.T) {
 
 	var err error
 
+	ns := &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: orgNamespace,
+		},
+	}
+
 	app := &v1alpha1.App{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      appName,
@@ -105,6 +111,14 @@ func TestFailWhenClusterLabelNotFound(t *testing.T) {
 	logger.Debugf(ctx, "waiting for failed app creation")
 
 	o := func() error {
+		_, err = appTest.K8sClient().CoreV1().Namespaces().Create(ctx, ns, metav1.CreateOptions{})
+		if apierrors.IsAlreadyExists(err) {
+			// fall through
+			return nil
+		} else if err != nil {
+			return microerror.Mask(err)
+		}
+
 		err = appTest.CtrlClient().Create(ctx, app)
 		if err == nil {
 			return microerror.Maskf(executionFailedError, "expected error but got nil")

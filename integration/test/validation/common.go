@@ -5,6 +5,7 @@ package validation
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/giantswarm/backoff"
@@ -181,6 +182,72 @@ func ensureCreated(ctx context.Context, o func() error) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
+
+	return nil
+}
+
+func executeWithApp(ctx context.Context, expectedError string, config appConfig) error {
+	var err error
+
+	app := &v1alpha1.App{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      config.appName,
+			Namespace: config.appNamespace,
+			Labels:    config.appLabels,
+		},
+		Spec: v1alpha1.AppSpec{
+			Catalog:   config.appCatalog,
+			Name:      config.appName,
+			Namespace: config.targetNamespace,
+			KubeConfig: v1alpha1.AppSpecKubeConfig{
+				InCluster: config.inCluster,
+			},
+			Version: config.appVersion,
+		},
+	}
+
+	if config.configName != "" {
+		app.Spec.Config = v1alpha1.AppSpecConfig{
+			ConfigMap: v1alpha1.AppSpecConfigConfigMap{
+				Name:      config.configName,
+				Namespace: config.appNamespace,
+			},
+		}
+	}
+
+	if !config.inCluster {
+		app.Spec.KubeConfig.Context = v1alpha1.AppSpecKubeConfigContext{
+			Name: config.targetCluster,
+		}
+
+		app.Spec.KubeConfig.Secret = v1alpha1.AppSpecKubeConfigSecret{
+			Name:      config.targetCluster + "-kubeconfig",
+			Namespace: config.appNamespace,
+		}
+	}
+
+	logger.Debugf(ctx, "waiting for failed app creation")
+
+	o := func() error {
+		err = appTest.CtrlClient().Create(ctx, app)
+		if err == nil {
+			return microerror.Maskf(executionFailedError, "expected error but got nil")
+		}
+		if !strings.Contains(err.Error(), expectedError) {
+			return microerror.Maskf(executionFailedError, "error == %#v, want %#v ", err.Error(), expectedError)
+		}
+
+		return nil
+	}
+	b := backoff.NewConstant(5*time.Minute, 10*time.Second)
+	n := backoff.NewNotifier(logger, ctx)
+
+	err = backoff.RetryNotify(o, b, n)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	logger.Debugf(ctx, "waited for failed app creation")
 
 	return nil
 }

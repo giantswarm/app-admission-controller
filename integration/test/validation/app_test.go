@@ -98,52 +98,22 @@ func TestFailWhenClusterLabelNotFound(t *testing.T) {
 		t.Fatalf("expected nil but got error %#v", err)
 	}
 
-	app := &v1alpha1.App{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      appName,
-			Namespace: "org-acme",
-		},
-		Spec: v1alpha1.AppSpec{
-			Catalog:   catalog,
-			Name:      appName,
-			Namespace: "default",
-			KubeConfig: v1alpha1.AppSpecKubeConfig{
-				Context: v1alpha1.AppSpecKubeConfigContext{
-					Name: orgKubeconfigSecret,
-				},
-				InCluster: false,
-				Secret: v1alpha1.AppSpecKubeConfigSecret{
-					Name:      orgKubeconfigSecret,
-					Namespace: orgNamespace,
-				},
-			},
-			Version: "1.2.2",
-		},
+	config := appConfig{
+		appCatalog:      catalog,
+		appName:         appName,
+		appNamespace:    orgNamespace,
+		appVersion:      "1.2.2",
+		inCluster:       false,
+		targetCluster:   namespace,
+		targetNamespace: "default",
 	}
+
 	expectedError := "validation error: label `giantswarm.io/cluster` not found"
 
-	logger.Debugf(ctx, "waiting for failed app creation")
-
-	o := func() error {
-		err = appTest.CtrlClient().Create(ctx, app)
-		if err == nil {
-			return microerror.Maskf(executionFailedError, "expected error but got nil")
-		}
-		if !strings.Contains(err.Error(), expectedError) {
-			return microerror.Maskf(executionFailedError, "error == %#v, want %#v ", err.Error(), expectedError)
-		}
-
-		return nil
-	}
-	b := backoff.NewConstant(5*time.Minute, 10*time.Second)
-	n := backoff.NewNotifier(logger, ctx)
-
-	err = backoff.RetryNotify(o, b, n)
+	err = executeWithApp(ctx, expectedError, config)
 	if err != nil {
 		t.Fatalf("expected nil but got error %#v", err)
 	}
-
-	logger.Debugf(ctx, "waited for failed app creation")
 }
 
 // TestFailWhenTargetNamespaceNotAllowed tests that the app CR is rejected when

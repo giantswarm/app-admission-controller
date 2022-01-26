@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
+### Changed
 
-- Fix mutation logic for `giantswarm.io/cluster` label for org-namespaced App CRs.
+- Adapt mutation logic for `giantswarm.io/cluster` label to support App CRs in the org namespace.
 
 ## [0.16.0] - 2022-01-24
 

@@ -174,6 +174,43 @@ func Test_ValidateApp(t *testing.T) {
 			},
 			expectedErr: "validation error: label `giantswarm.io/cluster` not found",
 		},
+		{
+			// This test relates case 9 from mutation tests. Upon missing `giantswarm.io/cluster`
+			// label mutation will produce an App CR with empty `.spec.kubeConfig`, before
+			// validating configs, we should return error on missing label first.
+			name: "missing cluster after mutation",
+			obj: &admissionv1.AdmissionRequest{
+				Operation: "CREATE",
+				Object: runtime.RawExtension{
+					Raw: []byte(`
+						{
+							"apiVersion": "application.giantswarm.io/v1alpha1",
+							"kind": "App",
+							"metadata": {
+    							"name": "kiam",
+    							"namespace": "org-eggs2"
+							},
+							"spec": {
+    							"catalog": "giantswarm",
+    							"name": "kiam",
+    							"namespace": "kube-system",
+    							"kubeConfig": {
+									"inCluster": false
+								},
+								"version": "1.4.0"
+							}
+						}
+					`),
+				},
+			},
+			catalogs: []*v1alpha1.Catalog{
+				newTestCatalog("giantswarm", "default"),
+			},
+			secrets: []*corev1.Secret{
+				newTestSecret("eggs2-kubeconfig", "org-eggs2"),
+			},
+			expectedErr: "validation error: label `giantswarm.io/cluster` not found",
+		},
 	}
 
 	for i, tc := range tests {

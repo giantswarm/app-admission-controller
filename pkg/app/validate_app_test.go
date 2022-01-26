@@ -175,7 +175,7 @@ func Test_ValidateApp(t *testing.T) {
 			expectedErr: "validation error: label `giantswarm.io/cluster` not found",
 		},
 		{
-			// This test relates case 9 from mutation tests. Upon missing `giantswarm.io/cluster`
+			// This test relates to the case 9 from mutation tests. Upon missing `giantswarm.io/cluster`
 			// label mutation will produce an App CR with empty `.spec.kubeConfig`, before
 			// validating configs, we should return error on missing label first.
 			name: "missing cluster after mutation",

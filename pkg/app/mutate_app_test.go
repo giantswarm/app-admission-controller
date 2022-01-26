@@ -366,7 +366,8 @@ func Test_MutateApp(t *testing.T) {
 		{
 			// When `giantswarm.io/cluster` label is missing for the org-namespaced
 			// apps, then some patches will be skipped due to mutator not being able
-			// to determine correct config names.
+			// to determine correct config names. We then expect the validator to return
+			// error upon spotting missing label.
 			name:   "case 9: missing cluster label",
 			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{

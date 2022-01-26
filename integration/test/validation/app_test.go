@@ -5,7 +5,6 @@ package validation
 
 import (
 	"context"
-	"strings"
 	"testing"
 	"time"
 
@@ -32,48 +31,25 @@ func TestFailWhenCatalogNotFound(t *testing.T) {
 
 	var err error
 
-	app := &v1alpha1.App{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      appName,
-			Namespace: "giantswarm",
-			Labels: map[string]string{
-				label.AppOperatorVersion: "3.0.0",
-			},
+	config := appConfig{
+		appCatalog: "missing",
+		appLabels: map[string]string{
+			label.AppOperatorVersion: "3.0.0",
 		},
-		Spec: v1alpha1.AppSpec{
-			Catalog:   "missing",
-			Name:      appName,
-			Namespace: "giantswarm",
-			KubeConfig: v1alpha1.AppSpecKubeConfig{
-				InCluster: true,
-			},
-			Version: "1.2.2",
-		},
+		appName:         appName,
+		appNamespace:    "giantswarm",
+		appVersion:      "1.2.2",
+		inCluster:       true,
+		targetCluster:   namespace,
+		targetNamespace: "giantswarm",
 	}
+
 	expectedError := "validation error: catalog `missing` not found"
 
-	logger.Debugf(ctx, "waiting for failed app creation")
-
-	o := func() error {
-		err = appTest.CtrlClient().Create(ctx, app)
-		if err == nil {
-			return microerror.Maskf(executionFailedError, "expected error but got nil")
-		}
-		if !strings.Contains(err.Error(), expectedError) {
-			return microerror.Maskf(executionFailedError, "error == %#v, want %#v ", err.Error(), expectedError)
-		}
-
-		return nil
-	}
-	b := backoff.NewConstant(5*time.Minute, 10*time.Second)
-	n := backoff.NewNotifier(logger, ctx)
-
-	err = backoff.RetryNotify(o, b, n)
+	err = executeWithApp(ctx, expectedError, config)
 	if err != nil {
 		t.Fatalf("expected nil but got error %#v", err)
 	}
-
-	logger.Debugf(ctx, "waited for failed app creation")
 }
 
 // TestFailWhenClusterLabelNotFound tests that the app CR is rejected if the
@@ -132,48 +108,23 @@ func TestFailWhenTargetNamespaceNotAllowed(t *testing.T) {
 		t.Fatalf("expected nil but got error %#v", err)
 	}
 
-	app := &v1alpha1.App{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      appName,
-			Namespace: orgNamespace,
-			Labels: map[string]string{
-				label.AppOperatorVersion: "5.5.0",
-			},
+	config := appConfig{
+		appCatalog: catalog,
+		appLabels: map[string]string{
+			label.AppOperatorVersion: "5.5.0",
 		},
-		Spec: v1alpha1.AppSpec{
-			Catalog:   catalog,
-			Name:      appName,
-			Namespace: "kube-system",
-			KubeConfig: v1alpha1.AppSpecKubeConfig{
-				InCluster: true,
-			},
-			Version: "1.2.2",
-		},
+		appName:         appName,
+		appNamespace:    orgNamespace,
+		appVersion:      "1.2.2",
+		inCluster:       true,
+		targetNamespace: "kube-system",
 	}
 	expectedError := "validation error: target namespace kube-system is not allowed for in-cluster apps"
 
-	logger.Debugf(ctx, "waiting for failed app creation")
-
-	o := func() error {
-		err = appTest.CtrlClient().Create(ctx, app)
-		if err == nil {
-			return microerror.Maskf(executionFailedError, "expected error but got nil")
-		}
-		if !strings.Contains(err.Error(), expectedError) {
-			return microerror.Maskf(executionFailedError, "error == %#v, want %#v ", err.Error(), expectedError)
-		}
-
-		return nil
-	}
-	b := backoff.NewConstant(5*time.Minute, 10*time.Second)
-	n := backoff.NewNotifier(logger, ctx)
-
-	err = backoff.RetryNotify(o, b, n)
+	err = executeWithApp(ctx, expectedError, config)
 	if err != nil {
 		t.Fatalf("expected nil but got error %#v", err)
 	}
-
-	logger.Debugf(ctx, "waited for failed app creation")
 }
 
 // TestSkipValidationOnNamespaceDeletion tests that when the namespace
@@ -256,6 +207,7 @@ func createTestResources(ctx context.Context) error {
 		inCluster:       true,
 		targetNamespace: namespace,
 	}
+
 	err = createApp(ctx, config)
 	if err != nil {
 		return microerror.Mask(err)

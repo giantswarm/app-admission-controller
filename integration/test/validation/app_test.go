@@ -32,10 +32,8 @@ func TestFailWhenCatalogNotFound(t *testing.T) {
 	var err error
 
 	config := appConfig{
-		appCatalog: "missing",
-		appLabels: map[string]string{
-			label.AppOperatorVersion: "3.0.0",
-		},
+		appCatalog:      "missing",
+		appLabels:       map[string]string{label.AppOperatorVersion: "3.0.0"},
 		appName:         appName,
 		appNamespace:    "giantswarm",
 		appVersion:      "1.2.2",
@@ -109,10 +107,8 @@ func TestFailWhenTargetNamespaceNotAllowed(t *testing.T) {
 	}
 
 	config := appConfig{
-		appCatalog: catalog,
-		appLabels: map[string]string{
-			label.AppOperatorVersion: "5.5.0",
-		},
+		appCatalog:      catalog,
+		appLabels:       map[string]string{label.AppOperatorVersion: "5.5.0"},
 		appName:         appName,
 		appNamespace:    orgNamespace,
 		appVersion:      "1.2.2",

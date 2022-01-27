@@ -41,7 +41,7 @@ func TestFailWhenCatalogNotFound(t *testing.T) {
 
 	expectedError := "validation error: catalog `missing` not found"
 
-	err = executeWithApp(ctx, expectedError, config)
+	err = executeAppTest(ctx, expectedError, config)
 	if err != nil {
 		t.Fatalf("expected nil but got error %#v", err)
 	}
@@ -80,7 +80,7 @@ func TestFailWhenClusterLabelNotFound(t *testing.T) {
 
 	expectedError := "validation error: label `giantswarm.io/cluster` not found"
 
-	err = executeWithApp(ctx, expectedError, appConfig)
+	err = executeAppTest(ctx, expectedError, appConfig)
 	if err != nil {
 		t.Fatalf("expected nil but got error %#v", err)
 	}
@@ -113,7 +113,7 @@ func TestFailWhenTargetNamespaceNotAllowed(t *testing.T) {
 	}
 	expectedError := "validation error: target namespace kube-system is not allowed for in-cluster apps"
 
-	err = executeWithApp(ctx, expectedError, appConfig)
+	err = executeAppTest(ctx, expectedError, appConfig)
 	if err != nil {
 		t.Fatalf("expected nil but got error %#v", err)
 	}
@@ -173,7 +173,7 @@ func createTestResources(ctx context.Context) error {
 		return microerror.Mask(err)
 	}
 
-	err = config.CreateAppCatalog(ctx, catalog)
+	err = config.CreateCatalog(ctx, catalog)
 	if err != nil {
 		return microerror.Mask(err)
 	}

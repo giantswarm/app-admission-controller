@@ -5,6 +5,7 @@ package setup
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
@@ -94,7 +95,7 @@ func (tc *TestConfig) CreateNamespace(ctx context.Context, name string) error {
 		return nil
 	}
 
-	return tc.ensureCreated(ctx, o)
+	return tc.ensureExecuted(ctx, o)
 }
 
 func (tc *TestConfig) CreateSecret(ctx context.Context, name, namespace string) error {
@@ -117,7 +118,7 @@ func (tc *TestConfig) CreateSecret(ctx context.Context, name, namespace string) 
 		return nil
 	}
 
-	return tc.ensureCreated(ctx, o)
+	return tc.ensureExecuted(ctx, o)
 }
 
 func (tc *TestConfig) CreateConfigMap(ctx context.Context, name, namespace string) error {
@@ -140,18 +141,17 @@ func (tc *TestConfig) CreateConfigMap(ctx context.Context, name, namespace strin
 		return nil
 	}
 
-	return tc.ensureCreated(ctx, o)
+	return tc.ensureExecuted(ctx, o)
 }
 
-func (tc *TestConfig) CreateAppCatalog(ctx context.Context, name string) error {
-	// TODO: Remove once apptestctl creates catalog CRs.
+func (tc *TestConfig) CreateCatalog(ctx context.Context, name string) error {
 	catalogCR := &v1alpha1.Catalog{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: "default",
 		},
 		Spec: v1alpha1.CatalogSpec{
-			Description: "This catalog holds Apps exclusively running on Giant Swarm control planes.",
+			Description: fmt.Sprintf("%s catalog", name),
 			LogoURL:     "/images/repo_icons/giantswarm.png",
 			Storage: v1alpha1.CatalogSpecStorage{
 				URL:  "",
@@ -170,7 +170,7 @@ func (tc *TestConfig) CreateAppCatalog(ctx context.Context, name string) error {
 		return nil
 	}
 
-	return tc.ensureCreated(ctx, o)
+	return tc.ensureExecuted(ctx, o)
 }
 
 func (tc *TestConfig) CreateApp(ctx context.Context, appConfig helpers.AppConfig) error {
@@ -192,7 +192,7 @@ func (tc *TestConfig) CreateApp(ctx context.Context, appConfig helpers.AppConfig
 		return nil
 	}
 
-	return tc.ensureCreated(ctx, o)
+	return tc.ensureExecuted(ctx, o)
 }
 
 func (tc *TestConfig) GetApp(ctx context.Context, name, namespace string) (*v1alpha1.App, error) {
@@ -209,7 +209,7 @@ func (tc *TestConfig) GetApp(ctx context.Context, name, namespace string) (*v1al
 		return nil
 	}
 
-	err = tc.ensureCreated(ctx, o)
+	err = tc.ensureExecuted(ctx, o)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -217,7 +217,7 @@ func (tc *TestConfig) GetApp(ctx context.Context, name, namespace string) (*v1al
 	return app, nil
 }
 
-func (tc *TestConfig) ensureCreated(ctx context.Context, o func() error) error {
+func (tc *TestConfig) ensureExecuted(ctx context.Context, o func() error) error {
 	b := backoff.NewConstant(5*time.Minute, 10*time.Second)
 	n := backoff.NewNotifier(tc.Logger, ctx)
 

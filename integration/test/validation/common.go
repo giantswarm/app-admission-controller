@@ -14,7 +14,7 @@ import (
 	"github.com/giantswarm/app-admission-controller/integration/helpers"
 )
 
-func executeWithApp(ctx context.Context, expectedError string, appConfig helpers.AppConfig) error {
+func executeAppTest(ctx context.Context, expectedError string, appConfig helpers.AppConfig) error {
 	var err error
 
 	app := helpers.GetAppCR(appConfig)

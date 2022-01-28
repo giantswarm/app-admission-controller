@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	appName        = "kaim-app"
+	appName        = "kiam-app"
 	catalogName    = "control-plane-catalog"
 	kubeConfigName = "mutation-test-kubeconfig"
 	namespace      = "mutation-test"

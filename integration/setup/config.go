@@ -29,6 +29,156 @@ type TestConfig struct {
 	Logger     micrologger.Logger
 }
 
+func (tc *TestConfig) CreateApp(ctx context.Context, appConfig helpers.AppConfig) error {
+	var err error
+
+	app := helpers.GetAppCR(appConfig)
+
+	o := func() error {
+		err = tc.AppTest.CtrlClient().Delete(ctx, app)
+		if !apierrors.IsNotFound(err) && err != nil {
+			return microerror.Mask(err)
+		}
+
+		err = tc.AppTest.CtrlClient().Create(ctx, app)
+		if !apierrors.IsAlreadyExists(err) && err != nil {
+			return microerror.Mask(err)
+		}
+
+		return nil
+	}
+
+	return tc.ensureExecuted(ctx, o)
+}
+
+func (tc *TestConfig) CreateCatalog(ctx context.Context, name string) error {
+	catalogCR := &v1alpha1.Catalog{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: "default",
+		},
+		Spec: v1alpha1.CatalogSpec{
+			Description: fmt.Sprintf("%s catalog", name),
+			LogoURL:     "/images/repo_icons/giantswarm.png",
+			Storage: v1alpha1.CatalogSpecStorage{
+				URL:  "",
+				Type: "helm",
+			},
+			Title: name,
+		},
+	}
+
+	o := func() error {
+		err := tc.AppTest.CtrlClient().Create(ctx, catalogCR)
+		if !apierrors.IsAlreadyExists(err) && err != nil {
+			return microerror.Mask(err)
+		}
+
+		return nil
+	}
+
+	return tc.ensureExecuted(ctx, o)
+}
+
+func (tc *TestConfig) CreateConfigMap(ctx context.Context, name, namespace string) error {
+	cm := &corev1.ConfigMap{
+		Data: map[string]string{
+			"values": "values",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+	}
+
+	o := func() error {
+		_, err := tc.AppTest.K8sClient().CoreV1().ConfigMaps(namespace).Create(ctx, cm, metav1.CreateOptions{})
+		if !apierrors.IsAlreadyExists(err) && err != nil {
+			return microerror.Mask(err)
+		}
+
+		return nil
+	}
+
+	return tc.ensureExecuted(ctx, o)
+}
+
+func (tc *TestConfig) CreateNamespace(ctx context.Context, name string) error {
+	ns := &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+	}
+
+	o := func() error {
+		_, err := tc.AppTest.K8sClient().CoreV1().Namespaces().Create(ctx, ns, metav1.CreateOptions{})
+		if !apierrors.IsAlreadyExists(err) && err != nil {
+			return microerror.Mask(err)
+		}
+
+		return nil
+	}
+
+	return tc.ensureExecuted(ctx, o)
+}
+
+func (tc *TestConfig) CreateSecret(ctx context.Context, name, namespace string) error {
+	secret := &corev1.Secret{
+		Data: map[string][]byte{
+			"kubeconfig": []byte("cluster: yaml\n"),
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+	}
+
+	o := func() error {
+		_, err := tc.AppTest.K8sClient().CoreV1().Secrets(namespace).Create(ctx, secret, metav1.CreateOptions{})
+		if !apierrors.IsAlreadyExists(err) && err != nil {
+			return microerror.Mask(err)
+		}
+
+		return nil
+	}
+
+	return tc.ensureExecuted(ctx, o)
+}
+
+func (tc *TestConfig) ensureExecuted(ctx context.Context, o func() error) error {
+	b := backoff.NewConstant(5*time.Minute, 10*time.Second)
+	n := backoff.NewNotifier(tc.Logger, ctx)
+
+	err := backoff.RetryNotify(o, b, n)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
+func (tc *TestConfig) GetApp(ctx context.Context, name, namespace string) (*v1alpha1.App, error) {
+	var err error
+
+	app := &v1alpha1.App{}
+
+	o := func() error {
+		err = tc.AppTest.CtrlClient().Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, app)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		return nil
+	}
+
+	err = tc.ensureExecuted(ctx, o)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return app, nil
+}
+
 func NewConfig() (TestConfig, error) {
 	var err error
 
@@ -77,154 +227,4 @@ func NewConfig() (TestConfig, error) {
 	}
 
 	return c, nil
-}
-
-func (tc *TestConfig) CreateNamespace(ctx context.Context, name string) error {
-	ns := &corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
-		},
-	}
-
-	o := func() error {
-		_, err := tc.AppTest.K8sClient().CoreV1().Namespaces().Create(ctx, ns, metav1.CreateOptions{})
-		if !apierrors.IsAlreadyExists(err) && err != nil {
-			return microerror.Mask(err)
-		}
-
-		return nil
-	}
-
-	return tc.ensureExecuted(ctx, o)
-}
-
-func (tc *TestConfig) CreateSecret(ctx context.Context, name, namespace string) error {
-	secret := &corev1.Secret{
-		Data: map[string][]byte{
-			"kubeconfig": []byte("cluster: yaml\n"),
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-	}
-
-	o := func() error {
-		_, err := tc.AppTest.K8sClient().CoreV1().Secrets(namespace).Create(ctx, secret, metav1.CreateOptions{})
-		if !apierrors.IsAlreadyExists(err) && err != nil {
-			return microerror.Mask(err)
-		}
-
-		return nil
-	}
-
-	return tc.ensureExecuted(ctx, o)
-}
-
-func (tc *TestConfig) CreateConfigMap(ctx context.Context, name, namespace string) error {
-	cm := &corev1.ConfigMap{
-		Data: map[string]string{
-			"values": "values",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-	}
-
-	o := func() error {
-		_, err := tc.AppTest.K8sClient().CoreV1().ConfigMaps(namespace).Create(ctx, cm, metav1.CreateOptions{})
-		if !apierrors.IsAlreadyExists(err) && err != nil {
-			return microerror.Mask(err)
-		}
-
-		return nil
-	}
-
-	return tc.ensureExecuted(ctx, o)
-}
-
-func (tc *TestConfig) CreateCatalog(ctx context.Context, name string) error {
-	catalogCR := &v1alpha1.Catalog{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: "default",
-		},
-		Spec: v1alpha1.CatalogSpec{
-			Description: fmt.Sprintf("%s catalog", name),
-			LogoURL:     "/images/repo_icons/giantswarm.png",
-			Storage: v1alpha1.CatalogSpecStorage{
-				URL:  "",
-				Type: "helm",
-			},
-			Title: name,
-		},
-	}
-
-	o := func() error {
-		err := tc.AppTest.CtrlClient().Create(ctx, catalogCR)
-		if !apierrors.IsAlreadyExists(err) && err != nil {
-			return microerror.Mask(err)
-		}
-
-		return nil
-	}
-
-	return tc.ensureExecuted(ctx, o)
-}
-
-func (tc *TestConfig) CreateApp(ctx context.Context, appConfig helpers.AppConfig) error {
-	var err error
-
-	app := helpers.GetAppCR(appConfig)
-
-	o := func() error {
-		err = tc.AppTest.CtrlClient().Delete(ctx, app)
-		if !apierrors.IsNotFound(err) && err != nil {
-			return microerror.Mask(err)
-		}
-
-		err = tc.AppTest.CtrlClient().Create(ctx, app)
-		if !apierrors.IsAlreadyExists(err) && err != nil {
-			return microerror.Mask(err)
-		}
-
-		return nil
-	}
-
-	return tc.ensureExecuted(ctx, o)
-}
-
-func (tc *TestConfig) GetApp(ctx context.Context, name, namespace string) (*v1alpha1.App, error) {
-	var err error
-
-	app := &v1alpha1.App{}
-
-	o := func() error {
-		err = tc.AppTest.CtrlClient().Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, app)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		return nil
-	}
-
-	err = tc.ensureExecuted(ctx, o)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return app, nil
-}
-
-func (tc *TestConfig) ensureExecuted(ctx context.Context, o func() error) error {
-	b := backoff.NewConstant(5*time.Minute, 10*time.Second)
-	n := backoff.NewNotifier(tc.Logger, ctx)
-
-	err := backoff.RetryNotify(o, b, n)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	return nil
 }

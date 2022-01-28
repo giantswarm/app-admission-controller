@@ -6,16 +6,12 @@ package mutation
 import (
 	"context"
 	"testing"
-	"time"
 
-	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/app/v6/pkg/key"
-	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
-	corev1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/giantswarm/app-admission-controller/integration/helpers"
 )
 
 const (
@@ -32,119 +28,126 @@ func TestDefaultKubeConfig(t *testing.T) {
 
 	var err error
 
-	logger.Debugf(ctx, "creating test resources in %#q namespace", namespace)
+	config.Logger.Debugf(ctx, "creating test resources in %#q namespace", namespace)
 
 	err = createTestResources(ctx)
 	if err != nil {
 		t.Fatalf("expected nil but got error %#v", err)
 	}
 
-	logger.Debugf(ctx, "created test resources in %#q namespace", namespace)
+	config.Logger.Debugf(ctx, "created test resources in %#q namespace", namespace)
 
-	logger.Debugf(ctx, "creating app")
+	config.Logger.Debugf(ctx, "creating app")
 
-	app := v1alpha1.App{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      appName,
-			Namespace: namespace,
-			Labels: map[string]string{
-				label.AppOperatorVersion: "3.0.0",
-			},
-		},
-		Spec: v1alpha1.AppSpec{
-			Catalog:   catalogName,
-			Name:      appName,
-			Namespace: "giantswarm",
-			KubeConfig: v1alpha1.AppSpecKubeConfig{
-				// Only set InCluster to false. Other fields will be defaulted.
-				InCluster: false,
-			},
-			Version: "1.2.2",
-		},
+	// InCluster and DefaultingEnabled set to false.
+	// Other fields will be defaulted.
+	appConfig := helpers.AppConfig{
+		AppCatalog:      catalogName,
+		AppLabels:       map[string]string{label.AppOperatorVersion: "3.0.0"},
+		AppName:         appName,
+		AppNamespace:    namespace,
+		AppVersion:      "1.2.2",
+		TargetCluster:   namespace,
+		TargetNamespace: "giantswarm",
 	}
 
-	o := func() error {
-		// First ensure app CR is deleted.
-		err = appTest.CtrlClient().Delete(ctx, &app)
-		if apierrors.IsNotFound(err) {
-			// Fall through.
-		} else if err != nil {
-			return microerror.Mask(err)
-		}
-
-		err = appTest.CtrlClient().Create(ctx, &app)
-		if apierrors.IsAlreadyExists(err) {
-			return nil
-		} else if err != nil {
-			return microerror.Mask(err)
-		}
-
-		return nil
-	}
-	b := backoff.NewConstant(5*time.Minute, 10*time.Second)
-	n := backoff.NewNotifier(logger, ctx)
-
-	err = backoff.RetryNotify(o, b, n)
+	err = config.CreateApp(ctx, appConfig)
 	if err != nil {
 		t.Fatalf("expected nil but got error %#v", err)
 	}
 
-	logger.Debugf(ctx, "created app")
+	config.Logger.Debugf(ctx, "created app")
 
-	logger.Debugf(ctx, "checking defaulted values for app")
+	config.Logger.Debugf(ctx, "checking defaulted values for app")
 
-	if key.KubeConfigSecretNamespace(app) != namespace {
-		t.Fatalf("expected kubeconfig namespace %#q but got %#q", namespace, key.KubeConfigSecretNamespace(app))
-	}
-	if key.KubeConfigSecretName(app) != kubeConfigName {
-		t.Fatalf("expected kubeconfig secret name %#q but got %#q", kubeConfigName, key.KubeConfigSecretName(app))
+	app, err := config.GetApp(ctx, appName, namespace)
+	if err != nil {
+		t.Fatalf("expected nil but got error %#v", err)
 	}
 
-	logger.Debugf(ctx, "checked defaulted values for app")
+	if key.KubeConfigSecretNamespace(*app) != namespace {
+		t.Fatalf("expected kubeconfig namespace %#q but got %#q", namespace, key.KubeConfigSecretNamespace(*app))
+	}
+	if key.KubeConfigSecretName(*app) != kubeConfigName {
+		t.Fatalf("expected kubeconfig secret name %#q but got %#q", kubeConfigName, key.KubeConfigSecretName(*app))
+	}
+
+	config.Logger.Debugf(ctx, "checked defaulted values for app")
+}
+
+// TestDefaultKubeConfigOrg checks that the app CR kubeconfig is defaulted to the
+// correct settings for the org-namespaced app.
+func TestDefaultKubeConfigOrg(t *testing.T) {
+	const (
+		orgNamespace        = "org-acme"
+		orgKubeConfigSecret = "test-kubeconfig"
+	)
+
+	ctx := context.Background()
+
+	var err error
+
+	err = config.CreateNamespace(ctx, orgNamespace)
+	if err != nil {
+		t.Fatalf("expected nil but got error %#v", err)
+	}
+
+	err = config.CreateSecret(ctx, orgKubeConfigSecret, orgNamespace)
+	if err != nil {
+		t.Fatalf("expected nil but got error %#v", err)
+	}
+
+	config.Logger.Debugf(ctx, "creating app")
+
+	// InCluster and DefaultingEnabled set to false.
+	// Other fields will be defaulted.
+	appConfig := helpers.AppConfig{
+		AppCatalog:      catalogName,
+		AppLabels:       map[string]string{label.Cluster: "test"},
+		AppName:         appName,
+		AppNamespace:    orgNamespace,
+		AppVersion:      "1.2.2",
+		InCluster:       false,
+		TargetCluster:   namespace,
+		TargetNamespace: "giantswarm",
+	}
+
+	err = config.CreateApp(ctx, appConfig)
+	if err != nil {
+		t.Fatalf("expected nil but got error %#v", err)
+	}
+
+	config.Logger.Debugf(ctx, "created app")
+
+	config.Logger.Debugf(ctx, "checking defaulted values for app")
+
+	app, err := config.GetApp(ctx, appName, orgNamespace)
+	if err != nil {
+		t.Fatalf("expected nil but got error %#v", err)
+	}
+
+	if key.KubeConfigSecretNamespace(*app) != orgNamespace {
+		t.Fatalf("expected kubeconfig namespace %#q but got %#q", orgNamespace, key.KubeConfigSecretNamespace(*app))
+	}
+	if key.KubeConfigSecretName(*app) != orgKubeConfigSecret {
+		t.Fatalf("expected kubeconfig secret name %#q but got %#q", orgKubeConfigSecret, key.KubeConfigSecretName(*app))
+	}
+	if key.VersionLabel(*app) != "" {
+		t.Fatalf("expected empty version label but got %#q", key.VersionLabel(*app))
+	}
+
+	config.Logger.Debugf(ctx, "checked defaulted values for app")
 }
 
 func createTestResources(ctx context.Context) error {
 	var err error
 
-	ns := &corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: namespace,
-		},
+	err = config.CreateNamespace(ctx, namespace)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
-	kubeConfig := &corev1.Secret{
-		Data: map[string][]byte{
-			"kubeconfig": []byte("kubeconfig"),
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      kubeConfigName,
-			Namespace: namespace,
-		},
-	}
-
-	o := func() error {
-		_, err = appTest.K8sClient().CoreV1().Namespaces().Create(ctx, ns, metav1.CreateOptions{})
-		if apierrors.IsAlreadyExists(err) {
-			// Fall through.
-			return nil
-		} else if err != nil {
-			return microerror.Mask(err)
-		}
-
-		_, err = appTest.K8sClient().CoreV1().Secrets(namespace).Create(ctx, kubeConfig, metav1.CreateOptions{})
-		if apierrors.IsAlreadyExists(err) {
-			// Fall through.
-			return nil
-		} else if err != nil {
-			return microerror.Mask(err)
-		}
-
-		return nil
-	}
-	b := backoff.NewConstant(5*time.Minute, 10*time.Second)
-	n := backoff.NewNotifier(logger, ctx)
-
-	err = backoff.RetryNotify(o, b, n)
+	err = config.CreateSecret(ctx, kubeConfigName, namespace)
 	if err != nil {
 		return microerror.Mask(err)
 	}

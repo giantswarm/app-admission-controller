@@ -8,11 +8,24 @@ workflows:
   build:
     jobs:
       - architect/go-build:
-          name: build-app-admission-controller
+          name: go-build
           context: architect
           binary: app-admission-controller
           filters:
             # Do this on every commit and when a new tag is created.
+            tags:
+              only: /^v.*/
+
+      - architect/push-to-docker:
+          context: "architect"
+          name: push-app-admission-controller-to-docker
+          image: "docker.io/giantswarm/app-admission-controller"
+          username_envar: "DOCKER_USERNAME"
+          password_envar: "DOCKER_PASSWORD"
+          requires:
+            - go-build
+          # Needed to trigger job also on git tag.
+          filters:
             tags:
               only: /^v.*/
 
@@ -23,7 +36,7 @@ workflows:
           username_envar: "QUAY_USERNAME"
           password_envar: "QUAY_PASSWORD"
           requires:
-            - build-app-admission-controller
+            - go-build
           # Do this on every commit and when a new tag is created.
           filters:
             tags:
@@ -36,7 +49,7 @@ workflows:
           username_envar: "ALIYUN_USERNAME"
           password_envar: "ALIYUN_PASSWORD"
           requires:
-            - build-app-admission-controller
+            - go-build
           filters:
             # Do this on every commit and when a new tag is created.
             tags:

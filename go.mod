@@ -7,10 +7,10 @@ require (
 	github.com/dyson/certman v0.2.1
 	github.com/giantswarm/apiextensions-application v0.3.1
 	github.com/giantswarm/app/v6 v6.8.1
-	github.com/giantswarm/apptest v1.0.1
+	github.com/giantswarm/apptest v1.1.0
 	github.com/giantswarm/backoff v1.0.0
 	github.com/giantswarm/k8sclient/v6 v6.1.0
-	github.com/giantswarm/k8smetadata v0.9.2
+	github.com/giantswarm/k8smetadata v0.9.3
 	github.com/giantswarm/microerror v0.4.0
 	github.com/giantswarm/micrologger v0.6.0
 	github.com/google/go-cmp v0.5.7

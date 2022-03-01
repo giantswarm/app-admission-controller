@@ -7,7 +7,7 @@ require (
 	github.com/dyson/certman v0.2.1
 	github.com/giantswarm/apiextensions-application v0.3.1
 	github.com/giantswarm/app/v6 v6.8.1
-	github.com/giantswarm/apptest v1.1.0
+	github.com/giantswarm/apptest v1.1.1
 	github.com/giantswarm/backoff v1.0.0
 	github.com/giantswarm/k8sclient/v6 v6.1.0
 	github.com/giantswarm/k8smetadata v0.9.3

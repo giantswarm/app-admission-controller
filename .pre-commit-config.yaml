@@ -1,0 +1,36 @@
+minimum_pre_commit_version: '2.17'
+exclude: 'vendor'
+repos:
+  # shell scripts
+  - repo: git://github.com/detailyang/pre-commit-shell
+    rev: 1.0.5
+    hooks:
+      - id: shell-lint
+        args: [ --format=json ]
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.31.1
+    hooks:
+        - id: markdownlint
+
+  - repo: git://github.com/pre-commit/pre-commit-hooks
+    rev: v3.0.1
+    hooks:
+      - id: check-added-large-files
+      - id: check-docstring-first
+      - id: check-merge-conflict
+      - id: check-shebang-scripts-are-executable
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+
+  - repo: git://github.com/dnephin/pre-commit-golang
+    rev: v0.3.5
+    hooks:
+      - id: go-fmt
+      - id: go-mod-tidy
+      - id: go-imports
+      - id: go-vet
+      - id: go-build
+      - id: golangci-lint

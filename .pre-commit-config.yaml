@@ -32,6 +32,7 @@ repos:
       - id: go-mod-tidy
       - id: go-imports
       - id: go-vet
+        args: [ -local, github.com/giantswarm/app-admission-controller ]
       - id: golangci-lint
         # do we want build?
         # - id: go-build

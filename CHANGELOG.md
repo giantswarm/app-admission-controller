@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Remove logic for app CRs with version < 3.0.0 as it is no longer needed.
+
 ## [0.16.3] - 2022-02-25
 
 ### Fixed

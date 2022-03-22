@@ -11,7 +11,7 @@ repos:
     rev: v4.1.0
     hooks:
       - id: check-added-large-files
-      - id: check-docstring-first
+      # check for unresolved merge conflicts
       - id: check-merge-conflict
       - id: check-shebang-scripts-are-executable
       - id: detect-private-key

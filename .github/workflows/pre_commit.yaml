@@ -9,9 +9,12 @@ jobs:
   pre-commit:
     runs-on: ubuntu-20.04
     steps:
-    - name: Install goimports
-      run: |
-        sudo apt-get install -y golang-golang-x-tools
     - uses: actions/checkout@v3
     - uses: actions/setup-python@v2
+    - uses: actions/setup-go@v2
+      with:
+        go-version: '1.17.7'
+    - name: Install goimports
+      run: |
+        go install golang.org/x/tools/cmd/goimports@latest
     - uses: pre-commit/action@v2.0.3

@@ -11,7 +11,8 @@ jobs:
     steps:
     - name: Install goimports
       run: |
-        GO111MODULE=on go get golang.org/x/tools/cmd/goimports@latest
+        go version
+        GO111MODULE=on go install golang.org/x/tools/cmd/goimports
     - uses: actions/checkout@v3
     - uses: actions/setup-python@v2
     - uses: pre-commit/action@v2.0.3

@@ -11,7 +11,7 @@ jobs:
     steps:
     - name: Install goimports
       run: |
-        apt-get update && apt-get install -y golang-golang-x-tools
+        sudo apt-get install -y golang-golang-x-tools
     - uses: actions/checkout@v3
     - uses: actions/setup-python@v2
     - uses: pre-commit/action@v2.0.3

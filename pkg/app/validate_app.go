@@ -6,16 +6,15 @@ import (
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
+	"github.com/giantswarm/app-admission-controller/internal/recorder"
+	"github.com/giantswarm/app-admission-controller/pkg/project"
+	"github.com/giantswarm/app-admission-controller/pkg/validator"
 	"github.com/giantswarm/app/v6/pkg/key"
 	"github.com/giantswarm/app/v6/pkg/validation"
 	"github.com/giantswarm/k8sclient/v6/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	admissionv1 "k8s.io/api/admission/v1"
-
-	"github.com/giantswarm/app-admission-controller/internal/recorder"
-	"github.com/giantswarm/app-admission-controller/pkg/project"
-	"github.com/giantswarm/app-admission-controller/pkg/validator"
 )
 
 const (

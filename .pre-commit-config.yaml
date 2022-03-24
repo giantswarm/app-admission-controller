@@ -26,6 +26,6 @@ repos:
       - id: go-mod-tidy
       - id: golangci-lint
         # timeout is needed for CI
-        args: [ -E, gosec, -E, goconst, -E, govet, --timeout, 120s ]
+        args: [ -E, gosec, -E, goconst, -E, govet, --timeout, 300s ]
       - id: go-imports
         args: [ -local, github.com/giantswarm/app-admission-controller ]

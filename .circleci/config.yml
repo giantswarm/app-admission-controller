@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  architect: giantswarm/architect@dev:pre-commit-go
+  architect: giantswarm/architect@4.13.0
 
 workflows:
   version: 2

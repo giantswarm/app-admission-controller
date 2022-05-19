@@ -335,7 +335,7 @@ func Test_ValidateApp(t *testing.T) {
 				newTestSecret("demo0-kubeconfig", "demo0"),
 				newTestSecret("vault-token", "giantswarm"),
 			},
-			expectedErr: "validation error: references to giantswarm namespace not allowed for `0.0.0` labeld apps",
+			expectedErr: "validation error: references to `giantswarm` namespace not allowed",
 		},
 		{
 			name: "referencing protected configuration as privileged service account",
@@ -402,7 +402,7 @@ func Test_ValidateApp(t *testing.T) {
     							}
 							},
 							"spec": {
-    							"catalog": "control-plane",
+    							"catalog": "control-plane-catalog",
     							"name": "app-operator",
     							"namespace": "demo0",
     							"config": {
@@ -441,7 +441,7 @@ func Test_ValidateApp(t *testing.T) {
 			secrets: []*corev1.Secret{
 				newTestSecret("vault-token", "giantswarm"),
 			},
-			expectedErr: "validation error: references to giantswarm namespace not allowed for `0.0.0` labeld apps",
+			expectedErr: "validation error: installing `app-operator` from `control-plane-catalog` catalog is not allowed",
 		},
 		{
 			name: "modify existing App CR as a GS member",

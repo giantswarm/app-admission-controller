@@ -158,7 +158,7 @@ func (v *Validator) Validate(request *admissionv1.AdmissionRequest) (bool, error
 	// user check for references to the protected namespaces and fail
 	// on finding any. For other cases behave like usual.
 	if key.VersionLabel(app) == uniqueAppCRVersion && nonPrivilegedActor(ctx, request.UserInfo) {
-		_, err := v.appValidator.ValidateAppReferences(ctx, app)
+		_, err := v.appValidator.ValidateAppForRegularUser(ctx, app)
 		if err != nil {
 			v.logger.Errorf(ctx, err, "rejected app %#q in namespace %#q", app.Name, app.Namespace)
 			return false, microerror.Mask(err)

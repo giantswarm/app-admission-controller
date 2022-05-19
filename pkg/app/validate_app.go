@@ -34,7 +34,7 @@ var (
 	}
 
 	privilegedGroups = map[string]bool{
-		"customer:giantswarm:Employees": true,
+		"giantswarm:giantswarm:giantswarm-admins": true,
 	}
 )
 
@@ -154,7 +154,7 @@ func (v *Validator) Validate(request *admissionv1.AdmissionRequest) (bool, error
 		strings.Join(request.UserInfo.Groups, ","),
 	)
 
-	if nonPrivilegedActor(ctx, request.UserInfo) {
+	if key.VersionLabel(app) == uniqueAppCRVersion && nonPrivilegedActor(ctx, request.UserInfo) {
 		_, err := v.appValidator.ValidateAppReferences(ctx, app)
 		if err != nil {
 			v.logger.Errorf(ctx, err, "rejected app %#q in namespace %#q", app.Name, app.Namespace)
@@ -242,7 +242,7 @@ func (v *Validator) emitEvents(ctx context.Context, request *admissionv1.Admissi
 
 func nonPrivilegedActor(ctx context.Context, userInfo authv1.UserInfo) bool {
 	// Checks if request comes from one of Service Account from one of the
-	// privileged namespaces. Yes means there is work being done by the
+	// privileged namespaces. If yes, it means there is work being done by the
 	// operators, or someone impersonating them.
 	for _, user := range privilegedSeviceAccounts {
 		if strings.HasPrefix(userInfo.Username, user) {

@@ -443,6 +443,93 @@ func Test_ValidateApp(t *testing.T) {
 			},
 			expectedErr: "validation error: references to giantswarm namespace not allowed for `0.0.0` labeld apps",
 		},
+		{
+			name: "modify existing App CR as a GS member",
+			obj: &admissionv1.AdmissionRequest{
+				Operation: "UPDATE",
+				Object: runtime.RawExtension{
+					Raw: []byte(`
+						{
+							"apiVersion": "application.giantswarm.io/v1alpha1",
+							"kind": "App",
+							"metadata": {
+    							"name": "app-operator-demo0",
+    							"namespace": "demo0",
+    							"labels": {
+									"app-operator.giantswarm.io/version": "0.0.0"
+    							}
+							},
+							"spec": {
+    							"catalog": "control-plane",
+    							"name": "app-operator",
+    							"namespace": "demo0",
+    							"config": {
+									"configMap": {
+										"name": "app-operator-cluster-values",
+										"namespace": "giantswarm"
+									}
+								},
+    							"kubeConfig": {
+									"inCluster": true
+								},
+								"userConfig": {
+									"secret": {
+										"name": "app-operator-secrets",
+										"namespace": "giantswarm"
+									}
+								},
+								"version": "0.3.0"
+							}
+						}
+					`),
+				},
+				OldObject: runtime.RawExtension{
+					Raw: []byte(`
+						{
+							"apiVersion": "application.giantswarm.io/v1alpha1",
+							"kind": "App",
+							"metadata": {
+    							"name": "app-operator-demo0",
+    							"namespace": "demo0",
+    							"labels": {
+									"app-operator.giantswarm.io/version": "0.0.0"
+    							}
+							},
+							"spec": {
+    							"catalog": "control-plane",
+    							"name": "app-operator",
+    							"namespace": "demo0",
+    							"config": {
+									"configMap": {
+										"name": "app-operator-cluster-values",
+										"namespace": "giantswarm"
+									}
+								},
+    							"kubeConfig": {
+									"inCluster": true
+								},
+								"version": "0.3.0"
+							}
+						}
+					`),
+				},
+				UserInfo: authv1.UserInfo{
+					Username: "user@giantswarm.io",
+					Groups: []string{
+						"giantswarm:giantswarm:giantswarm-admins",
+					},
+				},
+			},
+			catalogs: []*v1alpha1.Catalog{
+				newTestCatalog("control-plane", "giantswarm"),
+			},
+			configMaps: []*corev1.ConfigMap{
+				newTestConfigMap("app-operator-cluster-values", "giantswarm"),
+			},
+			secrets: []*corev1.Secret{
+				newTestSecret("app-operator-secrets", "giantswarm"),
+			},
+		},
 	}
 
 	for i, tc := range tests {

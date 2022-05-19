@@ -154,6 +154,9 @@ func (v *Validator) Validate(request *admissionv1.AdmissionRequest) (bool, error
 		strings.Join(request.UserInfo.Groups, ","),
 	)
 
+	// When creating App CR for unique App Operator by non privileged
+	// user check for references to the protected namespaces and fail
+	// on finding any. For other cases behave like usual.
 	if key.VersionLabel(app) == uniqueAppCRVersion && nonPrivilegedActor(ctx, request.UserInfo) {
 		_, err := v.appValidator.ValidateAppReferences(ctx, app)
 		if err != nil {

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Reject creation of `0.0.0`-labeled App CR when it references protected configuration.
+
 ## [0.16.3] - 2022-02-25
 
 ### Fixed

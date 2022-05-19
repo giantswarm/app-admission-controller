@@ -149,7 +149,7 @@ func (v *Validator) Validate(request *admissionv1.AdmissionRequest) (bool, error
 	// to recognize the actor when debugging issues.
 	v.logger.Debugf(
 		ctx,
-		"detected action taken by privileged `%s` user in `%s` groups",
+		"validating action taken by `%s` user in `%s` groups",
 		request.UserInfo.Username,
 		strings.Join(request.UserInfo.Groups, ","),
 	)

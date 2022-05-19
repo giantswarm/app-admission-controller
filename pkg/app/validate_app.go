@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
@@ -12,6 +13,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	admissionv1 "k8s.io/api/admission/v1"
+	authv1 "k8s.io/api/authentication/v1"
 
 	"github.com/giantswarm/app-admission-controller/internal/recorder"
 	"github.com/giantswarm/app-admission-controller/pkg/project"
@@ -22,6 +24,18 @@ const (
 	Name = "app"
 
 	uniqueAppCRVersion = "0.0.0"
+)
+
+var (
+	privilegedSeviceAccounts = []string{
+		"system:serviceaccount:giantswarm:",
+		"system:serviceaccount:flux-giantswarm:",
+		"system:serviceaccount:kube-system:",
+	}
+
+	privilegedGroups = map[string]bool{
+		"customer:giantswarm:Employees": true,
+	}
 )
 
 type ValidatorConfig struct {
@@ -130,6 +144,24 @@ func (v *Validator) Validate(request *admissionv1.AdmissionRequest) (bool, error
 		return true, nil
 	}
 
+	// Let's log users names and groupd membership in case we need to
+	// troubleshoot possible problems. This way it will be much easier
+	// to recognize the actor when debugging issues.
+	v.logger.Debugf(
+		ctx,
+		"detected action taken by privileged `%s` user in `%s` groups",
+		request.UserInfo.Username,
+		strings.Join(request.UserInfo.Groups, ","),
+	)
+
+	if nonPrivilegedActor(ctx, request.UserInfo) {
+		_, err := v.appValidator.ValidateAppReferences(ctx, app)
+		if err != nil {
+			v.logger.Errorf(ctx, err, "rejected app %#q in namespace %#q", app.Name, app.Namespace)
+			return false, microerror.Mask(err)
+		}
+	}
+
 	appAllowed, err := v.appValidator.ValidateApp(ctx, app)
 	if err != nil {
 		v.logger.Errorf(ctx, err, "rejected app %#q in namespace %#q", app.Name, app.Namespace)
@@ -206,4 +238,25 @@ func (v *Validator) emitEvents(ctx context.Context, request *admissionv1.Admissi
 	}
 
 	return nil
+}
+
+func nonPrivilegedActor(ctx context.Context, userInfo authv1.UserInfo) bool {
+	// Checks if request comes from one of Service Account from one of the
+	// privileged namespaces. Yes means there is work being done by the
+	// operators, or someone impersonating them.
+	for _, user := range privilegedSeviceAccounts {
+		if strings.HasPrefix(userInfo.Username, user) {
+			return false
+		}
+	}
+
+	// Check of request comes from one of the allowed Groups of users,
+	// if yes permit it, as we trust actions taken by the trusted actors.
+	for _, group := range userInfo.Groups {
+		if _, ok := privilegedGroups[group]; ok {
+			return false
+		}
+	}
+
+	return true
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/giantswarm/k8sclient/v6/pkg/k8sclienttest"
 	"github.com/giantswarm/micrologger/microloggertest"
 	admissionv1 "k8s.io/api/admission/v1"
+	authv1 "k8s.io/api/authentication/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -210,6 +211,237 @@ func Test_ValidateApp(t *testing.T) {
 				newTestSecret("eggs2-kubeconfig", "org-eggs2"),
 			},
 			expectedErr: "validation error: label `giantswarm.io/cluster` not found",
+		},
+		{
+			name: "flawless unique app validation",
+			obj: &admissionv1.AdmissionRequest{
+				Operation: "CREATE",
+				Object: runtime.RawExtension{
+					Raw: []byte(`
+						{
+							"apiVersion": "application.giantswarm.io/v1alpha1",
+							"kind": "App",
+							"metadata": {
+    							"name": "hello-world",
+    							"namespace": "demo0",
+    							"labels": {
+									"app-operator.giantswarm.io/version": "0.0.0"
+    							}
+							},
+							"spec": {
+    							"catalog": "giantswarm",
+    							"name": "hello-world",
+    							"namespace": "demo0",
+    							"config": {
+									"configMap": {
+										"name": "demo0-cluster-values",
+										"namespace": "demo0"
+									}
+								},
+    							"kubeConfig": {
+									"inCluster": true
+								},
+								"userConfig": {
+									"configMap": {
+										"name": "hello-world-user-values",
+										"namespace": "demo0"
+									}
+								},
+								"version": "0.3.0"
+							}
+						}
+					`),
+				},
+				UserInfo: authv1.UserInfo{
+					Username: "00001@customer.onmicrosoft.com",
+					Groups: []string{
+						"customer:CUSTOM-GROUP",
+					},
+				},
+			},
+			catalogs: []*v1alpha1.Catalog{
+				newTestCatalog("giantswarm", "default"),
+			},
+			configMaps: []*corev1.ConfigMap{
+				newTestConfigMap("demo0-cluster-values", "demo0"),
+				newTestConfigMap("hello-world-user-values", "demo0"),
+			},
+			secrets: []*corev1.Secret{
+				newTestSecret("demo0-kubeconfig", "demo0"),
+			},
+		},
+		{
+			name: "referencing protected configuration as regular user",
+			obj: &admissionv1.AdmissionRequest{
+				Operation: "CREATE",
+				Object: runtime.RawExtension{
+					Raw: []byte(`
+						{
+							"apiVersion": "application.giantswarm.io/v1alpha1",
+							"kind": "App",
+							"metadata": {
+    							"name": "hello-world",
+    							"namespace": "demo0",
+    							"labels": {
+									"app-operator.giantswarm.io/version": "0.0.0"
+    							}
+							},
+							"spec": {
+    							"catalog": "giantswarm",
+    							"name": "hello-world",
+    							"namespace": "demo0",
+    							"config": {
+									"configMap": {
+										"name": "demo0-cluster-values",
+										"namespace": "demo0"
+									}
+								},
+    							"kubeConfig": {
+									"context": {
+										"name": "demo0-kubeconfig"
+									},
+									"inCluster": false,
+									"secret": {
+										"name": "demo0-kubeconfig",
+										"namespace": "demo0"
+									}
+								},
+								"userConfig": {
+									"secret": {
+										"name": "vault-token",
+										"namespace": "giantswarm"
+									}
+								},
+								"version": "0.3.0"
+							}
+						}
+					`),
+				},
+				UserInfo: authv1.UserInfo{
+					Username: "00001@customer.onmicrosoft.com",
+					Groups: []string{
+						"customer:CUSTOMER-GROUP",
+					},
+				},
+			},
+			catalogs: []*v1alpha1.Catalog{
+				newTestCatalog("giantswarm", "default"),
+			},
+			configMaps: []*corev1.ConfigMap{
+				newTestConfigMap("demo0-cluster-values", "demo0"),
+				newTestConfigMap("hello-world-user-values", "demo0"),
+			},
+			secrets: []*corev1.Secret{
+				newTestSecret("demo0-kubeconfig", "demo0"),
+				newTestSecret("vault-token", "giantswarm"),
+			},
+			expectedErr: "validation error: references to giantswarm namespace not allowed for `0.0.0` labeld apps",
+		},
+		{
+			name: "referencing protected configuration as privileged service account",
+			obj: &admissionv1.AdmissionRequest{
+				Operation: "CREATE",
+				Object: runtime.RawExtension{
+					Raw: []byte(`
+						{
+							"apiVersion": "application.giantswarm.io/v1alpha1",
+							"kind": "App",
+							"metadata": {
+    							"name": "app-operator-demo0",
+    							"namespace": "demo0",
+    							"labels": {
+									"app-operator.giantswarm.io/version": "0.0.0"
+    							}
+							},
+							"spec": {
+    							"catalog": "control-plane",
+    							"name": "app-operator",
+    							"namespace": "demo0",
+    							"config": {
+									"configMap": {
+										"name": "app-operator-cluster-values",
+										"namespace": "giantswarm"
+									}
+								},
+    							"kubeConfig": {
+									"inCluster": true
+								},
+								"version": "0.3.0"
+							}
+						}
+					`),
+				},
+				UserInfo: authv1.UserInfo{
+					Username: "system:serviceaccount:giantswarm:cluster-operator-3-13-0",
+					Groups: []string{
+						"system:authenticated",
+					},
+				},
+			},
+			catalogs: []*v1alpha1.Catalog{
+				newTestCatalog("control-plane", "giantswarm"),
+			},
+			configMaps: []*corev1.ConfigMap{
+				newTestConfigMap("app-operator-cluster-values", "giantswarm"),
+			},
+		},
+		{
+			name: "modify existing App CR as a regular user",
+			obj: &admissionv1.AdmissionRequest{
+				Operation: "UPDATE",
+				Object: runtime.RawExtension{
+					Raw: []byte(`
+						{
+							"apiVersion": "application.giantswarm.io/v1alpha1",
+							"kind": "App",
+							"metadata": {
+    							"name": "app-operator-demo0",
+    							"namespace": "demo0",
+    							"labels": {
+									"app-operator.giantswarm.io/version": "0.0.0"
+    							}
+							},
+							"spec": {
+    							"catalog": "control-plane",
+    							"name": "app-operator",
+    							"namespace": "demo0",
+    							"config": {
+									"configMap": {
+										"name": "app-operator-cluster-values",
+										"namespace": "giantswarm"
+									}
+								},
+    							"kubeConfig": {
+									"inCluster": true
+								},
+								"userConfig": {
+									"secret": {
+										"name": "vault-token",
+										"namespace": "giantswarm"
+									}
+								},
+								"version": "0.3.0"
+							}
+						}
+					`),
+				},
+				UserInfo: authv1.UserInfo{
+					Username: "00001@customer.onmicrosoft.com",
+					Groups: []string{
+						"customer:CUSTOMER-GROUP",
+					},
+				},
+			},
+			catalogs: []*v1alpha1.Catalog{
+				newTestCatalog("control-plane", "giantswarm"),
+			},
+			configMaps: []*corev1.ConfigMap{
+				newTestConfigMap("app-operator-cluster-values", "giantswarm"),
+			},
+			secrets: []*corev1.Secret{
+				newTestSecret("vault-token", "giantswarm"),
+			},
+			expectedErr: "validation error: references to giantswarm namespace not allowed for `0.0.0` labeld apps",
 		},
 	}
 

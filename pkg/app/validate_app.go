@@ -144,9 +144,9 @@ func (v *Validator) Validate(request *admissionv1.AdmissionRequest) (bool, error
 		return true, nil
 	}
 
-	// Let's log users names and groupd membership in case we need to
+	// Let's log users names and groups membership in case we need to
 	// troubleshoot possible problems. This way it will be much easier
-	// to recognize the actor when debugging issues.
+	// to recognize the actor.
 	v.logger.Debugf(
 		ctx,
 		"validating action taken by `%s` user in `%s` groups",
@@ -154,9 +154,11 @@ func (v *Validator) Validate(request *admissionv1.AdmissionRequest) (bool, error
 		strings.Join(request.UserInfo.Groups, ","),
 	)
 
-	// When creating App CR for unique App Operator by non privileged
-	// user check for references to the protected namespaces and fail
-	// on finding any. For other cases behave like usual.
+	// When creating App CR for unique App Operator by a non privileged
+	// user run extra check to find out:
+	// - illegal references in config or userConfig
+	// - wrong value of the `chart-operator.giantswarm.io/app-namespace`
+	// - `app-catalog` from `control-plane[-test]-catalog` being requested
 	if key.VersionLabel(app) == uniqueAppCRVersion && nonPrivilegedActor(ctx, request.UserInfo) {
 		_, err := v.appValidator.ValidateAppForRegularUser(ctx, app)
 		if err != nil {

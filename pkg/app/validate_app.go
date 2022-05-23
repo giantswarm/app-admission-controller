@@ -28,6 +28,7 @@ const (
 
 var (
 	privilegedSeviceAccounts = []string{
+		"system:serviceaccount:draughtsman:",
 		"system:serviceaccount:giantswarm:",
 		"system:serviceaccount:flux-giantswarm:",
 		"system:serviceaccount:kube-system:",

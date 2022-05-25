@@ -19,12 +19,12 @@ deploymentStrategy:
   type: RollingUpdate
 
 security:
-  appBlacklist: #[]
+  appBlacklist:
     - "app-operator"
-  catalogBlacklist: #[]
+  catalogBlacklist:
     - "control-plane-catalog"
     - "control-plane-test-catalog"
-  groupWhitelist: #[]
+  groupWhitelist:
     - "giantswarm:giantswarm:giantswarm-admins"
   namespaceBlacklist:
     - "-prometheus"
@@ -34,7 +34,7 @@ security:
     - "giantswarm"
     - "kube-system"
     - "monitoring"
-  userWhitelist: #[]
+  userWhitelist:
     - "system:serviceaccount:draughtsman:"
     - "system:serviceaccount:giantswarm:"
     - "system:serviceaccount:flux-giantswarm:"

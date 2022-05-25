@@ -13,11 +13,12 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	admissionv1 "k8s.io/api/admission/v1"
-	authv1 "k8s.io/api/authentication/v1"
 
 	"github.com/giantswarm/app-admission-controller/internal/recorder"
 	"github.com/giantswarm/app-admission-controller/pkg/project"
 	"github.com/giantswarm/app-admission-controller/pkg/validator"
+
+	secins "github.com/giantswarm/app-admission-controller/internal/security/inspector"
 )
 
 const (
@@ -26,31 +27,20 @@ const (
 	uniqueAppCRVersion = "0.0.0"
 )
 
-var (
-	privilegedSeviceAccounts = []string{
-		"system:serviceaccount:draughtsman:",
-		"system:serviceaccount:giantswarm:",
-		"system:serviceaccount:flux-giantswarm:",
-		"system:serviceaccount:kube-system:",
-	}
-
-	privilegedGroups = map[string]bool{
-		"giantswarm:giantswarm:giantswarm-admins": true,
-	}
-)
-
 type ValidatorConfig struct {
 	Event     recorder.Interface
 	K8sClient k8sclient.Interface
 	Logger    micrologger.Logger
 
-	Provider string
+	Provider  string
+	Inspector *secins.Inspector
 }
 
 type Validator struct {
 	appValidator *validation.Validator
 	event        recorder.Interface
 	logger       micrologger.Logger
+	inspector    *secins.Inspector
 }
 
 func NewValidator(config ValidatorConfig) (*Validator, error) {
@@ -66,6 +56,10 @@ func NewValidator(config ValidatorConfig) (*Validator, error) {
 
 	if config.Provider == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Provider must not be empty", config)
+	}
+
+	if config.Inspector == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.SecurityInformer must not be empty", config)
 	}
 
 	var err error
@@ -96,6 +90,7 @@ func NewValidator(config ValidatorConfig) (*Validator, error) {
 		appValidator: appValidator,
 		event:        config.Event,
 		logger:       config.Logger,
+		inspector:    config.Inspector,
 	}
 
 	return v, nil
@@ -155,15 +150,12 @@ func (v *Validator) Validate(request *admissionv1.AdmissionRequest) (bool, error
 		strings.Join(request.UserInfo.Groups, ","),
 	)
 
-	// When creating App CR for unique App Operator by a non privileged
-	// user run extra check to find out:
+	// When creating App CR for unique App Operator run extra check to find out:
 	// - illegal references in config or userConfig
-	// - wrong value of the `chart-operator.giantswarm.io/app-namespace`
-	// - `app-catalog` from `control-plane[-test]-catalog` being requested
-	if key.VersionLabel(app) == uniqueAppCRVersion && nonPrivilegedActor(ctx, request.UserInfo) {
-		_, err := v.appValidator.ValidateAppForRegularUser(ctx, app)
+	// - blacklisted app being requested
+	if key.VersionLabel(app) == uniqueAppCRVersion {
+		err := v.inspector.Inspect(ctx, app, request.UserInfo)
 		if err != nil {
-			v.logger.Errorf(ctx, err, "rejected app %#q in namespace %#q", app.Name, app.Namespace)
 			return false, microerror.Mask(err)
 		}
 	}
@@ -244,25 +236,4 @@ func (v *Validator) emitEvents(ctx context.Context, request *admissionv1.Admissi
 	}
 
 	return nil
-}
-
-func nonPrivilegedActor(ctx context.Context, userInfo authv1.UserInfo) bool {
-	// Checks if request comes from one of Service Account from one of the
-	// privileged namespaces. If yes, it means there is work being done by the
-	// operators, or someone impersonating them.
-	for _, user := range privilegedSeviceAccounts {
-		if strings.HasPrefix(userInfo.Username, user) {
-			return false
-		}
-	}
-
-	// Check of request comes from one of the allowed Groups of users,
-	// if yes permit it, as we trust actions taken by the trusted actors.
-	for _, group := range userInfo.Groups {
-		if _, ok := privilegedGroups[group]; ok {
-			return false
-		}
-	}
-
-	return true
 }

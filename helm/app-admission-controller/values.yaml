@@ -18,6 +18,28 @@ deploymentStrategy:
     maxUnavailable: 0
   type: RollingUpdate
 
+security:
+  appBlacklist: # []
+    - "app-operator"
+  catalogBlacklist: # []
+    - "control-plane-catalog"
+    - "control-plane-test-catalog"
+  groupWhitelist: # []
+    - "giantswarm:giantswarm:giantswarm-admins"
+  namespaceBlacklist:
+    - "-prometheus"
+    - "capi-"
+    - "draughtsman"
+    - "flux-giantswarm"
+    - "giantswarm"
+    - "kube-system"
+    - "monitoring"
+  userWhitelist: # []
+    - "system:serviceaccount:draughtsman:"
+    - "system:serviceaccount:giantswarm:"
+    - "system:serviceaccount:flux-giantswarm:"
+    - "system:serviceaccount:kube-system:"
+
 podDisruptionBudget:
   enabled: true
   minAvailable: 1

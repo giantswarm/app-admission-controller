@@ -21,6 +21,13 @@ type Config struct {
 	MetricsAddress string
 	Provider       string
 
+	// Configuration for security validation
+	AppBlacklist       []string
+	CatalogBlacklist   []string
+	GroupWhitelist     []string
+	NamespaceBlacklist []string
+	UserWhitelist      []string
+
 	Logger    micrologger.Logger
 	K8sClient k8sclient.Interface
 }
@@ -67,6 +74,12 @@ func Parse() (Config, error) {
 	kingpin.Flag("tls-cert-file", "File containing the certificate for HTTPS").Required().StringVar(&config.CertFile)
 	kingpin.Flag("tls-key-file", "File containing the private key for HTTPS").Required().StringVar(&config.KeyFile)
 	kingpin.Flag("provider", "Provider of the management cluster. One of aws, azure, kvm").Required().StringVar(&config.Provider)
+
+	kingpin.Flag("whitelist-group", "Whitelited group").StringsVar(&config.GroupWhitelist)
+	kingpin.Flag("whitelist-user", "Whitelited user").StringsVar(&config.UserWhitelist)
+	kingpin.Flag("blacklist-app", "Blacklisted apps").StringsVar(&config.AppBlacklist)
+	kingpin.Flag("blacklist-catalog", "Blacklisted catalogs").StringsVar(&config.CatalogBlacklist)
+	kingpin.Flag("blacklist-namespace", "Blacklisted namespaces").StringsVar(&config.NamespaceBlacklist)
 
 	kingpin.Parse()
 

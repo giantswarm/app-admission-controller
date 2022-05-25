@@ -24,6 +24,12 @@ spec:
         - name: {{ include "name" . }}-certificates
           secret:
             secretName: {{ include "resource.default.name"  . }}-certificates
+        - name: {{ include "resource.default.name" . }}-configmap
+          configMap:
+            name: {{ include "resource.default.name" . }}
+            items:
+              - key: flags
+                path: flags
       serviceAccountName: {{ include "resource.default.name"  . }}
       securityContext:
         runAsUser: 1000
@@ -36,9 +42,12 @@ spec:
             - --tls-cert-file=/certs/ca.crt
             - --tls-key-file=/certs/tls.key
             - --provider={{ .Values.provider.kind }}
+            - "@/var/run/{{ .Chart.Name }}/configmap/flags"
           volumeMounts:
           - name: {{ include "name" . }}-certificates
             mountPath: "/certs"
+          - name: {{ include "resource.default.name" . }}-configmap
+            mountPath: /var/run/{{ .Chart.Name }}/configmap/
           ports:
           - containerPort: 8443
             name: webhook

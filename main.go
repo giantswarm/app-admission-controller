@@ -15,10 +15,12 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/giantswarm/app-admission-controller/config"
-	"github.com/giantswarm/app-admission-controller/internal/recorder"
 	"github.com/giantswarm/app-admission-controller/pkg/app"
 	"github.com/giantswarm/app-admission-controller/pkg/mutator"
 	"github.com/giantswarm/app-admission-controller/pkg/validator"
+
+	"github.com/giantswarm/app-admission-controller/internal/recorder"
+	secins "github.com/giantswarm/app-admission-controller/internal/security/inspector"
 )
 
 func main() {
@@ -67,6 +69,20 @@ func mainWithError() error {
 		}
 	}
 
+	var inspector *secins.Inspector
+	{
+
+		c := secins.Config{
+			NamespaceBlacklist: cfg.NamespaceBlacklist,
+			GroupWhitelist:     cfg.GroupWhitelist,
+			UserWhitelist:      cfg.UserWhitelist,
+			AppBlacklist:       cfg.AppBlacklist,
+			CatalogBlacklist:   cfg.CatalogBlacklist,
+		}
+
+		inspector = secins.New(c)
+	}
+
 	var appValidator *app.Validator
 	{
 		c := app.ValidatorConfig{
@@ -74,7 +90,8 @@ func mainWithError() error {
 			K8sClient: cfg.K8sClient,
 			Logger:    newLogger,
 
-			Provider: cfg.Provider,
+			Provider:  cfg.Provider,
+			Inspector: inspector,
 		}
 		appValidator, err = app.NewValidator(c)
 		if err != nil {

@@ -6,7 +6,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/dyson/certman v0.2.1
 	github.com/giantswarm/apiextensions-application v0.3.1
-	github.com/giantswarm/app/v6 v6.9.1-0.20220519155702-427ee1cdf0c3
+	github.com/giantswarm/app/v6 v6.10.0
 	github.com/giantswarm/apptest v1.0.1
 	github.com/giantswarm/backoff v1.0.0
 	github.com/giantswarm/k8sclient/v6 v6.1.0

@@ -17,9 +17,38 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
 	"github.com/giantswarm/app-admission-controller/internal/recorder"
+	secins "github.com/giantswarm/app-admission-controller/internal/security/inspector"
 )
 
 func Test_ValidateApp(t *testing.T) {
+	secInsCfg := secins.Config{
+		NamespaceBlacklist: []string{
+			"capi-",
+			"-prometheus",
+			"draughtsman",
+			"flux-giantswarm",
+			"giantswarm",
+			"kube-system",
+			"monitoring",
+		},
+		GroupWhitelist: []string{
+			"giantswarm:giantswarm:giantswarm-admins",
+		},
+		UserWhitelist: []string{
+			"system:serviceaccount:draughtsman:",
+			"system:serviceaccount:giantswarm:",
+			"system:serviceaccount:flux-giantswarm:",
+			"system:serviceaccount:kube-system:",
+		},
+		AppBlacklist: []string{
+			"app-operator",
+		},
+		CatalogBlacklist: []string{
+			"control-plane-catalog",
+			"control-plane-test-catalog",
+		},
+	}
+
 	tests := []struct {
 		name        string
 		obj         *admissionv1.AdmissionRequest
@@ -335,7 +364,74 @@ func Test_ValidateApp(t *testing.T) {
 				newTestSecret("demo0-kubeconfig", "demo0"),
 				newTestSecret("vault-token", "giantswarm"),
 			},
-			expectedErr: "validation error: references to `giantswarm` namespace not allowed",
+			expectedErr: "security violation error: references to `giantswarm` namespace not allowed",
+		},
+		{
+			name: "referencing protected configuration as regular service account",
+			obj: &admissionv1.AdmissionRequest{
+				Operation: "CREATE",
+				Object: runtime.RawExtension{
+					Raw: []byte(`
+						{
+							"apiVersion": "application.giantswarm.io/v1alpha1",
+							"kind": "App",
+							"metadata": {
+    							"name": "hello-world",
+    							"namespace": "demo0",
+    							"labels": {
+									"app-operator.giantswarm.io/version": "0.0.0"
+    							}
+							},
+							"spec": {
+    							"catalog": "giantswarm",
+    							"name": "hello-world",
+    							"namespace": "demo0",
+    							"config": {
+									"configMap": {
+										"name": "demo0-cluster-values",
+										"namespace": "demo0"
+									}
+								},
+    							"kubeConfig": {
+									"context": {
+										"name": "demo0-kubeconfig"
+									},
+									"inCluster": false,
+									"secret": {
+										"name": "demo0-kubeconfig",
+										"namespace": "demo0"
+									}
+								},
+								"userConfig": {
+									"configMap": {
+										"name": "capi-credentials",
+										"namespace": "capi-system"
+									}
+								},
+								"version": "0.3.0"
+							}
+						}
+					`),
+				},
+				UserInfo: authv1.UserInfo{
+					Username: "system:serviceaccount:default:automation",
+					Groups: []string{
+						"system:authenticated",
+					},
+				},
+			},
+			catalogs: []*v1alpha1.Catalog{
+				newTestCatalog("giantswarm", "default"),
+			},
+			configMaps: []*corev1.ConfigMap{
+				newTestConfigMap("demo0-cluster-values", "demo0"),
+				newTestConfigMap("hello-world-user-values", "demo0"),
+			},
+			secrets: []*corev1.Secret{
+				newTestSecret("demo0-kubeconfig", "demo0"),
+				newTestSecret("vault-token", "giantswarm"),
+			},
+			expectedErr: "security violation error: references to `capi-system` namespace not allowed",
 		},
 		{
 			name: "referencing protected configuration as privileged service account",
@@ -384,6 +480,46 @@ func Test_ValidateApp(t *testing.T) {
 			configMaps: []*corev1.ConfigMap{
 				newTestConfigMap("app-operator-cluster-values", "giantswarm"),
 			},
+		},
+		{
+			name: "install blacklisted app as regular service account",
+			obj: &admissionv1.AdmissionRequest{
+				Operation: "CREATE",
+				Object: runtime.RawExtension{
+					Raw: []byte(`
+						{
+							"apiVersion": "application.giantswarm.io/v1alpha1",
+							"kind": "App",
+							"metadata": {
+    							"name": "app-operator-new",
+    							"namespace": "demo0",
+    							"labels": {
+									"app-operator.giantswarm.io/version": "0.0.0"
+    							}
+							},
+							"spec": {
+    							"catalog": "control-plane-catalog",
+    							"name": "app-operator",
+    							"namespace": "demo0",
+    							"kubeConfig": {
+									"inCluster": true
+								},
+								"version": "0.3.0"
+							}
+						}
+					`),
+				},
+				UserInfo: authv1.UserInfo{
+					Username: "system:serviceaccount:default:automation",
+					Groups: []string{
+						"system:authenticated",
+					},
+				},
+			},
+			catalogs: []*v1alpha1.Catalog{
+				newTestCatalog("control-plane", "giantswarm"),
+			},
+			expectedErr: "security violation error: installing `app-operator` from `control-plane-catalog` catalog is not allowed",
 		},
 		{
 			name: "modify existing App CR as a regular user",
@@ -441,7 +577,7 @@ func Test_ValidateApp(t *testing.T) {
 			secrets: []*corev1.Secret{
 				newTestSecret("vault-token", "giantswarm"),
 			},
-			expectedErr: "validation error: installing `app-operator` from `control-plane-catalog` catalog is not allowed",
+			expectedErr: "security violation error: installing `app-operator` from `control-plane-catalog` catalog is not allowed",
 		},
 		{
 			name: "modify existing App CR as a GS member",
@@ -576,6 +712,7 @@ func Test_ValidateApp(t *testing.T) {
 				K8sClient: k8sClient,
 				Logger:    microloggertest.New(),
 				Provider:  "aws",
+				Inspector: secins.New(secInsCfg),
 			}
 
 			r, err := NewValidator(c)

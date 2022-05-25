@@ -25,11 +25,11 @@ type Inspector struct {
 
 func New(config Config) *Inspector {
 	inspector := Inspector{
-		appBlacklist:              make(map[string]empty, 0),
-		catalogBlacklist:          make(map[string]empty, 0),
+		appBlacklist:              make(map[string]empty),
+		catalogBlacklist:          make(map[string]empty),
 		dynamicNamespaceBlacklist: make([]string, 0),
-		fixedNamespaceBlacklist:   make(map[string]empty, 0),
-		groupWhitelist:            make(map[string]empty, 0),
+		fixedNamespaceBlacklist:   make(map[string]empty),
+		groupWhitelist:            make(map[string]empty),
 		userWhitelist:             config.UserWhitelist,
 	}
 

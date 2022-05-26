@@ -75,8 +75,8 @@ func Parse() (Config, error) {
 	kingpin.Flag("tls-key-file", "File containing the private key for HTTPS").Required().StringVar(&config.KeyFile)
 	kingpin.Flag("provider", "Provider of the management cluster. One of aws, azure, kvm").Required().StringVar(&config.Provider)
 
-	kingpin.Flag("whitelist-group", "Whitelited group").StringsVar(&config.GroupWhitelist)
-	kingpin.Flag("whitelist-user", "Whitelited user").StringsVar(&config.UserWhitelist)
+	kingpin.Flag("whitelist-group", "Whitelisted group").StringsVar(&config.GroupWhitelist)
+	kingpin.Flag("whitelist-user", "Whitelisted user").StringsVar(&config.UserWhitelist)
 	kingpin.Flag("blacklist-app", "Blacklisted apps").StringsVar(&config.AppBlacklist)
 	kingpin.Flag("blacklist-catalog", "Blacklisted catalogs").StringsVar(&config.CatalogBlacklist)
 	kingpin.Flag("blacklist-namespace", "Blacklisted namespaces").StringsVar(&config.NamespaceBlacklist)

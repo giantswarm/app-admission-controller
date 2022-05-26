@@ -8,17 +8,17 @@ metadata:
 data:
   flags: |
     {{- range .Values.security.appBlacklist }}
-    --blacklist-app={{ . | quote }}
+    --blacklist-app={{ . }}
     {{- end }}
     {{- range .Values.security.catalogBlacklist }}
-    --blacklist-catalog={{ . | quote }}
+    --blacklist-catalog={{ . }}
     {{- end }}
     {{- range .Values.security.groupWhitelist }}
-    --whitelist-group={{ . | quote }}
+    --whitelist-group={{ . }}
     {{- end }}
     {{- range .Values.security.namespaceBlacklist }}
-    --blacklist-namespace={{ . | quote }}
+    --blacklist-namespace={{ . }}
     {{- end }}
     {{- range .Values.security.userWhitelist }}
-    --whitelist-user={{ . | quote }}
+    --whitelist-user={{ . }}
     {{- end }}

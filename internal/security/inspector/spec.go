@@ -2,11 +2,16 @@ package inspector
 
 import (
 	"strings"
+
+	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger"
 )
 
 type empty struct{}
 
 type Config struct {
+	Logger micrologger.Logger
+
 	AppBlacklist       []string
 	CatalogBlacklist   []string
 	GroupWhitelist     []string
@@ -15,6 +20,8 @@ type Config struct {
 }
 
 type Inspector struct {
+	logger micrologger.Logger
+
 	appBlacklist              map[string]empty
 	catalogBlacklist          map[string]empty
 	dynamicNamespaceBlacklist []string
@@ -23,8 +30,14 @@ type Inspector struct {
 	userWhitelist             []string
 }
 
-func New(config Config) *Inspector {
+func New(config Config) (*Inspector, error) {
+	if config.Logger == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
+	}
+
 	inspector := Inspector{
+		logger: config.Logger,
+
 		appBlacklist:              make(map[string]empty),
 		catalogBlacklist:          make(map[string]empty),
 		dynamicNamespaceBlacklist: make([]string, 0),
@@ -53,5 +66,5 @@ func New(config Config) *Inspector {
 		inspector.catalogBlacklist[i] = empty{}
 	}
 
-	return &inspector
+	return &inspector, nil
 }

@@ -23,6 +23,7 @@ func (i *Inspector) Inspect(ctx context.Context, app v1alpha1.App, userInfo auth
 
 	// Skip early for whitelisted actors
 	if i.isWhitelistedActor(ctx, userInfo) {
+		i.logger.Debugf(ctx, "skipping validation due to whitelisted user %#q", userInfo.Username)
 		return nil
 	}
 
@@ -30,6 +31,7 @@ func (i *Inspector) Inspect(ctx context.Context, app v1alpha1.App, userInfo auth
 	// blacklisted namespaces, as it means this apps
 	// is one of the MAPI apps
 	if i.isPrivateApp(ctx, app) {
+		i.logger.Debugf(ctx, "skipping validation for app comming from private %#q namespace", app.ObjectMeta.Namespace)
 		return nil
 	}
 
@@ -37,6 +39,7 @@ func (i *Inspector) Inspect(ctx context.Context, app v1alpha1.App, userInfo auth
 	// and catalogs
 	err = i.isBlacklistedApp(ctx, app)
 	if err != nil {
+		i.logger.Errorf(ctx, err, "rejecting blacklisted %#q app in %#q namespace", app.Name, app.Namespace)
 		return microerror.Mask(err)
 	}
 
@@ -44,6 +47,7 @@ func (i *Inspector) Inspect(ctx context.Context, app v1alpha1.App, userInfo auth
 	// blacklisted namespaces
 	err = i.hasBlacklistedReference(ctx, app)
 	if err != nil {
+		i.logger.Errorf(ctx, err, "rejecting %#q app in %#q namespace due to blacklisted references", app.Name, app.Namespace)
 		return microerror.Mask(err)
 	}
 

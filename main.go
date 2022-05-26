@@ -73,6 +73,8 @@ func mainWithError() error {
 	{
 
 		c := secins.Config{
+			Logger: newLogger,
+
 			NamespaceBlacklist: cfg.NamespaceBlacklist,
 			GroupWhitelist:     cfg.GroupWhitelist,
 			UserWhitelist:      cfg.UserWhitelist,
@@ -80,7 +82,10 @@ func mainWithError() error {
 			CatalogBlacklist:   cfg.CatalogBlacklist,
 		}
 
-		inspector = secins.New(c)
+		inspector, err = secins.New(c)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	var appValidator *app.Validator

@@ -22,6 +22,8 @@ import (
 
 func Test_ValidateApp(t *testing.T) {
 	secInsCfg := secins.Config{
+		Logger: microloggertest.New(),
+
 		NamespaceBlacklist: []string{
 			"capi-",
 			"-prometheus",
@@ -707,12 +709,17 @@ func Test_ValidateApp(t *testing.T) {
 				event = recorder.New(c)
 			}
 
+			ins, err := secins.New(secInsCfg)
+			if err != nil {
+				t.Fatalf("error == %#v, want nil", err)
+			}
+
 			c := ValidatorConfig{
 				Event:     event,
 				K8sClient: k8sClient,
 				Logger:    microloggertest.New(),
 				Provider:  "aws",
-				Inspector: secins.New(secInsCfg),
+				Inspector: ins,
 			}
 
 			r, err := NewValidator(c)

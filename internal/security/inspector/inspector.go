@@ -21,7 +21,6 @@ const (
 func (i *Inspector) Inspect(ctx context.Context, app v1alpha1.App, userInfo authv1.UserInfo) error {
 	var err error
 
-	i.logger.Debugf(ctx, "validating against users whitelist %#q", i.userWhitelist)
 	// Skip early for whitelisted actors
 	if i.isWhitelistedActor(ctx, userInfo) {
 		i.logger.Debugf(ctx, "skipping validation due to whitelisted user %#q", userInfo.Username)
@@ -36,16 +35,14 @@ func (i *Inspector) Inspect(ctx context.Context, app v1alpha1.App, userInfo auth
 		return nil
 	}
 
-	i.logger.Debugf(ctx, "validating against apps blacklist %#q", i.appBlacklist)
 	// Validate app against blacklisted apps
 	// and catalogs
 	err = i.isBlacklistedApp(ctx, app)
 	if err != nil {
-		i.logger.Errorf(ctx, err, "rejecting blacklisted %#q app in %#q namespace", app.Name, app.Namespace)
+		i.logger.Errorf(ctx, err, "rejecting blacklisted %#q app", app.Name)
 		return microerror.Mask(err)
 	}
 
-	i.logger.Debugf(ctx, "validating against apps blacklist %#q", i.fixedNamespaceBlacklist, i.dynamicNamespaceBlacklist)
 	// Validate app against references to
 	// blacklisted namespaces
 	err = i.hasBlacklistedReference(ctx, app)

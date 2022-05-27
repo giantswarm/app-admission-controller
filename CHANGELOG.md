@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.0] - 2022-05-27
+
 ### Added
 
 - Run additional validation logic for submitting the `0.0.0`-labeld App CRs by a non privileged users.
@@ -195,7 +197,8 @@ allow app CR creation.
 - Add validation webhook that is enabled for app CRs with
 `app-operator.giantswarm.io/version` label value >= `3.0.0`.
 
-[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v0.16.3...HEAD
+[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v0.17.0...HEAD
+[0.17.0]: https://github.com/giantswarm/app-admission-controller/compare/v0.16.3...v0.17.0
 [0.16.3]: https://github.com/giantswarm/app-admission-controller/compare/v0.16.2...v0.16.3
 [0.16.2]: https://github.com/giantswarm/app-admission-controller/compare/v0.16.1...v0.16.2
 [0.16.1]: https://github.com/giantswarm/app-admission-controller/compare/v0.16.0...v0.16.1

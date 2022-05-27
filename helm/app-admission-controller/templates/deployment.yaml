@@ -36,6 +36,21 @@ spec:
             - --tls-cert-file=/certs/ca.crt
             - --tls-key-file=/certs/tls.key
             - --provider={{ .Values.provider.kind }}
+            {{- range .Values.security.appBlacklist }}
+            - --blacklist-app={{ . }}
+            {{- end }}
+            {{- range .Values.security.catalogBlacklist }}
+            - --blacklist-catalog={{ . }}
+            {{- end }}
+            {{- range .Values.security.groupWhitelist }}
+            - --whitelist-group={{ . }}
+            {{- end }}
+            {{- range .Values.security.namespaceBlacklist }}
+            - --blacklist-namespace={{ . }}
+            {{- end }}
+            {{- range .Values.security.userWhitelist }}
+            - --whitelist-user={{ . }}
+            {{- end }}
           volumeMounts:
           - name: {{ include "name" . }}-certificates
             mountPath: "/certs"

@@ -32,6 +32,7 @@ func Test_ValidateApp(t *testing.T) {
 			"giantswarm",
 			"kube-system",
 			"monitoring",
+			"org-giantswarm",
 		},
 		GroupWhitelist: []string{
 			"giantswarm:giantswarm:giantswarm-admins",
@@ -482,6 +483,105 @@ func Test_ValidateApp(t *testing.T) {
 			configMaps: []*corev1.ConfigMap{
 				newTestConfigMap("app-operator-cluster-values", "giantswarm"),
 			},
+		},
+		{
+			name: "referencing protected kubeconfig from private app",
+			obj: &admissionv1.AdmissionRequest{
+				Operation: "CREATE",
+				Object: runtime.RawExtension{
+					Raw: []byte(`
+						{
+							"apiVersion": "application.giantswarm.io/v1alpha1",
+							"kind": "App",
+							"metadata": {
+    							"name": "gsgang-app-operator",
+    							"namespace": "org-giantswarm",
+    							"labels": {
+									"giantswarm.io/cluster": "gsgang"
+    							}
+							},
+							"spec": {
+    							"catalog": "control-plane",
+    							"name": "app-operator",
+    							"namespace": "org-giantswarm",
+    							"kubeConfig": {
+									"context": {
+										"name": "gsgang-admin@gsgang"
+									},
+									"inCluster": false,
+									"secret": {
+										"name": "gsgang-kubeconfig",
+										"namespace": "org-giantswarm"
+									}
+								},
+								"version": "0.3.0"
+							}
+						}
+					`),
+				},
+				UserInfo: authv1.UserInfo{
+					Username: "system:serviceaccount:giantswarm:cluster-operator-3-13-0",
+					Groups: []string{
+						"system:authenticated",
+					},
+				},
+			},
+			catalogs: []*v1alpha1.Catalog{
+				newTestCatalog("control-plane", "giantswarm"),
+			},
+			secrets: []*corev1.Secret{
+				newTestSecret("gsgang-kubeconfig", "org-giantswarm"),
+			},
+		},
+		{
+			name: "referencing protected kubeconfig as a regular user",
+			obj: &admissionv1.AdmissionRequest{
+				Operation: "CREATE",
+				Object: runtime.RawExtension{
+					Raw: []byte(`
+						{
+							"apiVersion": "application.giantswarm.io/v1alpha1",
+							"kind": "App",
+							"metadata": {
+    							"name": "malicious-app",
+    							"namespace": "default",
+    							"labels": {
+									"app-operator.giantswarm.io/version": "0.0.0"
+    							}
+							},
+							"spec": {
+    							"catalog": "custom",
+    							"name": "malicious-app",
+    							"namespace": "default",
+    							"kubeConfig": {
+									"context": {
+										"name": "gsgang-admin@gsgang"
+									},
+									"inCluster": false,
+									"secret": {
+										"name": "gsgang-kubeconfig",
+										"namespace": "org-giantswarm"
+									}
+								},
+								"version": "0.3.0"
+							}
+						}
+					`),
+				},
+				UserInfo: authv1.UserInfo{
+					Username: "00001@customer.onmicrosoft.com",
+					Groups: []string{
+						"customer:CUSTOMER-GROUP",
+					},
+				},
+			},
+			catalogs: []*v1alpha1.Catalog{
+				newTestCatalog("custom", "default"),
+			},
+			secrets: []*corev1.Secret{
+				newTestSecret("gsgang-kubeconfig", "org-giantswarm"),
+			},
+			expectedErr: "security violation error: references to `org-giantswarm` namespace not allowed",
 		},
 		{
 			name: "install blacklisted app as regular service account",

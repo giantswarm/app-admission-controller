@@ -485,7 +485,10 @@ func Test_ValidateApp(t *testing.T) {
 			},
 		},
 		{
-			name: "referencing protected kubeconfig from private app",
+			// App created by some GS member with access to the clusters, but being in the group
+			// not explicitly listed in the user whitelists. Still, app created in private namespaces
+			// means we pass the validation.
+			name: "referencing protected kubeconfig from a private app",
 			obj: &admissionv1.AdmissionRequest{
 				Operation: "CREATE",
 				Object: runtime.RawExtension{
@@ -494,16 +497,17 @@ func Test_ValidateApp(t *testing.T) {
 							"apiVersion": "application.giantswarm.io/v1alpha1",
 							"kind": "App",
 							"metadata": {
-    							"name": "gsgang-app-operator",
+    							"name": "fake-controller",
     							"namespace": "org-giantswarm",
     							"labels": {
-									"giantswarm.io/cluster": "gsgang"
+									"giantswarm.io/cluster": "gsgang",
+									"app-operator.giantswarm.io/version": "0.0.0"
     							}
 							},
 							"spec": {
     							"catalog": "control-plane",
-    							"name": "app-operator",
-    							"namespace": "org-giantswarm",
+    							"name": "fake-controller",
+    							"namespace": "giantswarm",
     							"kubeConfig": {
 									"context": {
 										"name": "gsgang-admin@gsgang"
@@ -520,9 +524,9 @@ func Test_ValidateApp(t *testing.T) {
 					`),
 				},
 				UserInfo: authv1.UserInfo{
-					Username: "system:serviceaccount:giantswarm:cluster-operator-3-13-0",
+					Username: "user@giantswarm.io",
 					Groups: []string{
-						"system:authenticated",
+						"customer:giantswarm:Employees",
 					},
 				},
 			},
@@ -552,7 +556,7 @@ func Test_ValidateApp(t *testing.T) {
 							"spec": {
     							"catalog": "custom",
     							"name": "malicious-app",
-    							"namespace": "default",
+    							"namespace": "giantswarm",
     							"kubeConfig": {
 									"context": {
 										"name": "gsgang-admin@gsgang"

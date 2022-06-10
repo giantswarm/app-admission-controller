@@ -63,6 +63,7 @@ func (i *Inspector) hasBlacklistedReference(ctx context.Context, app v1alpha1.Ap
 		key.AppSecretNamespace(app),
 		key.UserConfigMapNamespace(app),
 		key.UserSecretNamespace(app),
+		key.KubeConfigSecretNamespace(app),
 	}
 
 	for _, ns := range referencedNamespaces {

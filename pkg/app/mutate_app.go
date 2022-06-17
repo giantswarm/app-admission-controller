@@ -73,9 +73,6 @@ func (m *Mutator) Mutate(request *admissionv1.AdmissionRequest) ([]mutator.Patch
 	if _, _, err := mutator.Deserializer.Decode(request.OldObject.Raw, nil, appOldCR); err != nil {
 		return nil, microerror.Maskf(parsingFailedError, "unable to parse app: %#v", err)
 	}
-	if appOldCR == nil {
-		appOldCR = &v1alpha1.App{}
-	}
 
 	m.logger.Debugf(ctx, "mutating app %#q in namespace %#q", appNewCR.Name, appNewCR.Namespace)
 

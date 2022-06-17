@@ -776,7 +776,7 @@ func Test_ValidateApp(t *testing.T) {
 
 	for i, tc := range tests {
 		t.Run(fmt.Sprintf("case %d: %s", i, tc.name), func(t *testing.T) {
-			t.Log(fmt.Sprintf("case %d: %s", i, tc.name))
+			t.Logf("case %d: %s", i, tc.name)
 
 			g8sObjs := make([]runtime.Object, 0)
 			for _, cat := range tc.catalogs {

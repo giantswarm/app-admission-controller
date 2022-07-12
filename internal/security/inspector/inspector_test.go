@@ -2,10 +2,11 @@ package inspector
 
 import (
 	"context"
+	"testing"
+
 	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/micrologger/microloggertest"
 	"k8s.io/apimachinery/pkg/util/errors"
-	"testing"
 )
 
 func Test_Inspector_hasBlacklistedReference(t *testing.T) {

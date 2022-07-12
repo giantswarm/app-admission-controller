@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Extend security validation logic to inspect referenced namespaces in `spec.extraConfigs` entries of App CR
+
 ## [0.17.1] - 2022-06-10
 
 ### Added

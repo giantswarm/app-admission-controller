@@ -17,7 +17,7 @@ var securityViolationError = &microerror.Error{
 	Kind: "securityViolationError",
 }
 
-// IsValidationError asserts validationError.
+// IsSecurityViolationError asserts validationError.
 func IsSecurityViolationError(err error) bool {
 	return microerror.Cause(err) == securityViolationError
 }

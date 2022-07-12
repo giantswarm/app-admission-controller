@@ -66,6 +66,10 @@ func (i *Inspector) hasBlacklistedReference(ctx context.Context, app v1alpha1.Ap
 		key.KubeConfigSecretNamespace(app),
 	}
 
+	for _, extraConfig := range key.ExtraConfigs(app) {
+		referencedNamespaces = append(referencedNamespaces, extraConfig.Namespace)
+	}
+
 	for _, ns := range referencedNamespaces {
 		if _, ok := i.fixedNamespaceBlacklist[ns]; ok {
 			return microerror.Maskf(securityViolationError, referenceNotAllowedTemplate, ns)

@@ -104,10 +104,27 @@ func mainWithError() error {
 		}
 	}
 
+	var inClusterAppValidator *app.InClusterAppValidator
+	{
+		c := app.InClusterAppValidatorConfig{
+			Event:     event,
+			K8sClient: cfg.K8sClient,
+			Logger:    newLogger,
+
+			Provider: cfg.Provider,
+		}
+
+		inClusterAppValidator, err = app.NewInClusterAppValidator(c)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
 	// Here we register our endpoints.
 	handler := http.NewServeMux()
 	handler.Handle("/mutate/app", mutator.Handler(appMutator))
 	handler.Handle("/validate/app", validator.Handler(appValidator))
+	handler.Handle("/validate/in-cluster-app", validator.Handler(inClusterAppValidator))
 
 	handler.HandleFunc("/healthz", healthCheck)
 

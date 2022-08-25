@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Bump `giantswarm/app` library to `v6.13.0` that contains a new App CR validator for unique in-cluster app names
+
 ## [0.17.2] - 2022-07-12
 
 ### Added

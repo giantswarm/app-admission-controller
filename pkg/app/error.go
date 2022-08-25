@@ -21,3 +21,12 @@ var parsingFailedError = &microerror.Error{
 func IsParsingFailed(err error) bool {
 	return microerror.Cause(err) == parsingFailedError
 }
+
+var listingAppsFailed = &microerror.Error{
+	Kind: "listingAppsFailedError",
+}
+
+// IsListingAppsFailed asserts listingAppsFailed.
+func IsListingAppsFailed(err error) bool {
+	return microerror.Cause(err) == listingAppsFailed
+}

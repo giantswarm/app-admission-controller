@@ -12,7 +12,7 @@ require (
 	github.com/giantswarm/k8sclient/v6 v6.1.0
 	github.com/giantswarm/k8smetadata v0.9.2
 	github.com/giantswarm/microerror v0.4.0
-	github.com/giantswarm/micrologger v0.6.0
+	github.com/giantswarm/micrologger v1.0.0
 	github.com/google/go-cmp v0.5.7
 	github.com/prometheus/client_golang v1.12.1
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6

@@ -2,7 +2,8 @@
 
 # app-admission-controller
 
-Admission controller for app CRs managed by app-operator.
+Admission controller for App CRs managed by app-operator. Does validation and defaulting for App CR submitted to
+the API server.
 
 ## Changelog
 

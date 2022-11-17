@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Bump `giantswarm/app` library to `v6.15.1` to fix cluster singleton.
+
 ## [0.18.1] - 2022-09-13
 
 ## [0.18.0] - 2022-08-25

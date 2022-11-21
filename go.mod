@@ -5,16 +5,17 @@ go 1.16
 require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/dyson/certman v0.2.1
-	github.com/giantswarm/apiextensions-application v0.5.1
-	github.com/giantswarm/app/v6 v6.14.0
+	github.com/giantswarm/apiextensions-application v0.6.0
+	github.com/giantswarm/app/v6 v6.15.1
 	github.com/giantswarm/apptest v1.0.1
 	github.com/giantswarm/backoff v1.0.0
 	github.com/giantswarm/k8sclient/v6 v6.1.0
-	github.com/giantswarm/k8smetadata v0.9.2
+	github.com/giantswarm/k8smetadata v0.13.0
 	github.com/giantswarm/microerror v0.4.0
 	github.com/giantswarm/micrologger v0.6.0
-	github.com/google/go-cmp v0.5.7
+	github.com/google/go-cmp v0.5.9
 	github.com/prometheus/client_golang v1.12.1
+	github.com/stretchr/testify v1.7.2 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	k8s.io/api v0.21.4
 	k8s.io/apimachinery v0.21.4
@@ -34,10 +35,14 @@ replace (
 	github.com/gogo/protobuf v1.3.1 => github.com/gogo/protobuf v1.3.2
 	// Use v1.4.2 of gorilla/websocket to fix nancy alert.
 	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
+	// Fix CVE
+	github.com/nats-io/nats-server/v2 => github.com/nats-io/nats-server/v2 v2.9.3
 	// Use v1.0.0-rc7 of runc to fix nancy alert.
 	github.com/opencontainers/runc v0.1.1 => github.com/opencontainers/runc v1.0.0-rc7
 	// Use v1.7.1 of viper to fix nancy alert.
 	github.com/spf13/viper => github.com/spf13/viper v1.7.1
+	// Fix CVE
+	golang.org/x/text => golang.org/x/text v0.3.8
 	// Same as go-logr/logr, klog/v2 is using logr v0.2.0
 	k8s.io/klog/v2 v2.4.0 => k8s.io/klog/v2 v2.0.0
 )

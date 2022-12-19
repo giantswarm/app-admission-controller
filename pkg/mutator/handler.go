@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 
@@ -48,7 +48,7 @@ func Handler(mutator Mutator) http.HandlerFunc {
 			return
 		}
 
-		data, err := ioutil.ReadAll(request.Body)
+		data, err := io.ReadAll(request.Body)
 		if err != nil {
 			mutator.Errorf(ctx, err, "unable to read request")
 			metrics.InternalError.WithLabelValues("mutating", mutator.Resource()).Inc()

@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/dyson/certman"
 	"github.com/giantswarm/microerror"
@@ -146,6 +147,7 @@ func serveTLS(config config.Config, handler http.Handler) {
 			GetCertificate: cm.GetCertificate,
 			MinVersion:     tls.VersionTLS12,
 		},
+		ReadHeaderTimeout: 60 * time.Second,
 	}
 
 	sig := make(chan os.Signal, 1)
@@ -168,8 +170,9 @@ func serveTLS(config config.Config, handler http.Handler) {
 
 func serveMetrics(config config.Config, handler http.Handler) {
 	server := &http.Server{
-		Addr:    config.MetricsAddress,
-		Handler: handler,
+		Addr:              config.MetricsAddress,
+		Handler:           handler,
+		ReadHeaderTimeout: 60 * time.Second,
 	}
 
 	sig := make(chan os.Signal, 1)

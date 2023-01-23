@@ -57,7 +57,7 @@ podSecurityContext:
   seccompProfile:
     type: RuntimeDefault
 
-#add seccomp to container security context
+# Add seccomp to container security context
 securityContext:
   seccompProfile:
     type: RuntimeDefault

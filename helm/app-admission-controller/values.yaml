@@ -51,3 +51,13 @@ security:
 podDisruptionBudget:
   enabled: true
   minAvailable: 1
+
+# Add seccomp to pod security context
+podSecurityContext:
+  seccompProfile:
+    type: RuntimeDefault
+
+#add seccomp to container security context
+securityContext:
+  seccompProfile:
+    type: RuntimeDefault

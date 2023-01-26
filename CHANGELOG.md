@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Add the use of the runtime/default seccomp profile
 - Set 60 seconds timeout for serve TLS and metrics endpoints to potential Slowloris Attack vector reported by `golangcli-lint`
 
 ## [0.18.2] - 2022-11-21

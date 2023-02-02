@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Bump `giantswarm/app` package to `v6.15.2` to weaken the condition on userConfig names for default apps.
+
+### Changed
+
 - Add the use of the runtime/default seccomp profile
 - Set 60 seconds timeout for serve TLS and metrics endpoints to potential Slowloris Attack vector reported by `golangcli-lint`
 

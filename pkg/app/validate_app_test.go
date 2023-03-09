@@ -775,6 +775,363 @@ func Test_ValidateApp(t *testing.T) {
 			},
 		},
 		{
+			name: "cluster singletons in cluster namespace (app already present for the cluster)",
+			obj: &admissionv1.AdmissionRequest{
+				Operation: "CREATE",
+				Object: runtime.RawExtension{
+					Raw: []byte(`
+		                {
+		                    "apiVersion": "application.giantswarm.io/v1alpha1",
+		                    "kind": "App",
+		                    "metadata": {
+		                        "name": "hello-world-second",
+		                        "namespace": "demo01",
+								"labels": {
+									"app-operator.giantswarm.io/version": "6.0.0"
+								}
+		                    },
+		                    "spec": {
+		                        "catalog": "giantswarm",
+		                        "name": "hello-world",
+		                        "namespace": "hello-world",
+								"kubeConfig": {
+		                            "context": {
+		                                "name": "demo01-kubeconfig"
+		                            },
+		                            "inCluster": false,
+		                            "secret": {
+		                                "name": "demo01-kubeconfig",
+		                                "namespace": "demo01"
+		                            }
+		                        },
+		                        "version": "0.3.0"
+		                    }
+		                }
+		            `),
+				},
+				UserInfo: authv1.UserInfo{
+					Username: "system:serviceaccount:default:automation",
+					Groups: []string{
+						"system:authenticated",
+					},
+				},
+			},
+			apps: []*v1alpha1.App{
+				&v1alpha1.App{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "hello-world-first",
+						Namespace: "demo01",
+						Labels: map[string]string{
+							"app-operator.giantswarm.io/version": "6.0.0",
+						},
+					},
+					Spec: v1alpha1.AppSpec{
+						Catalog:   "giantswarm",
+						Name:      "hello-world",
+						Namespace: "hello-world",
+						Version:   "0.3.0",
+					},
+				},
+			},
+			aces: []*v1alpha1.AppCatalogEntry{
+				&v1alpha1.AppCatalogEntry{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "giantswarm-hello-world-0.3.0",
+						Namespace: "default",
+					},
+					Spec: v1alpha1.AppCatalogEntrySpec{
+						Restrictions: &v1alpha1.AppCatalogEntrySpecRestrictions{
+							ClusterSingleton: true,
+						},
+					},
+				},
+			},
+			catalogs: []*v1alpha1.Catalog{
+				newTestCatalog("giantswarm", "default"),
+			},
+			secrets: []*corev1.Secret{
+				newTestSecret("demo01-kubeconfig", "demo01"),
+			},
+			expectedErr: "app `hello-world` can only be installed once in cluster `demo01`",
+		},
+		{
+			name: "cluster singletons in cluster namespace (app not yet configured for cluster)",
+			obj: &admissionv1.AdmissionRequest{
+				Operation: "CREATE",
+				Object: runtime.RawExtension{
+					Raw: []byte(`
+		                {
+		                    "apiVersion": "application.giantswarm.io/v1alpha1",
+		                    "kind": "App",
+		                    "metadata": {
+		                        "name": "hello-world-demo01",
+		                        "namespace": "demo01",
+								"labels": {
+									"app-operator.giantswarm.io/version": "6.0.0"
+								}
+		                    },
+		                    "spec": {
+		                        "catalog": "giantswarm",
+		                        "name": "hello-world",
+		                        "namespace": "hello-world",
+		                        "kubeConfig": {
+		                            "context": {
+		                                "name": "demo01-kubeconfig"
+		                            },
+		                            "inCluster": false,
+		                            "secret": {
+		                                "name": "demo01-kubeconfig",
+		                                "namespace": "demo01"
+		                            }
+		                        },
+		                        "version": "0.3.0"
+		                    }
+		                }
+		            `),
+				},
+				UserInfo: authv1.UserInfo{
+					Username: "system:serviceaccount:default:automation",
+					Groups: []string{
+						"system:authenticated",
+					},
+				},
+			},
+			aces: []*v1alpha1.AppCatalogEntry{
+				&v1alpha1.AppCatalogEntry{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "giantswarm-hello-world-0.3.0",
+						Namespace: "default",
+					},
+					Spec: v1alpha1.AppCatalogEntrySpec{
+						Restrictions: &v1alpha1.AppCatalogEntrySpecRestrictions{
+							ClusterSingleton: true,
+						},
+					},
+				},
+			},
+			catalogs: []*v1alpha1.Catalog{
+				newTestCatalog("giantswarm", "default"),
+			},
+			secrets: []*corev1.Secret{
+				newTestSecret("demo01-kubeconfig", "demo01"),
+			},
+		},
+		{
+			name: "namespace singletons in cluster namespace (app not yet configured for cluster)",
+			obj: &admissionv1.AdmissionRequest{
+				Operation: "CREATE",
+				Object: runtime.RawExtension{
+					Raw: []byte(`
+		                {
+		                    "apiVersion": "application.giantswarm.io/v1alpha1",
+		                    "kind": "App",
+		                    "metadata": {
+		                        "name": "hello-world",
+		                        "namespace": "demo01",
+								"labels": {
+ 								   "app-operator.giantswarm.io/version": "6.0.0"
+ 							   }
+		                    },
+		                    "spec": {
+		                        "catalog": "giantswarm",
+		                        "name": "hello-world",
+		                        "namespace": "hello-world",
+		                        "kubeConfig": {
+		                            "context": {
+		                                "name": "demo01-kubeconfig"
+		                            },
+		                            "inCluster": false,
+		                            "secret": {
+		                                "name": "demo01-kubeconfig",
+		                                "namespace": "demo01"
+		                            }
+		                        },
+		                        "version": "0.3.0"
+		                    }
+		                }
+		            `),
+				},
+				UserInfo: authv1.UserInfo{
+					Username: "system:serviceaccount:default:automation",
+					Groups: []string{
+						"system:authenticated",
+					},
+				},
+			},
+			aces: []*v1alpha1.AppCatalogEntry{
+				&v1alpha1.AppCatalogEntry{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "giantswarm-hello-world-0.3.0",
+						Namespace: "default",
+					},
+					Spec: v1alpha1.AppCatalogEntrySpec{
+						Restrictions: &v1alpha1.AppCatalogEntrySpecRestrictions{
+							NamespaceSingleton: true,
+						},
+					},
+				},
+			},
+			catalogs: []*v1alpha1.Catalog{
+				newTestCatalog("giantswarm", "default"),
+			},
+			secrets: []*corev1.Secret{
+				newTestSecret("demo01-kubeconfig", "demo01"),
+			},
+		},
+		{
+			name: "namespace singletons in cluster namespace (app configured already, but for different namespace)",
+			obj: &admissionv1.AdmissionRequest{
+				Operation: "CREATE",
+				Object: runtime.RawExtension{
+					Raw: []byte(`
+		                {
+		                    "apiVersion": "application.giantswarm.io/v1alpha1",
+		                    "kind": "App",
+		                    "metadata": {
+		                        "name": "hello-world-second",
+		                        "namespace": "demo01",
+								"labels": {
+									"app-operator.giantswarm.io/version": "6.0.0"
+								}
+		                    },
+		                    "spec": {
+		                        "catalog": "giantswarm",
+		                        "name": "hello-world",
+		                        "namespace": "hello-world-second",
+		                        "kubeConfig": {
+		                            "context": {
+		                                "name": "demo01-kubeconfig"
+		                            },
+		                            "inCluster": false,
+		                            "secret": {
+		                                "name": "demo01-kubeconfig",
+		                                "namespace": "demo01"
+		                            }
+		                        },
+		                        "version": "0.3.0"
+		                    }
+		                }
+		            `),
+				},
+				UserInfo: authv1.UserInfo{
+					Username: "system:serviceaccount:default:automation",
+					Groups: []string{
+						"system:authenticated",
+					},
+				},
+			},
+			apps: []*v1alpha1.App{
+				&v1alpha1.App{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "hello-world-first",
+						Namespace: "demo01",
+					},
+					Spec: v1alpha1.AppSpec{
+						Catalog:   "giantswarm",
+						Name:      "hello-world",
+						Namespace: "hello-world-first",
+						Version:   "0.3.0",
+					},
+				},
+			},
+			aces: []*v1alpha1.AppCatalogEntry{
+				&v1alpha1.AppCatalogEntry{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "giantswarm-hello-world-0.3.0",
+						Namespace: "default",
+					},
+					Spec: v1alpha1.AppCatalogEntrySpec{
+						Restrictions: &v1alpha1.AppCatalogEntrySpecRestrictions{
+							NamespaceSingleton: true,
+						},
+					},
+				},
+			},
+			catalogs: []*v1alpha1.Catalog{
+				newTestCatalog("giantswarm", "default"),
+			},
+			secrets: []*corev1.Secret{
+				newTestSecret("demo01-kubeconfig", "demo01"),
+			},
+		},
+		{
+			name: "namespace singletons in cluster namespace (app configured already for the given namespace)",
+			obj: &admissionv1.AdmissionRequest{
+				Operation: "CREATE",
+				Object: runtime.RawExtension{
+					Raw: []byte(`
+		                {
+		                    "apiVersion": "application.giantswarm.io/v1alpha1",
+		                    "kind": "App",
+		                    "metadata": {
+		                        "name": "hello-world-second",
+		                        "namespace": "demo01",
+								"labels": {
+									"app-operator.giantswarm.io/version": "6.0.0"
+								}
+		                    },
+		                    "spec": {
+		                        "catalog": "giantswarm",
+		                        "name": "hello-world",
+		                        "namespace": "hello-world",
+		                        "kubeConfig": {
+		                            "context": {
+		                                "name": "demo01-kubeconfig"
+		                            },
+		                            "inCluster": false,
+		                            "secret": {
+		                                "name": "demo01-kubeconfig",
+		                                "namespace": "demo01"
+		                            }
+		                        },
+		                        "version": "0.3.0"
+		                    }
+		                }
+		            `),
+				},
+				UserInfo: authv1.UserInfo{
+					Username: "system:serviceaccount:default:automation",
+					Groups: []string{
+						"system:authenticated",
+					},
+				},
+			},
+			apps: []*v1alpha1.App{
+				&v1alpha1.App{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "hello-world-first",
+						Namespace: "demo01",
+					},
+					Spec: v1alpha1.AppSpec{
+						Catalog:   "giantswarm",
+						Name:      "hello-world",
+						Namespace: "hello-world",
+						Version:   "0.3.0",
+					},
+				},
+			},
+			aces: []*v1alpha1.AppCatalogEntry{
+				&v1alpha1.AppCatalogEntry{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "giantswarm-hello-world-0.3.0",
+						Namespace: "default",
+					},
+					Spec: v1alpha1.AppCatalogEntrySpec{
+						Restrictions: &v1alpha1.AppCatalogEntrySpecRestrictions{
+							NamespaceSingleton: true,
+						},
+					},
+				},
+			},
+			catalogs: []*v1alpha1.Catalog{
+				newTestCatalog("giantswarm", "default"),
+			},
+			secrets: []*corev1.Secret{
+				newTestSecret("demo01-kubeconfig", "demo01"),
+			},
+			expectedErr: "app `hello-world` can only be installed only once in namespace `hello-world`",
+		},
+		{
 			name: "cluster singletons in org namespace (app already present for the cluster)",
 			obj: &admissionv1.AdmissionRequest{
 				Operation: "CREATE",
@@ -819,7 +1176,7 @@ func Test_ValidateApp(t *testing.T) {
 			apps: []*v1alpha1.App{
 				&v1alpha1.App{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "hello-world-demo01",
+						Name:      "hello-world-demo01-existing",
 						Namespace: "org-test",
 						Labels: map[string]string{
 							"giantswarm.io/cluster": "demo01",
@@ -1022,7 +1379,7 @@ func Test_ValidateApp(t *testing.T) {
 							"apiVersion": "application.giantswarm.io/v1alpha1",
 							"kind": "App",
 							"metadata": {
-    							"name": "hello-world-demo01",
+    							"name": "hello-world-demo01-second",
     							"namespace": "org-test",
     							"labels": {
 									"giantswarm.io/cluster": "demo01"
@@ -1057,7 +1414,7 @@ func Test_ValidateApp(t *testing.T) {
 			apps: []*v1alpha1.App{
 				&v1alpha1.App{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "hello-world-demo01-second",
+						Name:      "hello-world-demo01-first",
 						Namespace: "org-test",
 						Labels: map[string]string{
 							"giantswarm.io/cluster": "demo01",
@@ -1091,6 +1448,85 @@ func Test_ValidateApp(t *testing.T) {
 				newTestSecret("demo01-kubeconfig", "demo01"),
 			},
 			expectedErr: "app `hello-world` can only be installed only once in namespace `hello-world`",
+		},
+		{
+			name: "namespace singletons in org namespace (app configured for the same cluster, different namespace)",
+			obj: &admissionv1.AdmissionRequest{
+				Operation: "CREATE",
+				Object: runtime.RawExtension{
+					Raw: []byte(`
+						{
+							"apiVersion": "application.giantswarm.io/v1alpha1",
+							"kind": "App",
+							"metadata": {
+    							"name": "hello-world-demo01-second",
+    							"namespace": "org-test",
+    							"labels": {
+									"giantswarm.io/cluster": "demo01"
+    							}
+							},
+							"spec": {
+    							"catalog": "giantswarm",
+    							"name": "hello-world",
+    							"namespace": "hello-world-second",
+    							"kubeConfig": {
+									"context": {
+										"name": "demo01-kubeconfig"
+									},
+									"inCluster": false,
+									"secret": {
+										"name": "demo01-kubeconfig",
+										"namespace": "demo01"
+									}
+								},
+								"version": "0.3.0"
+							}
+						}
+					`),
+				},
+				UserInfo: authv1.UserInfo{
+					Username: "system:serviceaccount:default:automation",
+					Groups: []string{
+						"system:authenticated",
+					},
+				},
+			},
+			apps: []*v1alpha1.App{
+				&v1alpha1.App{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "hello-world-demo01-first",
+						Namespace: "org-test",
+						Labels: map[string]string{
+							"giantswarm.io/cluster": "demo01",
+						},
+					},
+					Spec: v1alpha1.AppSpec{
+						Catalog:   "giantswarm",
+						Name:      "hello-world",
+						Namespace: "hello-world-first",
+						Version:   "0.3.0",
+					},
+				},
+			},
+			aces: []*v1alpha1.AppCatalogEntry{
+				&v1alpha1.AppCatalogEntry{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "giantswarm-hello-world-0.3.0",
+						Namespace: "default",
+					},
+					Spec: v1alpha1.AppCatalogEntrySpec{
+						Restrictions: &v1alpha1.AppCatalogEntrySpecRestrictions{
+							NamespaceSingleton: true,
+						},
+					},
+				},
+			},
+			catalogs: []*v1alpha1.Catalog{
+				newTestCatalog("giantswarm", "default"),
+			},
+			secrets: []*corev1.Secret{
+				newTestSecret("demo01-kubeconfig", "demo01"),
+			},
 		},
 	}
 

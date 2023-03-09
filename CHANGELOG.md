@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.18.4] - 2023-03-09
+
 ### Changed
 
 - Bump `giantswarm/app` package to `v6.15.3` to fix cluster and namespace singletons checks for CAPI.
@@ -238,7 +240,8 @@ allow app CR creation.
 - Add validation webhook that is enabled for app CRs with
 `app-operator.giantswarm.io/version` label value >= `3.0.0`.
 
-[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v0.18.3...HEAD
+[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v0.18.4...HEAD
+[0.18.4]: https://github.com/giantswarm/app-admission-controller/compare/v0.18.3...v0.18.4
 [0.18.3]: https://github.com/giantswarm/app-admission-controller/compare/v0.18.2...v0.18.3
 [0.18.2]: https://github.com/giantswarm/app-admission-controller/compare/v0.18.1...v0.18.2
 [0.18.1]: https://github.com/giantswarm/app-admission-controller/compare/v0.18.0...v0.18.1

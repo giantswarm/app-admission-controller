@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- Remove push to `shared-app-collection` as it is deprecated.
+
 ## [0.18.6] - 2023-04-05
 
 ### Changed

@@ -121,19 +121,6 @@ workflows:
 
       - architect/push-to-app-collection:
           context: architect
-          name: push-app-admission-controller-to-openstack-app-collection
-          app_name: "app-admission-controller"
-          app_collection_repo: "openstack-app-collection"
-          requires:
-            - push-app-admission-controller-to-control-plane-catalog
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v.*/
-
-      - architect/push-to-app-collection:
-          context: architect
           name: push-app-admission-controller-to-gcp-app-collection
           app_name: "app-admission-controller"
           app_collection_repo: "gcp-app-collection"

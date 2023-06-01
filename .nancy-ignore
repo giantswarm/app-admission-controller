@@ -1,42 +1,56 @@
-# pkg:golang/github.com/aws/aws-sdk-go@v1.27.0
-sonatype-2020-1759
+#CWE-20: Improper Input Validation
+CVE-2023-26125
+
+#CWE-494: Download of Code Without Integrity Check
+CVE-2023-29401
+
+#CWE-327: Use of a Broken or Risky Cryptographic 
 CVE-2020-8911
+
+#CWE-326: Inadequate Encryption 
 CVE-2022-2582
+
+#CWE-327: Use of a Broken or Risky Cryptographic 
 CVE-2020-8912
 
-# pkg:golang/github.com/gin-gonic/gin@v1.4.0
-sonatype-2020-0921
+#CWE-74: Improper Neutralization of Special Elements in Output Used by a Downstream Component 
+CVE-2020-36567
+
+#CWE-444: Inconsistent Interpretation of HTTP Requests ('HTTP Request 
 CVE-2020-28483
 
-# pkg:golang/github.com/hashicorp/consul/api@v1.15.3
+#CWE-918: Server-Side Request Forgery 
 CVE-2022-29153
 
-# pkg:golang/github.com/hashicorp/consul/sdk@v0.11.0
-CVE-2022-29153
+#CWE-862: Missing 
 CVE-2021-41803
 
-# pkg:golang/github.com/kataras/iris/v12@v12.1.8
-CVE-2021-23772
+#CWE-918: Server-Side Request Forgery 
+CVE-2022-29153 
 
-# pkg:golang/github.com/microcosm-cc/bluemonday@v1.0.2
+#CWE-862: Missing 
+CVE-2021-41803
+
+#CWE-59: Improper Link Resolution Before File Access ('Link 
+CVE-2021-23772 
+
+#CWE-20: Improper Input 
 CVE-2021-42576
 
-# pkg:golang/github.com/nats-io/jwt@v0.3.0
+#CWE-798: Use of Hard-coded 
 CVE-2020-26892
+
+#CWE-755: Improper Handling of Exceptional 
 CVE-2021-3127
 
-# pkg:golang/github.com/urfave/negroni@v1.0.0
-sonatype-2021-1485
-
-# pkg:golang/github.com/valyala/fasthttp@v1.6.0
+#CWE-22: Improper Limitation of a Pathname to a Restricted Directory ('Path 
 CVE-2022-21221
 
-# pkg:golang/go.mongodb.org/mongo-driver@v1.1.2
-CVE-2021-20329
+#CWE-20: Improper Input 
+CVE-2021-20329 
 
-# pkg:golang/k8s.io/apiserver@v0.21.4
-sonatype-2022-6522
-
+#CWE-400: Uncontrolled Resource Consumption ('Resource 
 CVE-2022-41723
 
+#CWE-610: Externally Controlled Reference to a Resource in Another Sphere━━━━━━━━━━━━━━━━
 CVE-2020-8561

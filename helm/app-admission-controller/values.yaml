@@ -61,7 +61,7 @@ podSecurityContext:
 securityContext:
   seccompProfile:
     type: RuntimeDefault
-    
+
 serviceMonitor:
   enabled: true
   # -- (duration) Prometheus scrape interval.

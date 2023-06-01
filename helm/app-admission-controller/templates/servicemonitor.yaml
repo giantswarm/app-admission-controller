@@ -7,8 +7,10 @@ metadata:
   {{- include "labels.common" . | nindent 4 }}
 spec:
   endpoints:
-    - path: /metrics
+    - interval: {{ .Values.serviceMonitor.interval }}
+      path: /metrics
       port: metrics
+      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
   selector:
     matchLabels:
   {{- include "labels.selector" . | nindent 6 }}

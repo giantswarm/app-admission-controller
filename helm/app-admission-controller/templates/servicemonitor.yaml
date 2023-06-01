@@ -14,3 +14,4 @@ spec:
   selector:
     matchLabels:
   {{- include "labels.selector" . | nindent 6 }}
+  

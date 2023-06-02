@@ -5,13 +5,13 @@ metadata:
   namespace: {{ include "resource.default.namespace" . }}
   labels:
     {{- include "labels.common" . | nindent 4 }}
-  annotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/path: "/metrics"
-    prometheus.io/port: "8080"
 spec:
   ports:
-  - port: 443
-    targetPort: 8443
+  - name: webhook
+    port: 443
+    targetPort: webhook
+  - name: metrics
+    port: 8080
+    targetPort: metrics
   selector:
     {{- include "labels.selector" . | nindent 4 }}

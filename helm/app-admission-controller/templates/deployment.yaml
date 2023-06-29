@@ -85,5 +85,5 @@ spec:
               memory: 250Mi
           securityContext:
             {{- with .Values.securityContext }}
-              {{- . | toYaml | nindent 10 }}
+              {{- . | toYaml | nindent 12 }}
             {{- end }}

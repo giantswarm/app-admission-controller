@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.0] - 2023-07-04
+
 ### Changed
 
 - Updated default `securityContext` values to comply with PSS policies.
@@ -267,7 +269,8 @@ allow app CR creation.
 - Add validation webhook that is enabled for app CRs with
 `app-operator.giantswarm.io/version` label value >= `3.0.0`.
 
-[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v0.18.7...HEAD
+[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v0.19.0...HEAD
+[0.19.0]: https://github.com/giantswarm/app-admission-controller/compare/v0.18.7...v0.19.0
 [0.18.7]: https://github.com/giantswarm/app-admission-controller/compare/v0.18.6...v0.18.7
 [0.18.6]: https://github.com/giantswarm/app-admission-controller/compare/v0.18.5...v0.18.6
 [0.18.5]: https://github.com/giantswarm/app-admission-controller/compare/v0.18.4...v0.18.5

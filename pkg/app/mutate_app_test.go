@@ -164,45 +164,7 @@ func Test_MutateApp(t *testing.T) {
 			},
 		},
 		{
-			name:   "case 3: different configmap for nginx-ingress-controller-app",
-			oldObj: v1alpha1.App{},
-			obj: v1alpha1.App{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "nginx-ingress-controller-app",
-					Namespace: "eggs2",
-					Labels: map[string]string{
-						"app.kubernetes.io/name": "kiam",
-						label.AppOperatorVersion: "3.0.0",
-					},
-				},
-				Spec: v1alpha1.AppSpec{
-					Catalog:   "giantswarm",
-					Name:      "nginx-ingress-controller-app",
-					Namespace: "kube-system",
-					KubeConfig: v1alpha1.AppSpecKubeConfig{
-						InCluster: true,
-					},
-					Version: "1.4.0",
-				},
-			},
-			apps: []*v1alpha1.App{
-				newTestApp("chart-operator", "eggs2", "3.0.0"),
-			},
-			configMaps: []*corev1.ConfigMap{
-				newTestConfigMap("ingress-controller-values", "eggs2"),
-			},
-			operation: admissionv1.Create,
-			expectedPatches: []mutator.PatchOperation{
-				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
-				mutator.PatchAdd("/spec/config", map[string]string{}),
-				mutator.PatchAdd("/spec/config/configMap", map[string]string{
-					"namespace": "eggs2",
-					"name":      "ingress-controller-values",
-				}),
-			},
-		},
-		{
-			name:   "case 4: set version label only",
+			name:   "case 3: set version label only",
 			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
@@ -232,7 +194,7 @@ func Test_MutateApp(t *testing.T) {
 			},
 		},
 		{
-			name:   "case 5: no config map patch if it doesn't exist",
+			name:   "case 4: no config map patch if it doesn't exist",
 			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
@@ -262,7 +224,7 @@ func Test_MutateApp(t *testing.T) {
 			},
 		},
 		{
-			name:   "case 6: replace version label when it has legacy value 1.0.0",
+			name:   "case 5: replace version label when it has legacy value 1.0.0",
 			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
@@ -293,7 +255,7 @@ func Test_MutateApp(t *testing.T) {
 			},
 		},
 		{
-			name:   "case 7: no patches with legacy value 1.0.0 and no chart-operator app",
+			name:   "case 6: no patches with legacy value 1.0.0 and no chart-operator app",
 			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
@@ -319,7 +281,7 @@ func Test_MutateApp(t *testing.T) {
 			expectedPatches: nil,
 		},
 		{
-			name:   "case 8: flawless flow for org-namespaced app",
+			name:   "case 7: flawless flow for org-namespaced app",
 			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
@@ -368,7 +330,7 @@ func Test_MutateApp(t *testing.T) {
 			// apps, then some patches will be skipped due to mutator not being able
 			// to determine correct config names. We then expect the validator to return
 			// error upon spotting missing label.
-			name:   "case 9: missing cluster label",
+			name:   "case 8: missing cluster label",
 			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{

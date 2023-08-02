@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Bump `github.com/giantswarm/apptest` to `v1.2.1`
+- Bump `architect-orb` to `v4.31.0`
+
 ### Removed
 
 - Mutate App: Remove `nginx-ingress-controller-app` exception.

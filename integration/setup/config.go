@@ -64,6 +64,12 @@ func (tc *TestConfig) CreateCatalog(ctx context.Context, name string) error {
 				URL:  "",
 				Type: "helm",
 			},
+			Repositories: []v1alpha1.CatalogSpecRepository{
+				v1alpha1.CatalogSpecRepository{
+					URL:  "",
+					Type: "oci",
+				},
+			},
 			Title: name,
 		},
 	}

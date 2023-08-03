@@ -18,6 +18,58 @@ deploymentStrategy:
     maxUnavailable: 0
   type: RollingUpdate
 
+# Example
+# security:
+#   appBlacklist:
+#     - "app-operator"
+#   catalogBlacklist:
+#     - "control-plane-catalog"
+#     - "control-plane-test-catalog"
+#   groupWhitelist:
+#     - "giantswarm:giantswarm:giantswarm-admins"
+#   namespaceBlacklist:
+#     - "-prometheus"
+#     - "capi-"
+#     - "draughtsman"
+#     - "flux-giantswarm"
+#     - "giantswarm"
+#     - "kube-system"
+#     - "monitoring"
+#   userWhitelist:
+#     - "system:serviceaccount:draughtsman:"
+#     - "system:serviceaccount:giantswarm:"
+#     - "system:serviceaccount:flux-giantswarm:"
+#     - "system:serviceaccount:kube-system:"
+
+security:
+  appBlacklist: []
+  catalogBlacklist: []
+  groupWhitelist: []
+  namespaceBlacklist: []
+  userWhitelist: []
+
 podDisruptionBudget:
   enabled: true
   minAvailable: 1
+
+# Add seccomp to pod security context
+podSecurityContext:
+  seccompProfile:
+    type: RuntimeDefault
+
+# Add seccomp to container security context
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+serviceMonitor:
+  enabled: true
+  # -- (duration) Prometheus scrape interval.
+  interval: "60s"
+  # -- (duration) Prometheus scrape timeout.
+  scrapeTimeout: "45s"

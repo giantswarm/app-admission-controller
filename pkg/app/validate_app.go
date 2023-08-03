@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
@@ -16,6 +17,8 @@ import (
 	"github.com/giantswarm/app-admission-controller/internal/recorder"
 	"github.com/giantswarm/app-admission-controller/pkg/project"
 	"github.com/giantswarm/app-admission-controller/pkg/validator"
+
+	secins "github.com/giantswarm/app-admission-controller/internal/security/inspector"
 )
 
 const (
@@ -29,13 +32,15 @@ type ValidatorConfig struct {
 	K8sClient k8sclient.Interface
 	Logger    micrologger.Logger
 
-	Provider string
+	Provider  string
+	Inspector *secins.Inspector
 }
 
 type Validator struct {
 	appValidator *validation.Validator
 	event        recorder.Interface
 	logger       micrologger.Logger
+	inspector    *secins.Inspector
 }
 
 func NewValidator(config ValidatorConfig) (*Validator, error) {
@@ -51,6 +56,10 @@ func NewValidator(config ValidatorConfig) (*Validator, error) {
 
 	if config.Provider == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Provider must not be empty", config)
+	}
+
+	if config.Inspector == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.SecurityInformer must not be empty", config)
 	}
 
 	var err error
@@ -81,6 +90,7 @@ func NewValidator(config ValidatorConfig) (*Validator, error) {
 		appValidator: appValidator,
 		event:        config.Event,
 		logger:       config.Logger,
+		inspector:    config.Inspector,
 	}
 
 	return v, nil
@@ -128,6 +138,26 @@ func (v *Validator) Validate(request *admissionv1.AdmissionRequest) (bool, error
 	if !isManagedInOrg && key.VersionLabel(app) != uniqueAppCRVersion && ver.Major() < 3 {
 		v.logger.Debugf(ctx, "skipping validation of app %#q in namespace %#q due to version label %#q", app.Name, app.Namespace, key.VersionLabel(app))
 		return true, nil
+	}
+
+	// Let's log users names and groups membership in case we need to
+	// troubleshoot possible problems. This way it will be much easier
+	// to recognize the actor.
+	v.logger.Debugf(
+		ctx,
+		"validating action taken by `%s` user in `%s` groups",
+		request.UserInfo.Username,
+		strings.Join(request.UserInfo.Groups, ","),
+	)
+
+	// When creating App CR for unique App Operator run extra check to find out:
+	// - illegal references in config or userConfig
+	// - blacklisted app being requested
+	if key.VersionLabel(app) == uniqueAppCRVersion {
+		err := v.inspector.Inspect(ctx, app, request.UserInfo)
+		if err != nil {
+			return false, microerror.Mask(err)
+		}
 	}
 
 	appAllowed, err := v.appValidator.ValidateApp(ctx, app)

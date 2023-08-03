@@ -7,6 +7,93 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Bump `github.com/giantswarm/apptest` to `v1.2.1`
+- Bump `architect-orb` to `v4.31.0`
+
+### Removed
+
+- Mutate App: Remove `nginx-ingress-controller-app` exception.
+
+## [0.19.0] - 2023-07-04
+
+### Changed
+
+- Updated default `securityContext` values to comply with PSS policies.
+
+## [0.18.7] - 2023-06-02
+
+### Added
+
+- Add service monitor to be scraped by Prometheus Agent.
+
+### Removed
+
+- Remove push to `shared-app-collection` as it is deprecated.
+- Stop pushing to `openstack-app-collection\`.
+
+## [0.18.6] - 2023-04-05
+
+### Changed
+
+- Bump `giantswarm/app` package to `v6.15.6`
+
+## [0.18.5] - 2023-03-10
+
+### Changed
+
+- Bump `giantswarm/app` package to `v6.15.5`
+-
+## [0.18.4] - 2023-03-09
+
+### Changed
+
+- Bump `giantswarm/app` package to `v6.15.3` to fix cluster and namespace singletons checks for CAPI.
+
+## [0.18.3] - 2023-02-02
+
+### Changed
+
+- Bump `giantswarm/app` package to `v6.15.2` to weaken the condition on userConfig names for default apps.
+
+### Changed
+
+- Add the use of the runtime/default seccomp profile
+- Set 60 seconds timeout for serve TLS and metrics endpoints to potential Slowloris Attack vector reported by `golangcli-lint`
+
+## [0.18.2] - 2022-11-21
+
+### Changed
+
+- Bump `giantswarm/app` library to `v6.15.1` to fix cluster singleton.
+
+## [0.18.1] - 2022-09-13
+
+## [0.18.0] - 2022-08-25
+
+### Changed
+
+- Bump `giantswarm/app` library to `v6.13.0` that contains a new App CR validator for unique in-cluster app names
+
+## [0.17.2] - 2022-07-12
+
+### Added
+
+- Extend security validation logic to inspect referenced namespaces in `spec.extraConfigs` entries of App CR
+
+## [0.17.1] - 2022-06-10
+
+### Added
+
+- Extend security validation logic with checking the `kubeconfig` namespace against blacklisted namespaces.
+
+## [0.17.0] - 2022-05-27
+
+### Added
+
+- Run additional validation logic for submitting the `0.0.0`-labeld App CRs by a non privileged users.
+
 ## [0.16.3] - 2022-02-25
 
 ### Fixed
@@ -191,7 +278,19 @@ allow app CR creation.
 - Add validation webhook that is enabled for app CRs with
 `app-operator.giantswarm.io/version` label value >= `3.0.0`.
 
-[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v0.16.3...HEAD
+[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v0.19.0...HEAD
+[0.19.0]: https://github.com/giantswarm/app-admission-controller/compare/v0.18.7...v0.19.0
+[0.18.7]: https://github.com/giantswarm/app-admission-controller/compare/v0.18.6...v0.18.7
+[0.18.6]: https://github.com/giantswarm/app-admission-controller/compare/v0.18.5...v0.18.6
+[0.18.5]: https://github.com/giantswarm/app-admission-controller/compare/v0.18.4...v0.18.5
+[0.18.4]: https://github.com/giantswarm/app-admission-controller/compare/v0.18.3...v0.18.4
+[0.18.3]: https://github.com/giantswarm/app-admission-controller/compare/v0.18.2...v0.18.3
+[0.18.2]: https://github.com/giantswarm/app-admission-controller/compare/v0.18.1...v0.18.2
+[0.18.1]: https://github.com/giantswarm/app-admission-controller/compare/v0.18.0...v0.18.1
+[0.18.0]: https://github.com/giantswarm/app-admission-controller/compare/v0.17.2...v0.18.0
+[0.17.2]: https://github.com/giantswarm/app-admission-controller/compare/v0.17.1...v0.17.2
+[0.17.1]: https://github.com/giantswarm/app-admission-controller/compare/v0.17.0...v0.17.1
+[0.17.0]: https://github.com/giantswarm/app-admission-controller/compare/v0.16.3...v0.17.0
 [0.16.3]: https://github.com/giantswarm/app-admission-controller/compare/v0.16.2...v0.16.3
 [0.16.2]: https://github.com/giantswarm/app-admission-controller/compare/v0.16.1...v0.16.2
 [0.16.1]: https://github.com/giantswarm/app-admission-controller/compare/v0.16.0...v0.16.1

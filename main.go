@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/dyson/certman"
 	"github.com/giantswarm/microerror"
@@ -15,10 +16,12 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/giantswarm/app-admission-controller/config"
-	"github.com/giantswarm/app-admission-controller/internal/recorder"
 	"github.com/giantswarm/app-admission-controller/pkg/app"
 	"github.com/giantswarm/app-admission-controller/pkg/mutator"
 	"github.com/giantswarm/app-admission-controller/pkg/validator"
+
+	"github.com/giantswarm/app-admission-controller/internal/recorder"
+	secins "github.com/giantswarm/app-admission-controller/internal/security/inspector"
 )
 
 func main() {
@@ -67,6 +70,25 @@ func mainWithError() error {
 		}
 	}
 
+	var inspector *secins.Inspector
+	{
+
+		c := secins.Config{
+			Logger: newLogger,
+
+			NamespaceBlacklist: cfg.NamespaceBlacklist,
+			GroupWhitelist:     cfg.GroupWhitelist,
+			UserWhitelist:      cfg.UserWhitelist,
+			AppBlacklist:       cfg.AppBlacklist,
+			CatalogBlacklist:   cfg.CatalogBlacklist,
+		}
+
+		inspector, err = secins.New(c)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
 	var appValidator *app.Validator
 	{
 		c := app.ValidatorConfig{
@@ -74,7 +96,8 @@ func mainWithError() error {
 			K8sClient: cfg.K8sClient,
 			Logger:    newLogger,
 
-			Provider: cfg.Provider,
+			Provider:  cfg.Provider,
+			Inspector: inspector,
 		}
 		appValidator, err = app.NewValidator(c)
 		if err != nil {
@@ -124,6 +147,7 @@ func serveTLS(config config.Config, handler http.Handler) {
 			GetCertificate: cm.GetCertificate,
 			MinVersion:     tls.VersionTLS12,
 		},
+		ReadHeaderTimeout: 60 * time.Second,
 	}
 
 	sig := make(chan os.Signal, 1)
@@ -146,8 +170,9 @@ func serveTLS(config config.Config, handler http.Handler) {
 
 func serveMetrics(config config.Config, handler http.Handler) {
 	server := &http.Server{
-		Addr:    config.MetricsAddress,
-		Handler: handler,
+		Addr:              config.MetricsAddress,
+		Handler:           handler,
+		ReadHeaderTimeout: 60 * time.Second,
 	}
 
 	sig := make(chan os.Signal, 1)

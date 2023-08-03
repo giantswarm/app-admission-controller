@@ -28,6 +28,9 @@ spec:
       securityContext:
         runAsUser: 1000
         runAsGroup: 1000
+        {{- with .Values.podSecurityContext}}
+          {{- . | toYaml | nindent 8 }}
+        {{- end }}
       containers:
         - name: {{ include "name" . }}
           image: "{{ .Values.registry.domain }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
@@ -36,6 +39,21 @@ spec:
             - --tls-cert-file=/certs/ca.crt
             - --tls-key-file=/certs/tls.key
             - --provider={{ .Values.provider.kind }}
+            {{- range .Values.security.appBlacklist }}
+            - --blacklist-app={{ . }}
+            {{- end }}
+            {{- range .Values.security.catalogBlacklist }}
+            - --blacklist-catalog={{ . }}
+            {{- end }}
+            {{- range .Values.security.groupWhitelist }}
+            - --whitelist-group={{ . }}
+            {{- end }}
+            {{- range .Values.security.namespaceBlacklist }}
+            - --blacklist-namespace={{ . }}
+            {{- end }}
+            {{- range .Values.security.userWhitelist }}
+            - --whitelist-user={{ . }}
+            {{- end }}
           volumeMounts:
           - name: {{ include "name" . }}-certificates
             mountPath: "/certs"
@@ -65,3 +83,7 @@ spec:
             limits:
               cpu: 250m
               memory: 250Mi
+          securityContext:
+            {{- with .Values.securityContext }}
+              {{- . | toYaml | nindent 12 }}
+            {{- end }}

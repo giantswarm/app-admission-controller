@@ -3,7 +3,8 @@ module github.com/giantswarm/app-admission-controller
 go 1.16
 
 require (
-	github.com/Masterminds/semver/v3 v3.2.0
+	github.com/Masterminds/semver/v3 v3.2.1
+	github.com/alecthomas/kingpin/v2 v2.3.2
 	github.com/dyson/certman v0.3.0
 	github.com/giantswarm/apiextensions-application v0.6.0
 	github.com/giantswarm/app/v6 v6.15.6
@@ -14,8 +15,7 @@ require (
 	github.com/giantswarm/microerror v0.4.0
 	github.com/giantswarm/micrologger v0.6.0
 	github.com/google/go-cmp v0.5.9
-	github.com/prometheus/client_golang v1.14.0
-	gopkg.in/alecthomas/kingpin.v2 v2.2.6
+	github.com/prometheus/client_golang v1.16.0
 	k8s.io/api v0.21.4
 	k8s.io/apimachinery v0.21.4
 	k8s.io/client-go v0.21.4
@@ -37,15 +37,15 @@ replace (
 	// To solve CVE-2020-36565
 	github.com/labstack/echo/v4 v4.1.11 => github.com/labstack/echo/v4 v4.9.1
 	// Fix CVE
-	github.com/nats-io/nats-server/v2 => github.com/nats-io/nats-server/v2 v2.9.11
+	github.com/nats-io/nats-server/v2 => github.com/nats-io/nats-server/v2 v2.9.20
 	// Use v1.0.0-rc7 of runc to fix nancy alert.
 	github.com/opencontainers/runc v0.1.1 => github.com/opencontainers/runc v1.0.0-rc7
 	// Use v1.7.1 of viper to fix nancy alert.
-	github.com/spf13/viper => github.com/spf13/viper v1.14.0
+	github.com/spf13/viper => github.com/spf13/viper v1.16.0
 	// To solve CVE-2022-41717
 	golang.org/x/net v0.2.0 => golang.org/x/net v0.4.0
 	// Fix CVE
-	golang.org/x/text => golang.org/x/text v0.6.0
+	golang.org/x/text => golang.org/x/text v0.11.0
 	// Same as go-logr/logr, klog/v2 is using logr v0.2.0
 	k8s.io/klog/v2 v2.4.0 => k8s.io/klog/v2 v2.0.0
 )

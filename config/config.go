@@ -1,11 +1,11 @@
 package config
 
 import (
+	"github.com/alecthomas/kingpin/v2"
 	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/k8sclient/v6/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	kingpin "gopkg.in/alecthomas/kingpin.v2"
 	restclient "k8s.io/client-go/rest"
 )
 

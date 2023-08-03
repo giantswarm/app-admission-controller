@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
+	github.com/alecthomas/kingpin/v2 v2.3.2
 	github.com/dyson/certman v0.3.0
 	github.com/giantswarm/apiextensions-application v0.6.0
 	github.com/giantswarm/app/v6 v6.15.6
@@ -15,7 +16,6 @@ require (
 	github.com/giantswarm/micrologger v0.6.0
 	github.com/google/go-cmp v0.5.9
 	github.com/prometheus/client_golang v1.16.0
-	gopkg.in/alecthomas/kingpin.v2 v2.3.2
 	k8s.io/api v0.21.4
 	k8s.io/apimachinery v0.21.4
 	k8s.io/client-go v0.21.4

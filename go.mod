@@ -43,8 +43,8 @@ replace (
 	github.com/opencontainers/runc v0.1.1 => github.com/opencontainers/runc v1.0.0-rc7
 	// Use v1.7.1 of viper to fix nancy alert.
 	github.com/spf13/viper => github.com/spf13/viper v1.16.0
-	// To solve CVE-2022-41717
-	golang.org/x/net v0.2.0 => golang.org/x/net v0.4.0
+	// To solve CVE-2023-3978
+	golang.org/x/net => golang.org/x/net v0.14.0
 	// Fix CVE
 	golang.org/x/text => golang.org/x/text v0.11.0
 	k8s.io/klog/v2 v2.2.0 => k8s.io/klog/v2 v2.0.0

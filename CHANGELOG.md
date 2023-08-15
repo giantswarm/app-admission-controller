@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump `github.com/giantswarm/apptest` to `v1.2.1`
 - Bump `architect-orb` to `v4.31.0`
+- Bump `app` to `v7.0.0`, see: https://github.com/giantswarm/app/pull/294
 
 ### Removed
 

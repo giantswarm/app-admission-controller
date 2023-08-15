@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
-	"github.com/giantswarm/app/v6/pkg/key"
+	"github.com/giantswarm/app/v7/pkg/key"
 	"github.com/giantswarm/microerror"
 	authv1 "k8s.io/api/authentication/v1"
 )

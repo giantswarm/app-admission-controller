@@ -7,7 +7,7 @@ require (
 	github.com/alecthomas/kingpin/v2 v2.3.2
 	github.com/dyson/certman v0.3.0
 	github.com/giantswarm/apiextensions-application v0.6.0
-	github.com/giantswarm/app/v6 v6.15.6
+	github.com/giantswarm/app/v7 v7.0.0
 	github.com/giantswarm/apptest v1.2.1
 	github.com/giantswarm/backoff v1.0.0
 	github.com/giantswarm/k8sclient/v6 v6.0.0

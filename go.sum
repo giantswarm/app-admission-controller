@@ -836,7 +836,6 @@ github.com/giantswarm/backoff v0.2.0/go.mod h1:Z3WRsFilSJ5H5VlFa4XhraoPr+9pmZgYa
 github.com/giantswarm/backoff v1.0.0 h1:1oeTvyPsm1tJrHlSmfxbIWuoCNWPOkWJCb8kfLvE2T0=
 github.com/giantswarm/backoff v1.0.0/go.mod h1:l/WqbggvG5Ndxxws0LUgVEvP5E82Qj5/PF8SMip/1QM=
 github.com/giantswarm/exporterkit v0.2.1/go.mod h1:LkZNK+2qTcbHspbizA6JBBXpQW99u7u7UisUaWrSoVY=
-github.com/giantswarm/k8sclient/v6 v6.0.0 h1:jVrB8/q12/yPDv/tv8cwj4Z11hFGvGuNO2n9O1s+xGo=
 github.com/giantswarm/k8sclient/v6 v6.0.0/go.mod h1:mF0FgQHqCrAhk5EGiyN7RfgMMsz7CP3GoaFsfZ5KHps=
 github.com/giantswarm/k8sclient/v7 v7.0.1 h1:UmRwgsw5Uda27tpIblPo7nWjp/nq5qwqxEPHWcvzsHk=
 github.com/giantswarm/k8sclient/v7 v7.0.1/go.mod h1:zJTXammjLHSiukMIO4+a6eUDgzj/lJxEXFZ22mC0WXc=

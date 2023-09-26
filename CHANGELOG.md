@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- Removed duplicate of Github pre-commit workflow.
+
 ## [0.20.0] - 2023-08-15
 
 ### Changed

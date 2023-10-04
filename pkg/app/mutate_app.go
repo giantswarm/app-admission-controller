@@ -220,6 +220,13 @@ func (m *Mutator) mutateConfig(ctx context.Context, app v1alpha1.App) ([]mutator
 		"name":      key.ClusterConfigMapName(app),
 	}))
 
+	// Towards https://github.com/giantswarm/roadmap/issues/2716.
+	// See method documentation for more details.
+	result, err = m.mutateConfigForPSSCompliance(ctx, app, result)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	return result, nil
 }
 

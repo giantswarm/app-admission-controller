@@ -4,6 +4,15 @@ import (
 	"github.com/giantswarm/microerror"
 )
 
+var pssComplianceError = &microerror.Error{
+	Kind: "pssComplianceError",
+}
+
+// IsPssCompliance asserts pssComplianceError.
+func IsPssCompliance(err error) bool {
+	return microerror.Cause(err) == pssComplianceError
+}
+
 var invalidConfigError = &microerror.Error{
 	Kind: "invalidConfigError",
 }

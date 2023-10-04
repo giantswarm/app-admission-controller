@@ -16,9 +16,10 @@ require (
 	github.com/giantswarm/micrologger v1.0.0
 	github.com/google/go-cmp v0.5.9
 	github.com/prometheus/client_golang v1.16.0
-	k8s.io/api v0.24.0
-	k8s.io/apimachinery v0.24.0
-	k8s.io/client-go v0.24.0
+	k8s.io/api v0.24.1
+	k8s.io/apimachinery v0.24.1
+	k8s.io/client-go v0.24.1
+	sigs.k8s.io/cluster-api v1.0.4
 	sigs.k8s.io/controller-runtime v0.12.1
 )
 
@@ -47,4 +48,6 @@ replace (
 	// Fix CVE
 	golang.org/x/text => golang.org/x/text v0.12.0
 	k8s.io/klog/v2 v2.2.0 => k8s.io/klog/v2 v2.0.0
+	// Required by github.com/giantswarm/apiextensions/v6
+	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.0.4
 )

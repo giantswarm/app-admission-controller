@@ -446,6 +446,7 @@ func Test_MutateApp(t *testing.T) {
 					"namespace": "eggs2",
 					"name":      "eggs2-cluster-values",
 				}),
+				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
 				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
 					Kind:      "configMap",
 					Name:      "pss-compliance-patch",

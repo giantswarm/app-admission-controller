@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Mutate Vintage Workload Cluster Apps to enforce PSS compliance.
+
 ### Removed
 
 - Removed duplicate of Github pre-commit workflow.

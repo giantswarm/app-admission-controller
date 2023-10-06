@@ -35,7 +35,8 @@ const (
 // mutateConfigForPSSCompliance is a temporary solution to
 // https://github.com/giantswarm/roadmap/issues/2716. Revert once migration to
 // Release >= v19.2.0 is complete and managed apps no longer rely on PSPs.
-func (m *Mutator) mutateConfigForPSSCompliance(ctx context.Context, app v1alpha1.App, result []mutator.PatchOperation) ([]mutator.PatchOperation, error) {
+func (m *Mutator) mutateConfigForPSSCompliance(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
+	result := []mutator.PatchOperation{}
 	clusterID := key.ClusterLabel(app)
 	if clusterID == "" {
 		// This App CR does not belong to any Workload Cluster - it does not need any more patches.

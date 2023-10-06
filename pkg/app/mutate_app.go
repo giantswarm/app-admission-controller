@@ -160,6 +160,16 @@ func (m *Mutator) MutateApp(ctx context.Context, oldApp, app v1alpha1.App, opera
 		result = append(result, configPatches...)
 	}
 
+	// Towards https://github.com/giantswarm/roadmap/issues/2716.
+	// See method documentation for more details.
+	pssConfigPatches, err := m.mutateConfigForPSSCompliance(ctx, app)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	if len(pssConfigPatches) > 0 {
+		result = append(result, pssConfigPatches...)
+	}
+
 	kubeConfigPatches, err := m.mutateKubeConfig(ctx, app)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -219,13 +229,6 @@ func (m *Mutator) mutateConfig(ctx context.Context, app v1alpha1.App) ([]mutator
 		"namespace": app.Namespace,
 		"name":      key.ClusterConfigMapName(app),
 	}))
-
-	// Towards https://github.com/giantswarm/roadmap/issues/2716.
-	// See method documentation for more details.
-	result, err = m.mutateConfigForPSSCompliance(ctx, app, result)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
 
 	return result, nil
 }

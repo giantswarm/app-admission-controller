@@ -18,15 +18,25 @@ rules:
       - appcatalogentries
       - catalogs
     verbs:
-      - "get"
+      - get
+  - apiGroups:
+      - cluster.x-k8s.io
+    resources:
+      - clusters
+    verbs:
+      - get
+      - list
   - apiGroups:
     - ""
     resources:
       - configmaps
       - secrets
     verbs:
-      - "get"
-      - "list"
+      - get
+      - list
+      - create
+      - patch
+      - update
   - apiGroups:
       - ""
     resources:

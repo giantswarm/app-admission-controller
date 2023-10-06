@@ -105,6 +105,9 @@ func (m *Mutator) mutateConfigForPSSCompliance(ctx context.Context, app v1alpha1
 	}
 
 	// and add it to the list of extra configs in the App CR.
+	if len(key.ExtraConfigs(app)) == 0 {
+		result = append(result, mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}))
+	}
 	result = append(result, mutator.PatchAdd("/spec/extraConfigs/-", extraConfig))
 
 	return result, nil

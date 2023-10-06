@@ -11,7 +11,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -23,11 +22,6 @@ var (
 	// pssCutoffVersion represents first & lowest Giant Swarm Release version
 	// which does not support PodSecurityPolicies.
 	pssCutoffVersion, _ = semver.NewVersion("v19.2.0")
-	clusterGVK          = schema.GroupVersionResource{
-		Group:    "cluster.x-k8s.io",
-		Version:  "v1beta1",
-		Resource: "clusters",
-	}
 )
 
 const (

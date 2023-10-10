@@ -61,6 +61,23 @@ func Test_MutateApp(t *testing.T) {
 			},
 		},
 	}
+	xyz12cluster1910 := capiv1beta1.Cluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "xyz12",
+			Namespace: "org-giantswarm",
+			Labels: map[string]string{
+				"cluster-operator.giantswarm.io/version": "5.8.0",
+				"cluster.x-k8s.io/cluster-name":          "xyz12",
+				"giantswarm.io/cluster":                  "xyz12",
+				"giantswarm.io/organization":             "giantswarm",
+				"giantswarm.io/service-priority":         "medium",
+				"odp/provider":                           "aws",
+				"odp/region":                             "eu-west-1",
+				// release version < 19.2.0 to avoid PSS compliance patches
+				"release.giantswarm.io/version": "19.1.0",
+			},
+		},
+	}
 
 	tests := []struct {
 		name            string
@@ -435,6 +452,7 @@ func Test_MutateApp(t *testing.T) {
 			},
 			clusters: []*capiv1beta1.Cluster{
 				&eggs2Cluster1920,
+				&xyz12cluster1910,
 			},
 			operation: admissionv1.Create,
 			expectedPatches: []mutator.PatchOperation{
@@ -501,6 +519,7 @@ func Test_MutateApp(t *testing.T) {
 				newTestSecret("eggs2-kubeconfig", "eggs2"),
 			},
 			clusters: []*capiv1beta1.Cluster{
+				&xyz12cluster1910,
 				&eggs2Cluster1920,
 			},
 			operation: admissionv1.Create,
@@ -521,6 +540,40 @@ func Test_MutateApp(t *testing.T) {
 					"name":      "eggs2-kubeconfig",
 				}),
 			},
+		},
+		{
+			name:   "case 11: error when parent Cluster is missing",
+			oldObj: v1alpha1.App{},
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "kiam",
+					Namespace: "eggs2",
+					Labels: map[string]string{
+						label.Cluster: "eggs2",
+					},
+				},
+				Spec: v1alpha1.AppSpec{
+					Catalog:   "giantswarm",
+					Name:      "kiam",
+					Namespace: "kube-system",
+					KubeConfig: v1alpha1.AppSpecKubeConfig{
+						InCluster: false,
+					},
+					Version: "1.4.0",
+				},
+			},
+			apps: []*v1alpha1.App{
+				newTestApp("chart-operator", "eggs2", "3.0.0"),
+			},
+			configMaps: []*corev1.ConfigMap{
+				newTestConfigMap("eggs2-cluster-values", "eggs2"),
+			},
+			secrets: []*corev1.Secret{
+				newTestSecret("eggs2-kubeconfig", "eggs2"),
+			},
+			clusters:    []*capiv1beta1.Cluster{},
+			operation:   admissionv1.Create,
+			expectedErr: "pss compliance error: could not find a Cluster CR matching \"eggs2\" among 0 CRs",
 		},
 	}
 

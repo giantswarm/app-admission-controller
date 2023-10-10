@@ -74,10 +74,18 @@ func (m *Mutator) mutateConfigForPSSCompliance(ctx context.Context, app v1alpha1
 			return nil, microerror.Maskf(pssComplianceError, "error listing Clusters: %v", err)
 		}
 
-		if len(clusterCRList.Items) != 1 {
-			return nil, microerror.Maskf(pssComplianceError, "could not find one Cluster CR matching %q, found %d", clusterID, len(clusterCRList.Items))
+		var clusterCR *capiv1beta1.Cluster
+		for _, item := range clusterCRList.Items {
+			if item.Name == clusterID {
+				x := item
+				clusterCR = &x
+				break
+			}
 		}
-		clusterCR := clusterCRList.Items[0]
+
+		if clusterCR == nil {
+			return nil, microerror.Maskf(pssComplianceError, "could not find a Cluster CR matching %q among %d CRs", clusterID, len(clusterCRList.Items))
+		}
 
 		label, ok := clusterCR.Labels[label.ReleaseVersion]
 		if !ok {

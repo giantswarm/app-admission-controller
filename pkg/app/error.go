@@ -4,13 +4,13 @@ import (
 	"github.com/giantswarm/microerror"
 )
 
-var pssComplianceError = &microerror.Error{
-	Kind: "pssComplianceError",
+var pspRemovalError = &microerror.Error{
+	Kind: "pspRemovalError",
 }
 
-// IsPssCompliance asserts pssComplianceError.
+// IsPssCompliance asserts pspRemovalError.
 func IsPssCompliance(err error) bool {
-	return microerror.Cause(err) == pssComplianceError
+	return microerror.Cause(err) == pspRemovalError
 }
 
 var invalidConfigError = &microerror.Error{

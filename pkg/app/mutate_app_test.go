@@ -39,7 +39,7 @@ func Test_MutateApp(t *testing.T) {
 				"giantswarm.io/service-priority":         "medium",
 				"odp/provider":                           "aws",
 				"odp/region":                             "eu-west-1",
-				// release version < 19.2.0 to avoid PSS compliance patches
+				// release version < 19.2.0 to avoid PSP removal patches
 				"release.giantswarm.io/version": "19.1.0",
 			},
 		},
@@ -56,7 +56,7 @@ func Test_MutateApp(t *testing.T) {
 				"giantswarm.io/service-priority":         "medium",
 				"odp/provider":                           "aws",
 				"odp/region":                             "eu-west-1",
-				// release version >= 19.2.0 to trigger PSS compliance patches
+				// release version >= 19.2.0 to trigger PSP removal patches
 				"release.giantswarm.io/version": "19.2.0",
 			},
 		},
@@ -73,7 +73,7 @@ func Test_MutateApp(t *testing.T) {
 				"giantswarm.io/service-priority":         "medium",
 				"odp/provider":                           "aws",
 				"odp/region":                             "eu-west-1",
-				// release version < 19.2.0 to avoid PSS compliance patches
+				// release version < 19.2.0 to avoid PSP removal patches
 				"release.giantswarm.io/version": "19.1.0",
 			},
 		},
@@ -467,7 +467,7 @@ func Test_MutateApp(t *testing.T) {
 				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
 				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
 					Kind:      "configMap",
-					Name:      "pss-compliance-patch",
+					Name:      "psp-removal-patch",
 					Namespace: "eggs2",
 					Priority:  150,
 				}),
@@ -501,7 +501,7 @@ func Test_MutateApp(t *testing.T) {
 					ExtraConfigs: []v1alpha1.AppExtraConfig{
 						{
 							Kind:      "configMap",
-							Name:      "pss-compliance-patch",
+							Name:      "psp-removal-patch",
 							Namespace: "eggs2",
 							Priority:  150,
 						},
@@ -573,7 +573,7 @@ func Test_MutateApp(t *testing.T) {
 			},
 			clusters:    []*capiv1beta1.Cluster{},
 			operation:   admissionv1.Create,
-			expectedErr: "pss compliance error: could not find a Cluster CR matching \"eggs2\" among 0 CRs",
+			expectedErr: "psp removal error: could not find a Cluster CR matching \"eggs2\" among 0 CRs",
 		},
 	}
 

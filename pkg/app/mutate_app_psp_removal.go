@@ -25,17 +25,17 @@ var (
 )
 
 const (
-	extraConfigName   = "pss-compliance-patch"
+	extraConfigName   = "psp-removal-patch"
 	extraConfigValues = `global:
   podsecuritystandards:
     enforced: true`
 	topPriority = 150
 )
 
-// mutateConfigForPSSCompliance is a temporary solution to
+// mutateConfigForPSPRemoval is a temporary solution to
 // https://github.com/giantswarm/roadmap/issues/2716. Revert once migration to
 // Release >= v19.2.0 is complete and managed apps no longer rely on PSPs.
-func (m *Mutator) mutateConfigForPSSCompliance(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
+func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
 	result := []mutator.PatchOperation{}
 	clusterID := key.ClusterLabel(app)
 	if clusterID == "" {
@@ -71,7 +71,7 @@ func (m *Mutator) mutateConfigForPSSCompliance(ctx context.Context, app v1alpha1
 		clusterCRList := capiv1beta1.ClusterList{}
 		err := m.k8sClient.CtrlClient().List(ctx, &clusterCRList, &client.ListOptions{})
 		if err != nil {
-			return nil, microerror.Maskf(pssComplianceError, "error listing Clusters: %v", err)
+			return nil, microerror.Maskf(pspRemovalError, "error listing Clusters: %v", err)
 		}
 
 		var clusterCR *capiv1beta1.Cluster
@@ -84,17 +84,17 @@ func (m *Mutator) mutateConfigForPSSCompliance(ctx context.Context, app v1alpha1
 		}
 
 		if clusterCR == nil {
-			return nil, microerror.Maskf(pssComplianceError, "could not find a Cluster CR matching %q among %d CRs", clusterID, len(clusterCRList.Items))
+			return nil, microerror.Maskf(pspRemovalError, "could not find a Cluster CR matching %q among %d CRs", clusterID, len(clusterCRList.Items))
 		}
 
 		label, ok := clusterCR.Labels[label.ReleaseVersion]
 		if !ok {
-			return nil, microerror.Maskf(pssComplianceError, "error infering Release version for Cluster %q", clusterID)
+			return nil, microerror.Maskf(pspRemovalError, "error infering Release version for Cluster %q", clusterID)
 		}
 
 		releaseSemver, err := semver.NewVersion(label)
 		if err != nil {
-			return nil, microerror.Maskf(pssComplianceError, "error parsing Release version %q as semver: %v", label, err)
+			return nil, microerror.Maskf(pspRemovalError, "error parsing Release version %q as semver: %v", label, err)
 		}
 
 		releaseVersion = releaseSemver

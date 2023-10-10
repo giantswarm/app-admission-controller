@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Mutate Vintage Workload Cluster Apps to enforce PSS compliance.
+- Mutate Vintage Workload Cluster Apps to disable Pod Security Policies.
 
 ### Removed
 

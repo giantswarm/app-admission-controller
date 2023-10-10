@@ -93,7 +93,7 @@ func (m *Mutator) mutateConfigForPSSCompliance(ctx context.Context, app v1alpha1
 	}
 
 	if releaseVersion.LessThan(pssCutoffVersion) {
-		// releaseVersion is lower than pssCutoffVersion and still supports PSS. Nothing to do.
+		// releaseVersion is lower than pssCutoffVersion and still supports PSPs. Nothing to do.
 		return result, nil
 	}
 

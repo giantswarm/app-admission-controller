@@ -47,11 +47,12 @@ func TestDefaultKubeConfig(t *testing.T) {
 			label.AppOperatorVersion: "3.0.0",
 			label.Cluster:            "xyz12",
 		},
-		AppName:         appName,
-		AppNamespace:    namespace,
-		AppVersion:      "1.2.2",
-		TargetCluster:   namespace,
-		TargetNamespace: "giantswarm",
+		AppName:           appName,
+		AppNamespace:      namespace,
+		AppVersion:        "1.2.2",
+		TargetCluster:     namespace,
+		TargetNamespace:   "giantswarm",
+		DefaultingEnabled: true,
 	}
 
 	err = config.CreateApp(ctx, appConfig)
@@ -83,7 +84,7 @@ func TestDefaultKubeConfig(t *testing.T) {
 func TestDefaultKubeConfigOrg(t *testing.T) {
 	const (
 		orgNamespace        = "org-acme"
-		orgKubeConfigSecret = "test-kubeconfig"
+		orgKubeConfigSecret = "mutation-test-kubeconfig"
 	)
 
 	ctx := context.Background()
@@ -105,14 +106,15 @@ func TestDefaultKubeConfigOrg(t *testing.T) {
 	// InCluster and DefaultingEnabled set to false.
 	// Other fields will be defaulted.
 	appConfig := helpers.AppConfig{
-		AppCatalog:      catalogName,
-		AppLabels:       map[string]string{label.Cluster: "xyz12"},
-		AppName:         appName,
-		AppNamespace:    orgNamespace,
-		AppVersion:      "1.2.2",
-		InCluster:       false,
-		TargetCluster:   namespace,
-		TargetNamespace: "giantswarm",
+		AppCatalog:        catalogName,
+		AppLabels:         map[string]string{label.Cluster: "xyz12"},
+		AppName:           appName,
+		AppNamespace:      orgNamespace,
+		AppVersion:        "1.2.2",
+		InCluster:         false,
+		TargetCluster:     namespace,
+		TargetNamespace:   "giantswarm",
+		DefaultingEnabled: true,
 	}
 
 	err = config.CreateApp(ctx, appConfig)

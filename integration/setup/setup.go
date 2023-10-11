@@ -21,6 +21,12 @@ func Setup(m *testing.M, config TestConfig) {
 
 	ctx := context.Background()
 
+	err = config.CreateNamespace(ctx, "xyz12")
+	if err != nil {
+		config.Logger.Errorf(ctx, err, "create namespace failed")
+		os.Exit(2)
+	}
+
 	err = config.CreateCluster(ctx, "xyz12", "default", "v19.1.0")
 	if err != nil {
 		config.Logger.Errorf(ctx, err, "create cluster failed")

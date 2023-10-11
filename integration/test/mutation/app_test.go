@@ -42,8 +42,11 @@ func TestDefaultKubeConfig(t *testing.T) {
 	// InCluster and DefaultingEnabled set to false.
 	// Other fields will be defaulted.
 	appConfig := helpers.AppConfig{
-		AppCatalog:      catalogName,
-		AppLabels:       map[string]string{label.AppOperatorVersion: "3.0.0"},
+		AppCatalog: catalogName,
+		AppLabels: map[string]string{
+			label.AppOperatorVersion: "3.0.0",
+			label.Cluster:            "xyz12",
+		},
 		AppName:         appName,
 		AppNamespace:    namespace,
 		AppVersion:      "1.2.2",
@@ -103,7 +106,7 @@ func TestDefaultKubeConfigOrg(t *testing.T) {
 	// Other fields will be defaulted.
 	appConfig := helpers.AppConfig{
 		AppCatalog:      catalogName,
-		AppLabels:       map[string]string{label.Cluster: "test"},
+		AppLabels:       map[string]string{label.Cluster: "xyz12"},
 		AppName:         appName,
 		AppNamespace:    orgNamespace,
 		AppVersion:      "1.2.2",

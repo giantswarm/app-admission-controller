@@ -8,16 +8,19 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/apptest"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
 
 	"github.com/giantswarm/app-admission-controller/integration/env"
 	"github.com/giantswarm/app-admission-controller/integration/helpers"
@@ -80,6 +83,34 @@ func (tc *TestConfig) CreateCatalog(ctx context.Context, name string) error {
 			return microerror.Mask(err)
 		}
 
+		return nil
+	}
+
+	return tc.ensureExecuted(ctx, o)
+}
+
+func (tc *TestConfig) CreateCluster(ctx context.Context, name, namespace, releaseVersion string) error {
+	if _, err := semver.NewVersion(releaseVersion); err != nil {
+		return fmt.Errorf("releaseVersion %q is not a correct semver", releaseVersion)
+	}
+
+	clusterCR := &capiv1beta1.Cluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels: map[string]string{
+				label.ReleaseVersion: releaseVersion,
+				label.Cluster:        name,
+			},
+		},
+		Spec: capiv1beta1.ClusterSpec{},
+	}
+
+	o := func() error {
+		err := tc.AppTest.CtrlClient().Create(ctx, clusterCR)
+		if !apierrors.IsAlreadyExists(err) && err != nil {
+			return microerror.Mask(err)
+		}
 		return nil
 	}
 

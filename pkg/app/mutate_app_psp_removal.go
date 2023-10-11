@@ -28,7 +28,25 @@ const (
 	extraConfigName   = "psp-removal-patch"
 	extraConfigValues = `global:
   podsecuritystandards:
-    enforced: true`
+    enforced: true
+promtail:
+  rbac:
+    pspEnabled: false
+loki:
+  rbac:
+    pspEnabled: false
+grafana:
+  rbac:
+    pspEnabled: false
+datadog:
+  clusterAgent:
+    podSecurity:
+      podSecurityPolicy:
+        create: false
+  agents:
+    podSecurity:
+      podSecurityPolicy:
+        create: false`
 	topPriority = 150
 )
 

@@ -232,6 +232,10 @@ func NewConfig() (TestConfig, error) {
 	var k8sClients *k8sclient.Clients
 	{
 		c := k8sclient.ClientsConfig{
+			SchemeBuilder: k8sclient.SchemeBuilder{
+				v1alpha1.AddToScheme,
+				capiv1beta1.AddToScheme,
+			},
 			Logger: logger,
 
 			KubeConfigPath: env.KubeConfig(),

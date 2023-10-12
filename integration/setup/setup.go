@@ -27,7 +27,7 @@ func Setup(m *testing.M, config TestConfig) {
 		os.Exit(2)
 	}
 
-	err = config.CreateCluster(ctx, "xyz12", "default", "v19.1.0")
+	err = config.CreateCluster(ctx, "xyz12", "default", "v19.2.0")
 	if err != nil {
 		config.Logger.Errorf(ctx, err, "create cluster failed")
 		os.Exit(2)

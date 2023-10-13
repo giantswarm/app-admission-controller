@@ -160,6 +160,16 @@ func (m *Mutator) MutateApp(ctx context.Context, oldApp, app v1alpha1.App, opera
 		result = append(result, configPatches...)
 	}
 
+	// Towards https://github.com/giantswarm/roadmap/issues/2716.
+	// See method documentation for more details.
+	pspConfigPatches, err := m.mutateConfigForPSPRemoval(ctx, app)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	if len(pspConfigPatches) > 0 {
+		result = append(result, pspConfigPatches...)
+	}
+
 	kubeConfigPatches, err := m.mutateKubeConfig(ctx, app)
 	if err != nil {
 		return nil, microerror.Mask(err)

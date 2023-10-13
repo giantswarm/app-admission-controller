@@ -21,6 +21,18 @@ func Setup(m *testing.M, config TestConfig) {
 
 	ctx := context.Background()
 
+	err = config.CreateNamespace(ctx, "xyz12")
+	if err != nil {
+		config.Logger.Errorf(ctx, err, "create namespace failed")
+		os.Exit(2)
+	}
+
+	err = config.CreateCluster(ctx, "xyz12", "default", "v19.2.0")
+	if err != nil {
+		config.Logger.Errorf(ctx, err, "create cluster failed")
+		os.Exit(2)
+	}
+
 	err = installResources(ctx, config)
 	if err != nil {
 		config.Logger.Errorf(ctx, err, "install apps failed")
@@ -31,30 +43,26 @@ func Setup(m *testing.M, config TestConfig) {
 }
 
 func installResources(ctx context.Context, testConfig TestConfig) error {
-	var err error
-
-	{
-		apps := []apptest.App{
-			{
-				CatalogName:   "control-plane-catalog",
-				Name:          "cert-manager-app",
-				Namespace:     metav1.NamespaceSystem,
-				Version:       "2.3.1",
-				WaitForDeploy: true,
-			},
-			{
-				CatalogName:   "control-plane-test-catalog",
-				Name:          "app-admission-controller",
-				Namespace:     "giantswarm",
-				SHA:           env.CircleSHA(),
-				ValuesYAML:    templates.AppAdmissionControllerValues,
-				WaitForDeploy: true,
-			},
-		}
-		err = testConfig.AppTest.InstallApps(ctx, apps)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+	apps := []apptest.App{
+		{
+			CatalogName:   "control-plane-catalog",
+			Name:          "cert-manager-app",
+			Namespace:     metav1.NamespaceSystem,
+			Version:       "2.3.1",
+			WaitForDeploy: true,
+		},
+		{
+			CatalogName:   "control-plane-test-catalog",
+			Name:          "app-admission-controller",
+			Namespace:     "giantswarm",
+			SHA:           env.CircleSHA(),
+			ValuesYAML:    templates.AppAdmissionControllerValues,
+			WaitForDeploy: true,
+		},
+	}
+	err := testConfig.AppTest.InstallApps(ctx, apps)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
 	return nil

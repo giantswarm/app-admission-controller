@@ -29,8 +29,11 @@ func TestFailWhenCatalogNotFound(t *testing.T) {
 	var err error
 
 	config := helpers.AppConfig{
-		AppCatalog:      "missing",
-		AppLabels:       map[string]string{label.AppOperatorVersion: "0.0.0"},
+		AppCatalog: "missing",
+		AppLabels: map[string]string{
+			label.AppOperatorVersion: "0.0.0",
+			label.Cluster:            "xyz12",
+		},
 		AppName:         appName,
 		AppNamespace:    "giantswarm",
 		AppVersion:      "1.2.2",
@@ -103,8 +106,11 @@ func TestFailWhenTargetNamespaceNotAllowed(t *testing.T) {
 	}
 
 	appConfig := helpers.AppConfig{
-		AppCatalog:      catalog,
-		AppLabels:       map[string]string{label.AppOperatorVersion: "0.0.0"},
+		AppCatalog: catalog,
+		AppLabels: map[string]string{
+			label.AppOperatorVersion: "0.0.0",
+			label.Cluster:            "xyz12",
+		},
 		AppName:         appName,
 		AppNamespace:    orgNamespace,
 		AppVersion:      "1.2.2",
@@ -179,8 +185,11 @@ func createTestResources(ctx context.Context) error {
 	}
 
 	appConfig := helpers.AppConfig{
-		AppCatalog:      catalog,
-		AppLabels:       map[string]string{label.AppOperatorVersion: "0.0.0"},
+		AppCatalog: catalog,
+		AppLabels: map[string]string{
+			label.AppOperatorVersion: "0.0.0",
+			label.Cluster:            "xyz12",
+		},
 		AppName:         appName,
 		AppNamespace:    namespace,
 		AppVersion:      "1.2.2",

@@ -7,6 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	restclient "k8s.io/client-go/rest"
+	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
 )
 
 const (
@@ -56,6 +57,7 @@ func Parse() (Config, error) {
 		c := k8sclient.ClientsConfig{
 			SchemeBuilder: k8sclient.SchemeBuilder{
 				v1alpha1.AddToScheme,
+				capiv1beta1.AddToScheme,
 			},
 			Logger: config.Logger,
 

@@ -18,6 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgofake "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/kubernetes/scheme"
+	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
 	"github.com/giantswarm/app-admission-controller/pkg/mutator"
@@ -26,6 +27,58 @@ import (
 func Test_MutateApp(t *testing.T) {
 	ctx := context.Background()
 
+	eggs2Cluster1920 := capiv1beta1.Cluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "eggs2",
+			Namespace: "org-giantswarm",
+			Labels: map[string]string{
+				"cluster-operator.giantswarm.io/version": "5.8.0",
+				"cluster.x-k8s.io/cluster-name":          "eggs2",
+				"giantswarm.io/cluster":                  "eggs2",
+				"giantswarm.io/organization":             "giantswarm",
+				"giantswarm.io/service-priority":         "medium",
+				"odp/provider":                           "aws",
+				"odp/region":                             "eu-west-1",
+				// release version < 19.3.0 to avoid PSP removal patches
+				"release.giantswarm.io/version": "19.2.0",
+			},
+		},
+	}
+	eggs2Cluster1930 := capiv1beta1.Cluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "eggs2",
+			Namespace: "org-giantswarm",
+			Labels: map[string]string{
+				"cluster-operator.giantswarm.io/version": "5.8.0",
+				"cluster.x-k8s.io/cluster-name":          "eggs2",
+				"giantswarm.io/cluster":                  "eggs2",
+				"giantswarm.io/organization":             "giantswarm",
+				"giantswarm.io/service-priority":         "medium",
+				"odp/provider":                           "aws",
+				"odp/region":                             "eu-west-1",
+				// release version >= 19.3.0 to trigger PSP removal patches
+				"release.giantswarm.io/version": "19.3.0",
+			},
+		},
+	}
+	xyz12Cluster1920 := capiv1beta1.Cluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "xyz12",
+			Namespace: "org-giantswarm",
+			Labels: map[string]string{
+				"cluster-operator.giantswarm.io/version": "5.8.0",
+				"cluster.x-k8s.io/cluster-name":          "xyz12",
+				"giantswarm.io/cluster":                  "xyz12",
+				"giantswarm.io/organization":             "giantswarm",
+				"giantswarm.io/service-priority":         "medium",
+				"odp/provider":                           "aws",
+				"odp/region":                             "eu-west-1",
+				// release version < 19.3.0 to avoid PSP removal patches
+				"release.giantswarm.io/version": "19.2.0",
+			},
+		},
+	}
+
 	tests := []struct {
 		name            string
 		oldObj          v1alpha1.App
@@ -33,6 +86,7 @@ func Test_MutateApp(t *testing.T) {
 		apps            []*v1alpha1.App
 		configMaps      []*corev1.ConfigMap
 		secrets         []*corev1.Secret
+		clusters        []*capiv1beta1.Cluster
 		operation       admissionv1.Operation
 		expectedPatches []mutator.PatchOperation
 		expectedErr     string
@@ -63,6 +117,9 @@ func Test_MutateApp(t *testing.T) {
 			},
 			secrets: []*corev1.Secret{
 				newTestSecret("eggs2-kubeconfig", "eggs2"),
+			},
+			clusters: []*capiv1beta1.Cluster{
+				&eggs2Cluster1920,
 			},
 			operation: admissionv1.Create,
 			expectedPatches: []mutator.PatchOperation{
@@ -307,6 +364,9 @@ func Test_MutateApp(t *testing.T) {
 			secrets: []*corev1.Secret{
 				newTestSecret("eggs2-kubeconfig", "org-eggs2"),
 			},
+			clusters: []*capiv1beta1.Cluster{
+				&eggs2Cluster1920,
+			},
 			operation: admissionv1.Create,
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
@@ -360,10 +420,166 @@ func Test_MutateApp(t *testing.T) {
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), "kiam"),
 			},
 		},
+		{
+			name:   "case 9: flawless flow for app in Release >= v19.3.0",
+			oldObj: v1alpha1.App{},
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "kiam",
+					Namespace: "eggs2",
+					Labels: map[string]string{
+						label.Cluster: "eggs2",
+					},
+				},
+				Spec: v1alpha1.AppSpec{
+					Catalog:   "giantswarm",
+					Name:      "kiam",
+					Namespace: "kube-system",
+					KubeConfig: v1alpha1.AppSpecKubeConfig{
+						InCluster: false,
+					},
+					Version: "1.4.0",
+				},
+			},
+			apps: []*v1alpha1.App{
+				newTestApp("chart-operator", "eggs2", "3.0.0"),
+			},
+			configMaps: []*corev1.ConfigMap{
+				newTestConfigMap("eggs2-cluster-values", "eggs2"),
+			},
+			secrets: []*corev1.Secret{
+				newTestSecret("eggs2-kubeconfig", "eggs2"),
+			},
+			clusters: []*capiv1beta1.Cluster{
+				&eggs2Cluster1930,
+				&xyz12Cluster1920,
+			},
+			operation: admissionv1.Create,
+			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), "kiam"),
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
+				mutator.PatchAdd("/spec/config", map[string]string{}),
+				mutator.PatchAdd("/spec/config/configMap", map[string]string{
+					"namespace": "eggs2",
+					"name":      "eggs2-cluster-values",
+				}),
+				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
+				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
+					Kind:      "configMap",
+					Name:      "psp-removal-patch",
+					Namespace: "eggs2",
+					Priority:  150,
+				}),
+				mutator.PatchAdd("/spec/kubeConfig/context", map[string]string{
+					"name": "eggs2",
+				}),
+				mutator.PatchAdd("/spec/kubeConfig/secret", map[string]string{
+					"namespace": "eggs2",
+					"name":      "eggs2-kubeconfig",
+				}),
+			},
+		},
+		{
+			name:   "case 10: no change flow for app in Release >= 19.3.0",
+			oldObj: v1alpha1.App{},
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "kiam",
+					Namespace: "eggs2",
+					Labels: map[string]string{
+						label.Cluster: "eggs2",
+					},
+				},
+				Spec: v1alpha1.AppSpec{
+					Catalog:   "giantswarm",
+					Name:      "kiam",
+					Namespace: "kube-system",
+					KubeConfig: v1alpha1.AppSpecKubeConfig{
+						InCluster: false,
+					},
+					ExtraConfigs: []v1alpha1.AppExtraConfig{
+						{
+							Kind:      "configMap",
+							Name:      "psp-removal-patch",
+							Namespace: "eggs2",
+							Priority:  150,
+						},
+					},
+					Version: "1.4.0",
+				},
+			},
+			apps: []*v1alpha1.App{
+				newTestApp("chart-operator", "eggs2", "3.0.0"),
+			},
+			configMaps: []*corev1.ConfigMap{
+				newTestConfigMap("eggs2-cluster-values", "eggs2"),
+			},
+			secrets: []*corev1.Secret{
+				newTestSecret("eggs2-kubeconfig", "eggs2"),
+			},
+			clusters: []*capiv1beta1.Cluster{
+				&xyz12Cluster1920,
+				&eggs2Cluster1930,
+			},
+			operation: admissionv1.Create,
+			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), "kiam"),
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
+				mutator.PatchAdd("/spec/config", map[string]string{}),
+				mutator.PatchAdd("/spec/config/configMap", map[string]string{
+					"namespace": "eggs2",
+					"name":      "eggs2-cluster-values",
+				}),
+				mutator.PatchAdd("/spec/kubeConfig/context", map[string]string{
+					"name": "eggs2",
+				}),
+				mutator.PatchAdd("/spec/kubeConfig/secret", map[string]string{
+					"namespace": "eggs2",
+					"name":      "eggs2-kubeconfig",
+				}),
+			},
+		},
+		{
+			name:   "case 11: error when parent Cluster is missing",
+			oldObj: v1alpha1.App{},
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "kiam",
+					Namespace: "eggs2",
+					Labels: map[string]string{
+						label.Cluster: "eggs2",
+					},
+				},
+				Spec: v1alpha1.AppSpec{
+					Catalog:   "giantswarm",
+					Name:      "kiam",
+					Namespace: "kube-system",
+					KubeConfig: v1alpha1.AppSpecKubeConfig{
+						InCluster: false,
+					},
+					Version: "1.4.0",
+				},
+			},
+			apps: []*v1alpha1.App{
+				newTestApp("chart-operator", "eggs2", "3.0.0"),
+			},
+			configMaps: []*corev1.ConfigMap{
+				newTestConfigMap("eggs2-cluster-values", "eggs2"),
+			},
+			secrets: []*corev1.Secret{
+				newTestSecret("eggs2-kubeconfig", "eggs2"),
+			},
+			clusters:    []*capiv1beta1.Cluster{},
+			operation:   admissionv1.Create,
+			expectedErr: "psp removal error: could not find a Cluster CR matching \"eggs2\" among 0 CRs",
+		},
 	}
 
 	appSchemeBuilder := runtime.SchemeBuilder(schemeBuilder{
 		v1alpha1.AddToScheme,
+		capiv1beta1.AddToScheme,
 	})
 	err := appSchemeBuilder.AddToScheme(scheme.Scheme)
 	if err != nil {
@@ -378,6 +594,10 @@ func Test_MutateApp(t *testing.T) {
 
 			for _, app := range tc.apps {
 				g8sObjs = append(g8sObjs, app)
+			}
+
+			for _, cluster := range tc.clusters {
+				g8sObjs = append(g8sObjs, cluster)
 			}
 
 			k8sObjs := make([]runtime.Object, 0)

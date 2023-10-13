@@ -4,6 +4,15 @@ import (
 	"github.com/giantswarm/microerror"
 )
 
+var pspRemovalError = &microerror.Error{
+	Kind: "pspRemovalError",
+}
+
+// IsPspRemoval asserts pspRemovalError.
+func IsPspRemoval(err error) bool {
+	return microerror.Cause(err) == pspRemovalError
+}
+
 var invalidConfigError = &microerror.Error{
 	Kind: "invalidConfigError",
 }

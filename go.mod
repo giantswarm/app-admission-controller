@@ -14,8 +14,8 @@ require (
 	github.com/giantswarm/k8smetadata v0.21.0
 	github.com/giantswarm/microerror v0.4.0
 	github.com/giantswarm/micrologger v1.0.0
-	github.com/google/go-cmp v0.5.9
-	github.com/prometheus/client_golang v1.16.0
+	github.com/google/go-cmp v0.6.0
+	github.com/prometheus/client_golang v1.17.0
 	k8s.io/api v0.24.1
 	k8s.io/apimachinery v0.24.1
 	k8s.io/client-go v0.24.1
@@ -38,15 +38,15 @@ replace (
 	// To solve CVE-2020-36565
 	github.com/labstack/echo/v4 v4.1.11 => github.com/labstack/echo/v4 v4.9.1
 	// Fix CVE
-	github.com/nats-io/nats-server/v2 => github.com/nats-io/nats-server/v2 v2.9.21
+	github.com/nats-io/nats-server/v2 => github.com/nats-io/nats-server/v2 v2.10.3
 	// Use v1.0.0-rc7 of runc to fix nancy alert.
 	github.com/opencontainers/runc v0.1.1 => github.com/opencontainers/runc v1.0.0-rc7
 	// Use v1.7.1 of viper to fix nancy alert.
-	github.com/spf13/viper => github.com/spf13/viper v1.16.0
+	github.com/spf13/viper => github.com/spf13/viper v1.17.0
 	// To solve CVE-2023-3978
-	golang.org/x/net => golang.org/x/net v0.14.0
+	golang.org/x/net => golang.org/x/net v0.17.0
 	// Fix CVE
-	golang.org/x/text => golang.org/x/text v0.12.0
+	golang.org/x/text => golang.org/x/text v0.13.0
 	k8s.io/klog/v2 v2.2.0 => k8s.io/klog/v2 v2.0.0
 	// Required by github.com/giantswarm/apiextensions/v6
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.0.4

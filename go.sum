@@ -1031,8 +1031,8 @@ github.com/giantswarm/k8smetadata v0.5.0/go.mod h1:k3DYCMdspxhk7efLkQdX1b8UZ71ij
 github.com/giantswarm/k8smetadata v0.6.0/go.mod h1:k3DYCMdspxhk7efLkQdX1b8UZ71ijOCG3ZoIU8+5xgw=
 github.com/giantswarm/k8smetadata v0.9.2/go.mod h1:k3DYCMdspxhk7efLkQdX1b8UZ71ijOCG3ZoIU8+5xgw=
 github.com/giantswarm/k8smetadata v0.13.0/go.mod h1:k3DYCMdspxhk7efLkQdX1b8UZ71ijOCG3ZoIU8+5xgw=
-github.com/giantswarm/k8smetadata v0.21.0 h1:NeLh8thaQf3iRobPhP94qF8kd7KUU65gUUNSkwFfu+E=
-github.com/giantswarm/k8smetadata v0.21.0/go.mod h1:QiQAyaZnwco1U0lENLF0Kp4bSN4dIPwIlHWEvUo3ES8=
+github.com/giantswarm/k8smetadata v0.23.0 h1:iGwa1Nb45Sfcd5wqJEKBvxY1u5yXFg3Sq5Fw62nyRGA=
+github.com/giantswarm/k8smetadata v0.23.0/go.mod h1:QiQAyaZnwco1U0lENLF0Kp4bSN4dIPwIlHWEvUo3ES8=
 github.com/giantswarm/microendpoint v0.2.0/go.mod h1:SSkSp4Q4iSW7vwkil+/E3IXy9Q8To8vXmT5VCg24RDg=
 github.com/giantswarm/microerror v0.2.0/go.mod h1:1YtJq/m7Vlq1Y6NP7B+SODOKCGlG7e5wctV2OoE9n34=
 github.com/giantswarm/microerror v0.3.0/go.mod h1:g8oCEMFAoEs70riRRmj9+6eiz7SqNxYl+2OfxFh1po0=

@@ -27,23 +27,6 @@ import (
 func Test_MutateApp(t *testing.T) {
 	ctx := context.Background()
 
-	eggs2Cluster1910 := capiv1beta1.Cluster{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "eggs2",
-			Namespace: "org-giantswarm",
-			Labels: map[string]string{
-				"cluster-operator.giantswarm.io/version": "5.8.0",
-				"cluster.x-k8s.io/cluster-name":          "eggs2",
-				"giantswarm.io/cluster":                  "eggs2",
-				"giantswarm.io/organization":             "giantswarm",
-				"giantswarm.io/service-priority":         "medium",
-				"odp/provider":                           "aws",
-				"odp/region":                             "eu-west-1",
-				// release version < 19.2.0 to avoid PSP removal patches
-				"release.giantswarm.io/version": "19.1.0",
-			},
-		},
-	}
 	eggs2Cluster1920 := capiv1beta1.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "eggs2",
@@ -56,12 +39,29 @@ func Test_MutateApp(t *testing.T) {
 				"giantswarm.io/service-priority":         "medium",
 				"odp/provider":                           "aws",
 				"odp/region":                             "eu-west-1",
-				// release version >= 19.2.0 to trigger PSP removal patches
+				// release version < 19.3.0 to avoid PSP removal patches
 				"release.giantswarm.io/version": "19.2.0",
 			},
 		},
 	}
-	xyz12cluster1910 := capiv1beta1.Cluster{
+	eggs2Cluster1930 := capiv1beta1.Cluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "eggs2",
+			Namespace: "org-giantswarm",
+			Labels: map[string]string{
+				"cluster-operator.giantswarm.io/version": "5.8.0",
+				"cluster.x-k8s.io/cluster-name":          "eggs2",
+				"giantswarm.io/cluster":                  "eggs2",
+				"giantswarm.io/organization":             "giantswarm",
+				"giantswarm.io/service-priority":         "medium",
+				"odp/provider":                           "aws",
+				"odp/region":                             "eu-west-1",
+				// release version >= 19.3.0 to trigger PSP removal patches
+				"release.giantswarm.io/version": "19.3.0",
+			},
+		},
+	}
+	xyz12Cluster1920 := capiv1beta1.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "xyz12",
 			Namespace: "org-giantswarm",
@@ -73,8 +73,8 @@ func Test_MutateApp(t *testing.T) {
 				"giantswarm.io/service-priority":         "medium",
 				"odp/provider":                           "aws",
 				"odp/region":                             "eu-west-1",
-				// release version < 19.2.0 to avoid PSP removal patches
-				"release.giantswarm.io/version": "19.1.0",
+				// release version < 19.3.0 to avoid PSP removal patches
+				"release.giantswarm.io/version": "19.2.0",
 			},
 		},
 	}
@@ -119,7 +119,7 @@ func Test_MutateApp(t *testing.T) {
 				newTestSecret("eggs2-kubeconfig", "eggs2"),
 			},
 			clusters: []*capiv1beta1.Cluster{
-				&eggs2Cluster1910,
+				&eggs2Cluster1920,
 			},
 			operation: admissionv1.Create,
 			expectedPatches: []mutator.PatchOperation{
@@ -365,7 +365,7 @@ func Test_MutateApp(t *testing.T) {
 				newTestSecret("eggs2-kubeconfig", "org-eggs2"),
 			},
 			clusters: []*capiv1beta1.Cluster{
-				&eggs2Cluster1910,
+				&eggs2Cluster1920,
 			},
 			operation: admissionv1.Create,
 			expectedPatches: []mutator.PatchOperation{
@@ -421,7 +421,7 @@ func Test_MutateApp(t *testing.T) {
 			},
 		},
 		{
-			name:   "case 9: flawless flow for app in Release >= v19.2.0",
+			name:   "case 9: flawless flow for app in Release >= v19.3.0",
 			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
@@ -451,8 +451,8 @@ func Test_MutateApp(t *testing.T) {
 				newTestSecret("eggs2-kubeconfig", "eggs2"),
 			},
 			clusters: []*capiv1beta1.Cluster{
-				&eggs2Cluster1920,
-				&xyz12cluster1910,
+				&eggs2Cluster1930,
+				&xyz12Cluster1920,
 			},
 			operation: admissionv1.Create,
 			expectedPatches: []mutator.PatchOperation{
@@ -481,7 +481,7 @@ func Test_MutateApp(t *testing.T) {
 			},
 		},
 		{
-			name:   "case 10: no change flow for app in Release >= 19.2.0",
+			name:   "case 10: no change flow for app in Release >= 19.3.0",
 			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
@@ -519,8 +519,8 @@ func Test_MutateApp(t *testing.T) {
 				newTestSecret("eggs2-kubeconfig", "eggs2"),
 			},
 			clusters: []*capiv1beta1.Cluster{
-				&xyz12cluster1910,
-				&eggs2Cluster1920,
+				&xyz12Cluster1920,
+				&eggs2Cluster1930,
 			},
 			operation: admissionv1.Create,
 			expectedPatches: []mutator.PatchOperation{

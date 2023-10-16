@@ -8,8 +8,8 @@ var pspRemovalError = &microerror.Error{
 	Kind: "pspRemovalError",
 }
 
-// IsPssCompliance asserts pspRemovalError.
-func IsPssCompliance(err error) bool {
+// IsPspRemoval asserts pspRemovalError.
+func IsPspRemoval(err error) bool {
 	return microerror.Cause(err) == pspRemovalError
 }
 

@@ -2,12 +2,14 @@ package app
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/app/v7/pkg/key"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
+	"golang.org/x/exp/slices"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,6 +24,9 @@ var (
 	// pssCutoffVersion represents the first & lowest Giant Swarm Release
 	// version which does not support PodSecurityPolicies.
 	pssCutoffVersion, _ = semver.NewVersion("v19.3.0")
+	// legacyProviders is a slice of provider names, like "aws";
+	// mutateConfigForPSPRemoval is applied to legacy providers exclusively
+	legacyProviders = []string{"aws", "azure", "kvm"}
 )
 
 const (
@@ -37,6 +42,11 @@ const (
 // Release >= v19.3.0 is complete and managed apps no longer rely on PSPs.
 func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
 	result := []mutator.PatchOperation{}
+
+	if !slices.Contains(legacyProviders, strings.ToLower(m.provider)) {
+		// PSP patch is applicable to legacy providers only.
+		return result, nil
+	}
 
 	clusterID := key.ClusterLabel(app)
 	if clusterID == "" {

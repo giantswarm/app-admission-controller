@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Limit PSP removal logic to legacy providers.
+
 ## [0.21.0] - 2023-10-13
 
 ### Added

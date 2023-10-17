@@ -37,6 +37,7 @@ const (
 // Release >= v19.3.0 is complete and managed apps no longer rely on PSPs.
 func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
 	result := []mutator.PatchOperation{}
+
 	clusterID := key.ClusterLabel(app)
 	if clusterID == "" {
 		// This App CR does not belong to any Workload Cluster - it does not

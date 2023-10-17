@@ -24,11 +24,14 @@ import (
 type MutatorConfig struct {
 	K8sClient k8sclient.Interface
 	Logger    micrologger.Logger
+	Provider  string
 }
 
 type Mutator struct {
 	k8sClient k8sclient.Interface
 	logger    micrologger.Logger
+	// provider is required by mutateConfigForPSPRemoval()
+	provider string
 }
 
 func NewMutator(config MutatorConfig) (*Mutator, error) {
@@ -42,6 +45,7 @@ func NewMutator(config MutatorConfig) (*Mutator, error) {
 	mutator := &Mutator{
 		k8sClient: config.K8sClient,
 		logger:    config.Logger,
+		provider:  config.Provider,
 	}
 
 	return mutator, nil

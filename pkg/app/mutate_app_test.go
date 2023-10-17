@@ -621,6 +621,7 @@ func Test_MutateApp(t *testing.T) {
 			c := MutatorConfig{
 				K8sClient: k8sClient,
 				Logger:    microloggertest.New(),
+				Provider:  "aws",
 			}
 			r, err := NewMutator(c)
 			if err != nil {

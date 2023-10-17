@@ -24,9 +24,9 @@ var (
 	// pssCutoffVersion represents the first & lowest Giant Swarm Release
 	// version which does not support PodSecurityPolicies.
 	pssCutoffVersion, _ = semver.NewVersion("v19.3.0")
-	// legacyProviders is a slice of provider names, like "aws";
-	// mutateConfigForPSPRemoval is applied to legacy providers exclusively
-	legacyProviders = []string{"aws", "azure", "kvm"}
+	// vintageProviders is a slice of provider names, like "aws";
+	// mutateConfigForPSPRemoval is applied to vintage providers exclusively
+	vintageProviders = []string{"aws", "azure", "kvm"}
 )
 
 const (
@@ -43,8 +43,8 @@ const (
 func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
 	result := []mutator.PatchOperation{}
 
-	if !slices.Contains(legacyProviders, strings.ToLower(m.provider)) {
-		// PSP patch is applicable to legacy providers only.
+	if !slices.Contains(vintageProviders, strings.ToLower(m.provider)) {
+		// PSP patch is applicable to vintage providers only.
 		return result, nil
 	}
 

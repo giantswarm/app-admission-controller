@@ -481,6 +481,15 @@ func Test_MutateApp(t *testing.T) {
 					"name":      "eggs2-kubeconfig",
 				}),
 			},
+			expectedConfigMaps: []*corev1.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Namespace: "eggs2",
+						Name:      "psp-removal-patch",
+					},
+					Data: map[string]string{"values": "global:\n  podsecuritystandards:\n    enforced: true"},
+				},
+			},
 		},
 		{
 			name:   "case 10: no change flow for app in Release >= 19.3.0",

@@ -45,7 +45,7 @@ spec:
             - --tls-key-file=/certs/tls.key
             - --provider={{ .Values.provider.kind }}
             {{- if .Values.psp.enableOverrides }}
-            - --psp-config-file=/etc/app-app-admission-controller/psp-config.yaml
+            - --psp-config-file=/etc/app-admission-controller/psp-config.yaml
             {{- end }}
             {{- range .Values.security.appBlacklist }}
             - --blacklist-app={{ . }}

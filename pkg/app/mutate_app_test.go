@@ -576,6 +576,66 @@ func Test_MutateApp(t *testing.T) {
 			operation:   admissionv1.Create,
 			expectedErr: "psp removal error: could not find a Cluster CR matching \"eggs2\" among 0 CRs",
 		},
+		{
+			name:   "case 12: flawless flow for app in Release >= v19.3.0 with custom patch",
+			oldObj: v1alpha1.App{},
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "prometheus-meta-operator",
+					Namespace: "eggs2",
+					Labels: map[string]string{
+						label.Cluster: "eggs2",
+					},
+				},
+				Spec: v1alpha1.AppSpec{
+					Catalog:   "giantswarm",
+					Name:      "prometheus-meta-operator",
+					Namespace: "kube-system",
+					KubeConfig: v1alpha1.AppSpecKubeConfig{
+						InCluster: false,
+					},
+					Version: "2.0.0",
+				},
+			},
+			apps: []*v1alpha1.App{
+				newTestApp("chart-operator", "eggs2", "3.0.0"),
+			},
+			configMaps: []*corev1.ConfigMap{
+				newTestConfigMap("eggs2-cluster-values", "eggs2"),
+			},
+			secrets: []*corev1.Secret{
+				newTestSecret("eggs2-kubeconfig", "eggs2"),
+			},
+			clusters: []*capiv1beta1.Cluster{
+				&eggs2Cluster1930,
+				&xyz12Cluster1920,
+			},
+			operation: admissionv1.Create,
+			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), "prometheus-meta-operator"),
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
+				mutator.PatchAdd("/spec/config", map[string]string{}),
+				mutator.PatchAdd("/spec/config/configMap", map[string]string{
+					"namespace": "eggs2",
+					"name":      "eggs2-cluster-values",
+				}),
+				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
+				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
+					Kind:      "configMap",
+					Name:      "psp-removal-patch-pmo",
+					Namespace: "eggs2",
+					Priority:  150,
+				}),
+				mutator.PatchAdd("/spec/kubeConfig/context", map[string]string{
+					"name": "eggs2",
+				}),
+				mutator.PatchAdd("/spec/kubeConfig/secret", map[string]string{
+					"namespace": "eggs2",
+					"name":      "eggs2-kubeconfig",
+				}),
+			},
+		},
 	}
 
 	appSchemeBuilder := runtime.SchemeBuilder(schemeBuilder{
@@ -620,10 +680,21 @@ func Test_MutateApp(t *testing.T) {
 			})
 
 			c := MutatorConfig{
-				K8sClient:     k8sClient,
-				Logger:        microloggertest.New(),
-				Provider:      "aws",
-				ConfigPatches: []config.ConfigPatch{},
+				K8sClient: k8sClient,
+				Logger:    microloggertest.New(),
+				Provider:  "aws",
+				ConfigPatches: []config.ConfigPatch{
+					{
+						AppName:         "prometheus-meta-operator",
+						ConfigMapSuffix: "pmo",
+						Values:          "prometheus:\n  psp: false",
+					},
+					{
+						AppName:         "hello-world-app",
+						ConfigMapSuffix: "hello-world",
+						Values:          "hello:\n  psp_deploy: false",
+					},
+				},
 			}
 			r, err := NewMutator(c)
 			if err != nil {

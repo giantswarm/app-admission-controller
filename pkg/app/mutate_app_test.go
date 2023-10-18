@@ -81,16 +81,17 @@ func Test_MutateApp(t *testing.T) {
 	}
 
 	tests := []struct {
-		name            string
-		oldObj          v1alpha1.App
-		obj             v1alpha1.App
-		apps            []*v1alpha1.App
-		configMaps      []*corev1.ConfigMap
-		secrets         []*corev1.Secret
-		clusters        []*capiv1beta1.Cluster
-		operation       admissionv1.Operation
-		expectedPatches []mutator.PatchOperation
-		expectedErr     string
+		name               string
+		oldObj             v1alpha1.App
+		obj                v1alpha1.App
+		apps               []*v1alpha1.App
+		configMaps         []*corev1.ConfigMap
+		secrets            []*corev1.Secret
+		clusters           []*capiv1beta1.Cluster
+		operation          admissionv1.Operation
+		expectedPatches    []mutator.PatchOperation
+		expectedConfigMaps []*corev1.ConfigMap
+		expectedErr        string
 	}{
 		{
 			name:   "case 0: flawless flow",
@@ -716,6 +717,15 @@ func Test_MutateApp(t *testing.T) {
 			}
 			if !reflect.DeepEqual(patches, tc.expectedPatches) {
 				t.Fatalf("want matching patches \n %s", cmp.Diff(patches, tc.expectedPatches))
+			}
+			for _, expectedCM := range tc.expectedConfigMaps {
+				gotCM, err := k8sClient.K8sClient().CoreV1().ConfigMaps(expectedCM.Namespace).Get(ctx, expectedCM.Name, metav1.GetOptions{})
+				if err != nil {
+					t.Fatalf("missing expected ConfigMap %s/%s: %s", expectedCM.Namespace, expectedCM.Name, err.Error())
+				}
+				if !reflect.DeepEqual(expectedCM.Data, gotCM.Data) {
+					t.Fatalf("want matching ConfigMap %s/%s data:\n %s", expectedCM.Namespace, expectedCM.Name, cmp.Diff(gotCM.Data, expectedCM.Data))
+				}
 			}
 		})
 	}

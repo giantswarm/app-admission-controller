@@ -102,6 +102,8 @@ func Parse() (Config, error) {
 
 	kingpin.Parse()
 
+	config.PSPPatches = []ConfigPatch{}
+
 	if config.PSPConfigFile != "" {
 		data, err := os.ReadFile(config.PSPConfigFile)
 		if err != nil {

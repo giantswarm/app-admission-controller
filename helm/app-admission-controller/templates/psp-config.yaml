@@ -1,0 +1,14 @@
+{{- if .Values.psp.enableOverrides }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "resource.default.name" . }}-psp-config
+  namespace: {{ include "resource.default.namespace" . }}
+  labels:
+    {{- include "labels.common" . | nindent 4 }}
+data:
+  "psp-config.yaml": |
+    {{- with .Values.psp.config }}
+      {{- . | toYaml | nindent 4 }}
+    {{- end }}
+{{- end }}

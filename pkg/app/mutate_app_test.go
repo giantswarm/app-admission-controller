@@ -21,6 +21,7 @@ import (
 	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
+	"github.com/giantswarm/app-admission-controller/config"
 	"github.com/giantswarm/app-admission-controller/pkg/mutator"
 )
 
@@ -619,9 +620,10 @@ func Test_MutateApp(t *testing.T) {
 			})
 
 			c := MutatorConfig{
-				K8sClient: k8sClient,
-				Logger:    microloggertest.New(),
-				Provider:  "aws",
+				K8sClient:     k8sClient,
+				Logger:        microloggertest.New(),
+				Provider:      "aws",
+				ConfigPatches: []config.ConfigPatch{},
 			}
 			r, err := NewMutator(c)
 			if err != nil {

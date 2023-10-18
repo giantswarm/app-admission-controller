@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
@@ -16,6 +17,7 @@ import (
 	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/app-admission-controller/config"
 	"github.com/giantswarm/app-admission-controller/pkg/mutator"
 	"github.com/giantswarm/app-admission-controller/pkg/project"
 )
@@ -30,8 +32,8 @@ var (
 )
 
 const (
-	extraConfigName   = "psp-removal-patch"
-	extraConfigValues = `global:
+	defaultExtraConfigName   = "psp-removal-patch"
+	defaultExtraConfigValues = `global:
   podsecuritystandards:
     enforced: true`
 	topPriority = 150
@@ -57,9 +59,23 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 
 	extraConfig := v1alpha1.AppExtraConfig{
 		Kind:      "configMap",
-		Name:      extraConfigName,
+		Name:      defaultExtraConfigName,
 		Namespace: app.Namespace,
 		Priority:  topPriority,
+	}
+	extraConfigName := defaultExtraConfigName
+	extraConfigValues := defaultExtraConfigValues
+
+	// If a custom patch is defined for this particular App name, override
+	// extraConfig. Use a new name and custom values.
+	ok, patch := m.appRequiresCustomPatch(ctx, app.Spec.Name)
+	if ok {
+		extraConfigName = fmt.Sprintf("%s-%s", defaultExtraConfigName, patch.ConfigMapSuffix)
+		if len(extraConfigName) > 60 {
+			extraConfigName = extraConfigName[:60]
+		}
+		extraConfig.Name = extraConfigName
+		extraConfigValues = patch.Values
 	}
 
 	// If extraConfigs are already patched with 'extraConfigName', let's save
@@ -67,7 +83,7 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 	// order.
 	ec := key.ExtraConfigs(app)
 	if len(ec) > 0 && ec[len(ec)-1] == extraConfig {
-		if err := m.ensureConfigMap(ctx, app.Namespace); err != nil {
+		if err := m.ensureConfigMap(ctx, app.Namespace, extraConfigName, extraConfigValues); err != nil {
 			return nil, microerror.Mask(err)
 		}
 		return result, nil
@@ -120,7 +136,7 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 	// We need to ensure configMap disabling PSPs exists and is added to
 	// .spec.extraConfigs with highest priority.
 	// Let's ensure the ConfigMap exists first...
-	if err := m.ensureConfigMap(ctx, app.Namespace); err != nil {
+	if err := m.ensureConfigMap(ctx, app.Namespace, extraConfigName, extraConfigValues); err != nil {
 		return nil, microerror.Mask(err)
 	}
 
@@ -135,17 +151,17 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 
 // ensureConfigMap tries to create given ConfigMap. If it already exists, it
 // updates the CM to ensure content consistency.
-func (m *Mutator) ensureConfigMap(ctx context.Context, namespace string) error {
+func (m *Mutator) ensureConfigMap(ctx context.Context, namespace, name, values string) error {
 	cm := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: namespace,
-			Name:      extraConfigName,
+			Name:      name,
 			Labels: map[string]string{
 				label.ManagedBy: project.Name(),
 			},
 		},
 		Data: map[string]string{
-			"values": extraConfigValues,
+			"values": values,
 		},
 	}
 
@@ -159,4 +175,17 @@ func (m *Mutator) ensureConfigMap(ctx context.Context, namespace string) error {
 		return microerror.Mask(err)
 	}
 	return nil
+}
+
+// appRequiresCustomPatch checks if a particular app has a defined, customized
+// extraConfig that prevents it from deploying PSPs. If it does, it returns the
+// details, otherwise empty object.
+func (m *Mutator) appRequiresCustomPatch(ctx context.Context, appSpecName string) (bool, config.ConfigPatch) {
+	for _, patch := range m.configPatches {
+		if patch.AppName == appSpecName {
+			x := patch
+			return true, x
+		}
+	}
+	return false, config.ConfigPatch{}
 }

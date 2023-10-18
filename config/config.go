@@ -34,19 +34,19 @@ type Config struct {
 
 	// Configuration for PSP removal
 	PSPConfigFile string
-	PSPPatches    []ConfigPSPPatch
+	PSPPatches    []ConfigPatch
 
 	Logger    micrologger.Logger
 	K8sClient k8sclient.Interface
 }
 
-type ConfigPSPPatch struct {
+type ConfigPatch struct {
 	// AppName is used to match against App CR's .ObjectMeta.Name
 	AppName string `yaml:"app_name"`
 	// ConfigMapSuffix is a suffix of patch ConfigMap's name
 	ConfigMapSuffix string `yaml:"config_map_suffix"`
 	// Patch contains Helm values to use as App's extraConfig
-	Patch string `yaml:"patch"`
+	Values string `yaml:"values"`
 }
 
 func Parse() (Config, error) {
@@ -108,7 +108,7 @@ func Parse() (Config, error) {
 			return Config{}, microerror.Mask(err)
 		}
 
-		patches := []ConfigPSPPatch{}
+		patches := []ConfigPatch{}
 		err = yaml.Unmarshal(data, &patches)
 		if err != nil {
 			return Config{}, microerror.Mask(err)

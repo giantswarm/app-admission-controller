@@ -34,7 +34,7 @@ var (
 const (
 	defaultExtraConfigName   = "psp-removal-patch"
 	defaultExtraConfigValues = `global:
-  podsecuritystandards:
+  podSecurityStandards:
     enforced: true`
 	topPriority = 150
 )

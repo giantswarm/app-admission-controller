@@ -645,6 +645,15 @@ func Test_MutateApp(t *testing.T) {
 					"name":      "eggs2-kubeconfig",
 				}),
 			},
+			expectedConfigMaps: []*corev1.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Namespace: "eggs2",
+						Name:      "psp-removal-patch-pmo",
+					},
+					Data: map[string]string{"values": "prometheus:\n  psp: false"},
+				},
+			},
 		},
 	}
 

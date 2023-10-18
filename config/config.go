@@ -44,7 +44,7 @@ type ConfigPatch struct {
 	// AppName is used to match against App CR's .ObjectMeta.Name
 	AppName string `yaml:"app_name"`
 	// ConfigMapSuffix is a suffix of patch ConfigMap's name
-	ConfigMapSuffix string `yaml:"config_map_suffix"`
+	ConfigMapSuffix string `yaml:"configmap_suffix"`
 	// Patch contains Helm values to use as App's extraConfig
 	Values string `yaml:"values"`
 }

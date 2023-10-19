@@ -98,7 +98,6 @@
                         },
                         "required": [
                             "app_name",
-                            "configmap_suffix",
                             "values"
                         ]
                     }

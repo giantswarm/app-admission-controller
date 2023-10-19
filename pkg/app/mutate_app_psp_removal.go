@@ -57,7 +57,7 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 		return result, nil
 	}
 
-	if app.Labels[label.AppOperatorVersion] == "0.0.0" || app.Spec.Catalog == "control-plane-catalog" {
+	if app.Namespace == "giantswarm" && app.Labels[label.AppOperatorVersion] == "0.0.0" {
 		// This App is not a Workload Cluster app, but has a ClusterID
 		// annotation - it's app bundle to be deployed to the MC.
 		return result, nil

@@ -709,9 +709,8 @@ func Test_MutateApp(t *testing.T) {
 						Values:          "prometheus:\n  psp: false",
 					},
 					{
-						AppName:         "hello-world-app",
-						ConfigMapSuffix: "hello-world",
-						Values:          "hello:\n  psp_deploy: false",
+						AppName: "hello-world-app",
+						Values:  "hello:\n  psp_deploy: false",
 					},
 				},
 			}

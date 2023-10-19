@@ -76,7 +76,11 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 	// extraConfig. Use a new name and custom values.
 	ok, patch := m.appRequiresCustomPatch(ctx, app.Spec.Name)
 	if ok {
-		extraConfigName = fmt.Sprintf("%s-%s", defaultExtraConfigName, patch.ConfigMapSuffix)
+		suffix := patch.ConfigMapSuffix
+		if suffix == "" {
+			suffix = patch.AppName
+		}
+		extraConfigName = fmt.Sprintf("%s-%s", defaultExtraConfigName, suffix)
 		if len(extraConfigName) > 60 {
 			extraConfigName = extraConfigName[:60]
 		}

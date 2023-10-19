@@ -487,7 +487,7 @@ func Test_MutateApp(t *testing.T) {
 						Namespace: "eggs2",
 						Name:      "psp-removal-patch",
 					},
-					Data: map[string]string{"values": "global:\n  podsecuritystandards:\n    enforced: true"},
+					Data: map[string]string{"values": "global:\n  podSecurityStandards:\n    enforced: true"},
 				},
 			},
 		},

@@ -73,3 +73,7 @@ serviceMonitor:
   interval: "60s"
   # -- (duration) Prometheus scrape timeout.
   scrapeTimeout: "45s"
+
+psp:
+  enableOverrides: true
+  config: []

@@ -61,9 +61,10 @@ func mainWithError() error {
 	var appMutator *app.Mutator
 	{
 		c := app.MutatorConfig{
-			K8sClient: cfg.K8sClient,
-			Logger:    newLogger,
-			Provider:  cfg.Provider,
+			K8sClient:     cfg.K8sClient,
+			Logger:        newLogger,
+			Provider:      cfg.Provider,
+			ConfigPatches: cfg.PSPPatches,
 		}
 		appMutator, err = app.NewMutator(c)
 		if err != nil {

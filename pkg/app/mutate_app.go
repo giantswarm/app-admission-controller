@@ -18,20 +18,23 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 
+	"github.com/giantswarm/app-admission-controller/config"
 	"github.com/giantswarm/app-admission-controller/pkg/mutator"
 )
 
 type MutatorConfig struct {
-	K8sClient k8sclient.Interface
-	Logger    micrologger.Logger
-	Provider  string
+	K8sClient     k8sclient.Interface
+	Logger        micrologger.Logger
+	Provider      string
+	ConfigPatches []config.ConfigPatch
 }
 
 type Mutator struct {
 	k8sClient k8sclient.Interface
 	logger    micrologger.Logger
-	// provider is required by mutateConfigForPSPRemoval()
-	provider string
+	// provider & configPatches are required by mutateConfigForPSPRemoval()
+	provider      string
+	configPatches []config.ConfigPatch
 }
 
 func NewMutator(config MutatorConfig) (*Mutator, error) {
@@ -43,9 +46,10 @@ func NewMutator(config MutatorConfig) (*Mutator, error) {
 	}
 
 	mutator := &Mutator{
-		k8sClient: config.K8sClient,
-		logger:    config.Logger,
-		provider:  config.Provider,
+		k8sClient:     config.K8sClient,
+		logger:        config.Logger,
+		provider:      config.Provider,
+		configPatches: config.ConfigPatches,
 	}
 
 	return mutator, nil

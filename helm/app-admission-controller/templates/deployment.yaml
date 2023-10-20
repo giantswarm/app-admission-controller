@@ -24,6 +24,11 @@ spec:
         - name: {{ include "name" . }}-certificates
           secret:
             secretName: {{ include "resource.default.name"  . }}-certificates
+        {{- if .Values.psp.enableOverrides }}
+        - name: psp-config-file
+          configMap:
+            name: {{ include "resource.default.name" .}}-psp-config
+        {{- end }}
       serviceAccountName: {{ include "resource.default.name"  . }}
       securityContext:
         runAsUser: 1000
@@ -39,6 +44,9 @@ spec:
             - --tls-cert-file=/certs/ca.crt
             - --tls-key-file=/certs/tls.key
             - --provider={{ .Values.provider.kind }}
+            {{- if .Values.psp.enableOverrides }}
+            - --psp-config-file=/etc/app-admission-controller/psp-config.yaml
+            {{- end }}
             {{- range .Values.security.appBlacklist }}
             - --blacklist-app={{ . }}
             {{- end }}
@@ -57,6 +65,10 @@ spec:
           volumeMounts:
           - name: {{ include "name" . }}-certificates
             mountPath: "/certs"
+          {{- if .Values.psp.enableOverrides }}
+          - name: psp-config-file
+            mountPath: "/etc/app-admission-controller"
+          {{- end }}
           ports:
           - containerPort: 8443
             name: webhook

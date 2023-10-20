@@ -75,6 +75,35 @@
                 }
             }
         },
+        "psp": {
+            "type": "object",
+            "properties": {
+                "enableOverrides": {
+                    "type": "boolean"
+                },
+                "config": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "app_name": {
+                                "kind": "string"
+                            },
+                            "configmap_suffix": {
+                                "kind": "string"
+                            },
+                            "values": {
+                                "kind": "string"
+                            }
+                        },
+                        "required": [
+                            "app_name",
+                            "values"
+                        ]
+                    }
+                }
+            }
+        },
         "registry": {
             "type": "object",
             "properties": {

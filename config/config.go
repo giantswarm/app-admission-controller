@@ -1,11 +1,14 @@
 package config
 
 import (
+	"os"
+
 	"github.com/alecthomas/kingpin/v2"
 	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	"gopkg.in/yaml.v3"
 	restclient "k8s.io/client-go/rest"
 	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
 )
@@ -29,8 +32,21 @@ type Config struct {
 	NamespaceBlacklist []string
 	UserWhitelist      []string
 
+	// Configuration for PSP removal
+	PSPConfigFile string
+	PSPPatches    []ConfigPatch
+
 	Logger    micrologger.Logger
 	K8sClient k8sclient.Interface
+}
+
+type ConfigPatch struct {
+	// AppName is used to match against App CR's .ObjectMeta.Name
+	AppName string `yaml:"app_name"`
+	// ConfigMapSuffix is a suffix of patch ConfigMap's name
+	ConfigMapSuffix string `yaml:"configmap_suffix,omitempty"`
+	// Patch contains Helm values to use as App's extraConfig
+	Values string `yaml:"values"`
 }
 
 func Parse() (Config, error) {
@@ -82,8 +98,25 @@ func Parse() (Config, error) {
 	kingpin.Flag("blacklist-app", "Blacklisted apps").StringsVar(&config.AppBlacklist)
 	kingpin.Flag("blacklist-catalog", "Blacklisted catalogs").StringsVar(&config.CatalogBlacklist)
 	kingpin.Flag("blacklist-namespace", "Blacklisted namespaces").StringsVar(&config.NamespaceBlacklist)
+	kingpin.Flag("psp-config-file", "File containing PSP patch configuration").StringVar(&config.PSPConfigFile)
 
 	kingpin.Parse()
+
+	config.PSPPatches = []ConfigPatch{}
+
+	if config.PSPConfigFile != "" {
+		data, err := os.ReadFile(config.PSPConfigFile)
+		if err != nil {
+			return Config{}, microerror.Mask(err)
+		}
+
+		patches := []ConfigPatch{}
+		err = yaml.Unmarshal(data, &patches)
+		if err != nil {
+			return Config{}, microerror.Mask(err)
+		}
+		config.PSPPatches = patches
+	}
 
 	return config, nil
 }

@@ -3,7 +3,7 @@ package project
 var (
 	description = "app-admission-controller validates and defaults app CRs."
 	gitSHA      = "n/a"
-	name        = "app-admission-controller"
+	name        = "app-admission-controller" //nolint:gosec
 	source      = "https://github.com/giantswarm/app-admission-controller"
 	version     = "0.22.1-dev"
 )

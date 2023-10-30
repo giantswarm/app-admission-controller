@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	metricNamespace = "app_admission_controller"
+	metricNamespace = "app_admission_controller" //nolint:gosec
 	metricSubsystem = "webhook"
 )
 

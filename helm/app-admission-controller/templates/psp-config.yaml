@@ -1,3 +1,4 @@
+{{- if not .Values.podSecurityStandards.enforced }}
 {{- if .Values.psp.enableOverrides }}
 apiVersion: v1
 kind: ConfigMap
@@ -11,4 +12,5 @@ data:
     {{- with .Values.psp.config }}
       {{- . | toYaml | nindent 4 }}
     {{- end }}
+{{- end }}
 {{- end }}

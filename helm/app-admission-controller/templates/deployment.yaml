@@ -24,10 +24,12 @@ spec:
         - name: {{ include "name" . }}-certificates
           secret:
             secretName: {{ include "resource.default.name"  . }}-certificates
+        {{- if not .Values.podSecurityStandards.enforced }}
         {{- if .Values.psp.enableOverrides }}
         - name: psp-config-file
           configMap:
             name: {{ include "resource.default.name" .}}-psp-config
+        {{- end }}
         {{- end }}
       serviceAccountName: {{ include "resource.default.name"  . }}
       securityContext:

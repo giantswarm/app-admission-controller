@@ -109,7 +109,7 @@ replace (
 	// To solve CVE-2023-3978
 	golang.org/x/net => golang.org/x/net v0.17.0
 	// Fix CVE
-	golang.org/x/text => golang.org/x/text v0.13.0
+	golang.org/x/text => golang.org/x/text v0.14.0
 	k8s.io/klog/v2 v2.2.0 => k8s.io/klog/v2 v2.0.0
 	// Required by github.com/giantswarm/apiextensions/v6
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.0.4

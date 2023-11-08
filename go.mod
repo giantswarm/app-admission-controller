@@ -67,9 +67,9 @@ require (
 	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
 	golang.org/x/net v0.15.0 // indirect
 	golang.org/x/oauth2 v0.12.0 // indirect
-	golang.org/x/sys v0.13.0 // indirect
-	golang.org/x/term v0.13.0 // indirect
-	golang.org/x/text v0.13.0 // indirect
+	golang.org/x/sys v0.14.0 // indirect
+	golang.org/x/term v0.14.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
@@ -107,7 +107,7 @@ replace (
 	// Use v1.7.1 of viper to fix nancy alert.
 	github.com/spf13/viper => github.com/spf13/viper v1.17.0
 	// To solve CVE-2023-3978
-	golang.org/x/net => golang.org/x/net v0.17.0
+	golang.org/x/net => golang.org/x/net v0.18.0
 	// Fix CVE
 	golang.org/x/text => golang.org/x/text v0.14.0
 	k8s.io/klog/v2 v2.2.0 => k8s.io/klog/v2 v2.0.0

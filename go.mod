@@ -16,7 +16,7 @@ require (
 	github.com/giantswarm/micrologger v1.0.0
 	github.com/google/go-cmp v0.6.0
 	github.com/prometheus/client_golang v1.17.0
-	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
+	golang.org/x/exp v0.0.0-20231108232855-2478ac86f678
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.24.1
 	k8s.io/apimachinery v0.24.1

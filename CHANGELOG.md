@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.0] - 2023-11-10
+
 ### Changed
 
 - Add a switch for PSP CR installation.
@@ -307,7 +309,8 @@ allow app CR creation.
 - Add validation webhook that is enabled for app CRs with
 `app-operator.giantswarm.io/version` label value >= `3.0.0`.
 
-[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v0.22.0...HEAD
+[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v0.23.0...HEAD
+[0.23.0]: https://github.com/giantswarm/app-admission-controller/compare/v0.22.0...v0.23.0
 [0.22.0]: https://github.com/giantswarm/app-admission-controller/compare/v0.21.1...v0.22.0
 [0.21.1]: https://github.com/giantswarm/app-admission-controller/compare/v0.21.0...v0.21.1
 [0.21.0]: https://github.com/giantswarm/app-admission-controller/compare/v0.20.0...v0.21.0

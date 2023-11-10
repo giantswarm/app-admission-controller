@@ -77,3 +77,6 @@ serviceMonitor:
 psp:
   enableOverrides: true
   config: []
+
+podSecurityStandards:
+  enforced: false

@@ -40,7 +40,7 @@ const (
 	// pspLabel values have to match the ones defined in pss-operator.
 	// See https://github.com/giantswarm/pss-operator/blob/main/service/controller/handler/pssversion/create.go#L25
 	// pspLabelKey has been escaped ('/' replaced with '~1') to fit JSONPatch format.
-	pspLabelKey = "team-shield.giantswarm.io~1psp"
+	pspLabelKey = "policy.giantswarm.io~1psp-status"
 	pspLabelVal = "disabled"
 )
 

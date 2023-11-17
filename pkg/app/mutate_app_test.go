@@ -466,6 +466,7 @@ func Test_MutateApp(t *testing.T) {
 					"namespace": "eggs2",
 					"name":      "eggs2-cluster-values",
 				}),
+				mutator.PatchAdd("/metadata/labels/policy.giantswarm.io~1psp-status", "disabled"),
 				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
 				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
 					Kind:      "configMap",
@@ -543,6 +544,7 @@ func Test_MutateApp(t *testing.T) {
 					"namespace": "eggs2",
 					"name":      "eggs2-cluster-values",
 				}),
+				mutator.PatchAdd("/metadata/labels/policy.giantswarm.io~1psp-status", "disabled"),
 				mutator.PatchAdd("/spec/kubeConfig/context", map[string]string{
 					"name": "eggs2",
 				}),
@@ -630,6 +632,7 @@ func Test_MutateApp(t *testing.T) {
 					"namespace": "eggs2",
 					"name":      "eggs2-cluster-values",
 				}),
+				mutator.PatchAdd("/metadata/labels/policy.giantswarm.io~1psp-status", "disabled"),
 				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
 				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
 					Kind:      "configMap",

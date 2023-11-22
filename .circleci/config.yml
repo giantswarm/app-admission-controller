@@ -16,12 +16,10 @@ workflows:
             tags:
               only: /^v.*/
 
-      - architect/push-to-docker:
-          context: "architect"
-          name: push-app-admission-controller-to-docker
-          image: "docker.io/giantswarm/app-admission-controller"
-          username_envar: "DOCKER_USERNAME"
-          password_envar: "DOCKER_PASSWORD"
+      - architect/push-to-registries:
+          context: architect
+          name: push-to-registries
+          image: giantswarm/app-admission-controller
           requires:
             - go-build
           # Needed to trigger job also on git tag.
@@ -29,40 +27,14 @@ workflows:
             tags:
               only: /^v.*/
 
-      - architect/push-to-docker:
-          name: push-app-admission-controller-to-quay
-          context: architect
-          image: "quay.io/giantswarm/app-admission-controller"
-          username_envar: "QUAY_USERNAME"
-          password_envar: "QUAY_PASSWORD"
-          requires:
-            - go-build
-          # Do this on every commit and when a new tag is created.
-          filters:
-            tags:
-              only: /^v.*/
-
-      - architect/push-to-docker:
-          name: push-app-admission-controller-to-aliyun
-          context: architect
-          image: "giantswarm-registry.cn-shanghai.cr.aliyuncs.com/giantswarm/app-admission-controller"
-          username_envar: "ALIYUN_USERNAME"
-          password_envar: "ALIYUN_PASSWORD"
-          requires:
-            - go-build
-          filters:
-            # Do this on every commit and when a new tag is created.
-            tags:
-              only: /^v.*/
-
       - architect/push-to-app-catalog:
-          name: push-app-admission-controller-to-control-plane-catalog
+          name: push-to-control-plane-catalog
           context: architect
           app_catalog: "control-plane-catalog"
           app_catalog_test: "control-plane-test-catalog"
           chart: "app-admission-controller"
           requires:
-            - push-app-admission-controller-to-quay
+            - push-to-registries
           filters:
             # Do this on every commit and when a new tag is created.
             tags:
@@ -78,7 +50,7 @@ workflows:
               ignore:
                 - master
           requires:
-            - push-app-admission-controller-to-control-plane-catalog
+            - push-to-control-plane-catalog
 
       - architect/integration-test:
           name: validation-integration-test
@@ -90,16 +62,16 @@ workflows:
               ignore:
                 - master
           requires:
-            - push-app-admission-controller-to-control-plane-catalog
+            - push-to-control-plane-catalog
 
       - architect/push-to-app-collection:
           context: architect
-          name: push-app-admission-controller-to-aws-app-collection
+          name: push-to-aws-app-collection
           app_name: "app-admission-controller"
           app_collection_repo: "aws-app-collection"
           requires:
-            - push-app-admission-controller-to-aliyun
-            - push-app-admission-controller-to-control-plane-catalog
+            - push-to-registries
+            - push-to-control-plane-catalog
           filters:
             branches:
               ignore: /.*/
@@ -108,11 +80,11 @@ workflows:
 
       - architect/push-to-app-collection:
           context: architect
-          name: push-app-admission-controller-to-azure-app-collection
+          name: push-to-azure-app-collection
           app_name: "app-admission-controller"
           app_collection_repo: "azure-app-collection"
           requires:
-            - push-app-admission-controller-to-control-plane-catalog
+            - push-to-control-plane-catalog
           filters:
             branches:
               ignore: /.*/
@@ -121,11 +93,11 @@ workflows:
 
       - architect/push-to-app-collection:
           context: architect
-          name: push-app-admission-controller-to-gcp-app-collection
+          name: push-to-gcp-app-collection
           app_name: "app-admission-controller"
           app_collection_repo: "gcp-app-collection"
           requires:
-            - push-app-admission-controller-to-control-plane-catalog
+            - push-to-control-plane-catalog
           filters:
             branches:
               ignore: /.*/
@@ -134,11 +106,11 @@ workflows:
 
       - architect/push-to-app-collection:
           context: architect
-          name: push-app-admission-controller-to-vsphere-app-collection
+          name: push-to-vsphere-app-collection
           app_name: "app-admission-controller"
           app_collection_repo: "vsphere-app-collection"
           requires:
-            - push-app-admission-controller-to-control-plane-catalog
+            - push-to-control-plane-catalog
           filters:
             branches:
               ignore: /.*/
@@ -151,7 +123,7 @@ workflows:
           app_name: "app-admission-controller"
           app_collection_repo: "cloud-director-app-collection"
           requires:
-            - push-app-admission-controller-to-control-plane-catalog
+            - push-to-control-plane-catalog
           filters:
             branches:
               ignore: /.*/
@@ -164,7 +136,7 @@ workflows:
           app_name: "app-admission-controller"
           app_collection_repo: "capa-app-collection"
           requires:
-            - push-app-admission-controller-to-control-plane-catalog
+            - push-to-control-plane-catalog
           filters:
             branches:
               ignore: /.*/
@@ -177,7 +149,7 @@ workflows:
           app_name: "app-admission-controller"
           app_collection_repo: "capz-app-collection"
           requires:
-            - push-app-admission-controller-to-control-plane-catalog
+            - push-to-control-plane-catalog
           filters:
             branches:
               ignore: /.*/

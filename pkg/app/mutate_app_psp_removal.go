@@ -50,11 +50,6 @@ const (
 func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
 	result := []mutator.PatchOperation{}
 
-	if !slices.Contains(vintageProviders, strings.ToLower(m.provider)) {
-		// PSP patch is applicable to vintage providers only.
-		return result, nil
-	}
-
 	clusterID := key.ClusterLabel(app)
 	if clusterID == "" {
 		// This App CR does not belong to any Workload Cluster - it does not
@@ -110,48 +105,49 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 
 	// This App belongs to a Workload Cluster, which is using a certain Release
 	// version. Let's determine what it is.
-	var releaseVersion *semver.Version
-	{
-		// We don't want to guess Cluster's namespace because it's been
-		// historically difficult. Cluster ID/name is unique, so we are relying
-		// on that.
-		clusterCRList := capiv1beta1.ClusterList{}
-		err := m.k8sClient.CtrlClient().List(ctx, &clusterCRList, &client.ListOptions{})
-		if err != nil {
-			return nil, microerror.Maskf(pspRemovalError, "error listing Clusters: %v", err)
-		}
-
-		var clusterCR *capiv1beta1.Cluster
-		for _, item := range clusterCRList.Items {
-			if item.Name == clusterID {
-				x := item
-				clusterCR = &x
-				break
+	if slices.Contains(vintageProviders, strings.ToLower(m.provider)) {
+		var releaseVersion *semver.Version
+		{
+			// We don't want to guess Cluster's namespace because it's been
+			// historically difficult. Cluster ID/name is unique, so we are relying
+			// on that.
+			clusterCRList := capiv1beta1.ClusterList{}
+			err := m.k8sClient.CtrlClient().List(ctx, &clusterCRList, &client.ListOptions{})
+			if err != nil {
+				return nil, microerror.Maskf(pspRemovalError, "error listing Clusters: %v", err)
 			}
+
+			var clusterCR *capiv1beta1.Cluster
+			for _, item := range clusterCRList.Items {
+				if item.Name == clusterID {
+					x := item
+					clusterCR = &x
+					break
+				}
+			}
+
+			if clusterCR == nil {
+				return nil, microerror.Maskf(pspRemovalError, "could not find a Cluster CR matching %q among %d CRs", clusterID, len(clusterCRList.Items))
+			}
+
+			label, ok := clusterCR.Labels[label.ReleaseVersion]
+			if !ok {
+				return nil, microerror.Maskf(pspRemovalError, "error infering Release version for Cluster %q", clusterID)
+			}
+
+			releaseSemver, err := semver.NewVersion(label)
+			if err != nil {
+				return nil, microerror.Maskf(pspRemovalError, "error parsing Release version %q as semver: %v", label, err)
+			}
+
+			releaseVersion = releaseSemver
 		}
 
-		if clusterCR == nil {
-			return nil, microerror.Maskf(pspRemovalError, "could not find a Cluster CR matching %q among %d CRs", clusterID, len(clusterCRList.Items))
+		if releaseVersion.LessThan(pssCutoffVersion) {
+			// releaseVersion is lower than pssCutoffVersion and still supports PSPs. Nothing to do.
+			return result, nil
 		}
-
-		label, ok := clusterCR.Labels[label.ReleaseVersion]
-		if !ok {
-			return nil, microerror.Maskf(pspRemovalError, "error infering Release version for Cluster %q", clusterID)
-		}
-
-		releaseSemver, err := semver.NewVersion(label)
-		if err != nil {
-			return nil, microerror.Maskf(pspRemovalError, "error parsing Release version %q as semver: %v", label, err)
-		}
-
-		releaseVersion = releaseSemver
 	}
-
-	if releaseVersion.LessThan(pssCutoffVersion) {
-		// releaseVersion is lower than pssCutoffVersion and still supports PSPs. Nothing to do.
-		return result, nil
-	}
-
 	// Ensure pssLabel to prevent any conflicts between pss-operator and other
 	// operators, like Flux.
 	result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", pspLabelKey), pspLabelVal))

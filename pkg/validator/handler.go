@@ -34,7 +34,9 @@ func Handler(validator Validator) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		ctx := context.Background()
 		start := time.Now()
-		defer metrics.DurationRequests.WithLabelValues("validating", validator.Resource()).Observe(float64(time.Since(start)) / float64(time.Second))
+		defer func() {
+			metrics.DurationRequests.WithLabelValues("validating", validator.Resource()).Observe(float64(time.Since(start)) / float64(time.Second))
+		}()
 
 		if request.Header.Get("Content-Type") != "application/json" {
 			validator.Errorf(ctx, nil, "invalid content-type: %s", request.Header.Get("Content-Type"))

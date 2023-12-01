@@ -101,7 +101,7 @@ replace (
 	// To solve CVE-2020-36565
 	github.com/labstack/echo/v4 v4.1.11 => github.com/labstack/echo/v4 v4.9.1
 	// Fix CVE
-	github.com/nats-io/nats-server/v2 => github.com/nats-io/nats-server/v2 v2.10.5
+	github.com/nats-io/nats-server/v2 => github.com/nats-io/nats-server/v2 v2.10.6
 	// Use v1.0.0-rc7 of runc to fix nancy alert.
 	github.com/opencontainers/runc v0.1.1 => github.com/opencontainers/runc v1.0.0-rc7
 	// Use v1.7.1 of viper to fix nancy alert.

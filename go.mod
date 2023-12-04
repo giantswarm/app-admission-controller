@@ -87,11 +87,10 @@ require (
 )
 
 replace (
-	// Use v0.8.10 of hcsshim to fix nancy alert.
-	github.com/Microsoft/hcsshim v0.8.7 => github.com/Microsoft/hcsshim v0.8.10
+	cloud.google.com/go => cloud.google.com/go v0.110.7
 	// Apply fix for CVE-2020-15114 not yet released in github.com/spf13/viper.
 	github.com/bketelsen/crypt => github.com/bketelsen/crypt v0.0.5
-	github.com/dgrijalva/jwt-go => github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
+	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.1.0
 	// Use go-logr/logr v0.1.0 due to breaking changes in v0.2.0 that can't be applied.
 	github.com/go-logr/logr => github.com/go-logr/logr v1.3.0
 	// Use v1.3.2 of gogo/protobuf to fix nancy alert.
@@ -108,8 +107,7 @@ replace (
 	github.com/spf13/viper => github.com/spf13/viper v1.17.0
 	// To solve CVE-2023-3978
 	golang.org/x/net => golang.org/x/net v0.19.0
-	// Fix CVE
-	golang.org/x/text => golang.org/x/text v0.14.0
+
 	k8s.io/klog/v2 v2.2.0 => k8s.io/klog/v2 v2.0.0
 	// Required by github.com/giantswarm/apiextensions/v6
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.0.4

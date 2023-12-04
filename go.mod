@@ -65,7 +65,7 @@ require (
 	github.com/prometheus/procfs v0.11.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
-	golang.org/x/net v0.15.0 // indirect
+	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/oauth2 v0.12.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/term v0.15.0 // indirect
@@ -87,29 +87,14 @@ require (
 )
 
 replace (
-	// Use v0.8.10 of hcsshim to fix nancy alert.
-	github.com/Microsoft/hcsshim v0.8.7 => github.com/Microsoft/hcsshim v0.8.10
-	// Apply fix for CVE-2020-15114 not yet released in github.com/spf13/viper.
-	github.com/bketelsen/crypt => github.com/bketelsen/crypt v0.0.5
-	github.com/dgrijalva/jwt-go => github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
-	// Use go-logr/logr v0.1.0 due to breaking changes in v0.2.0 that can't be applied.
+	cloud.google.com/go => cloud.google.com/go v0.110.7
 	github.com/go-logr/logr => github.com/go-logr/logr v1.3.0
-	// Use v1.3.2 of gogo/protobuf to fix nancy alert.
-	github.com/gogo/protobuf v1.3.1 => github.com/gogo/protobuf v1.3.2
-	// Use v1.4.2 of gorilla/websocket to fix nancy alert.
-	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
-	// To solve CVE-2020-36565
-	github.com/labstack/echo/v4 v4.1.11 => github.com/labstack/echo/v4 v4.9.1
-	// Fix CVE
+	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
+	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
 	github.com/nats-io/nats-server/v2 => github.com/nats-io/nats-server/v2 v2.10.6
-	// Use v1.0.0-rc7 of runc to fix nancy alert.
-	github.com/opencontainers/runc v0.1.1 => github.com/opencontainers/runc v1.0.0-rc7
-	// Use v1.7.1 of viper to fix nancy alert.
+	github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.0-rc7
 	github.com/spf13/viper => github.com/spf13/viper v1.17.0
-	// To solve CVE-2023-3978
 	golang.org/x/net => golang.org/x/net v0.19.0
-	// Fix CVE
-	golang.org/x/text => golang.org/x/text v0.14.0
 	k8s.io/klog/v2 v2.2.0 => k8s.io/klog/v2 v2.0.0
 	// Required by github.com/giantswarm/apiextensions/v6
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.0.4

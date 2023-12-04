@@ -88,7 +88,6 @@ require (
 
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.110.7
-	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.1.0
 	// Use go-logr/logr v0.1.0 due to breaking changes in v0.2.0 that can't be applied.
 	github.com/go-logr/logr => github.com/go-logr/logr v1.3.0
 	// Use v1.3.2 of gogo/protobuf to fix nancy alert.

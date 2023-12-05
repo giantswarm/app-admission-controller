@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Configure `gsoci.azurecr.io` as the default container image registry.
+
 ## [0.23.0] - 2023-11-17
 
 ### Changed
@@ -77,6 +81,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump `giantswarm/app` package to `v6.15.5`
 -
+
 ## [0.18.4] - 2023-03-09
 
 ### Changed

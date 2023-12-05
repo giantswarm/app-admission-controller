@@ -29,6 +29,7 @@ var (
 	// vintageProviders is a slice of provider names, like "aws";
 	// mutateConfigForPSPRemoval is applied to vintage providers exclusively
 	vintageProviders = []string{"aws", "azure", "kvm"}
+	capiProviders    = []string{"capa", "capz", "capvcd", "capv"}
 )
 
 const (
@@ -105,31 +106,32 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 
 	// This App belongs to a Workload Cluster, which is using a certain Release
 	// version. Let's determine what it is.
+
+	// We don't want to guess Cluster's namespace because it's been
+	// historically difficult. Cluster ID/name is unique, so we are relying
+	// on that.
+	clusterCRList := capiv1beta1.ClusterList{}
+	err := m.k8sClient.CtrlClient().List(ctx, &clusterCRList, &client.ListOptions{})
+	if err != nil {
+		return nil, microerror.Maskf(pspRemovalError, "error listing Clusters: %v", err)
+	}
+
+	var clusterCR *capiv1beta1.Cluster
+	for _, item := range clusterCRList.Items {
+		if item.Name == clusterID {
+			x := item
+			clusterCR = &x
+			break
+		}
+	}
+
+	if clusterCR == nil {
+		return nil, microerror.Maskf(pspRemovalError, "could not find a Cluster CR matching %q among %d CRs", clusterID, len(clusterCRList.Items))
+	}
+
 	if slices.Contains(vintageProviders, strings.ToLower(m.provider)) {
 		var releaseVersion *semver.Version
 		{
-			// We don't want to guess Cluster's namespace because it's been
-			// historically difficult. Cluster ID/name is unique, so we are relying
-			// on that.
-			clusterCRList := capiv1beta1.ClusterList{}
-			err := m.k8sClient.CtrlClient().List(ctx, &clusterCRList, &client.ListOptions{})
-			if err != nil {
-				return nil, microerror.Maskf(pspRemovalError, "error listing Clusters: %v", err)
-			}
-
-			var clusterCR *capiv1beta1.Cluster
-			for _, item := range clusterCRList.Items {
-				if item.Name == clusterID {
-					x := item
-					clusterCR = &x
-					break
-				}
-			}
-
-			if clusterCR == nil {
-				return nil, microerror.Maskf(pspRemovalError, "could not find a Cluster CR matching %q among %d CRs", clusterID, len(clusterCRList.Items))
-			}
-
 			label, ok := clusterCR.Labels[label.ReleaseVersion]
 			if !ok {
 				return nil, microerror.Maskf(pspRemovalError, "error infering Release version for Cluster %q", clusterID)
@@ -147,6 +149,16 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 			// releaseVersion is lower than pssCutoffVersion and still supports PSPs. Nothing to do.
 			return result, nil
 		}
+	} else if slices.Contains(capiProviders, strings.ToLower(m.provider)) {
+		disableLabel, ok := clusterCR.Labels[pspLabelKey]
+		if !ok {
+			return nil, microerror.Maskf(pspRemovalError, "error finding the cluster %q label", pspLabelKey)
+		}
+		if ok && disableLabel != pspLabelVal {
+			return nil, microerror.Maskf(pspRemovalError, "cluster %q label found, but not set to %q", pspLabelKey, pspLabelVal)
+		}
+	} else {
+		return nil, microerror.Maskf(pspRemovalError, "invalid value for the `provider` flag: %q", m.provider)
 	}
 	// Ensure pssLabel to prevent any conflicts between pss-operator and other
 	// operators, like Flux.

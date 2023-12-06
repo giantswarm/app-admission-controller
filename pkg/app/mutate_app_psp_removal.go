@@ -158,7 +158,7 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 			return nil, microerror.Maskf(pspRemovalError, "cluster %q label found, but not set to %q", pspLabelKey, pspLabelVal)
 		}
 	} else {
-		return nil, microerror.Maskf(pspRemovalError, "invalid value for the `provider` flag: %q", m.provider)
+		return nil, microerror.Maskf(pspRemovalError, "unsupported provider for PSP deprecation: %s", m.provider)
 	}
 	// Ensure pssLabel to prevent any conflicts between pss-operator and other
 	// operators, like Flux.

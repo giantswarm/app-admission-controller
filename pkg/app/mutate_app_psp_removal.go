@@ -41,9 +41,10 @@ const (
 	topPriority = 150
 	// pspLabel values have to match the ones defined in pss-operator.
 	// See https://github.com/giantswarm/pss-operator/blob/main/service/controller/handler/pssversion/create.go#L25
-	// pspLabelKey has been escaped ('/' replaced with '~1') to fit JSONPatch format.
-	pspLabelKey = "policy.giantswarm.io~1psp-status"
-	pspLabelVal = "disabled"
+	// pspLabelKeyForPatch has been escaped ('/' replaced with '~1') to fit JSONPatch format.
+	pspLabelKeyForPatch = "policy.giantswarm.io~1psp-status"
+	pspLabelKey         = "policy.giantswarm.io/psp-status"
+	pspLabelVal         = "disabled"
 )
 
 // mutateConfigForPSPRemoval is a temporary solution to
@@ -99,7 +100,7 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 	if len(ec) > 0 && ec[len(ec)-1] == extraConfig {
 		// Ensure pssLabel to prevent any conflicts between pss-operator and other
 		// operators, like Flux.
-		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", pspLabelKey), pspLabelVal))
+		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", pspLabelKeyForPatch), pspLabelVal))
 
 		if err := m.ensureConfigMap(ctx, app.Namespace, extraConfigName, extraConfigValues); err != nil {
 			return nil, microerror.Mask(err)
@@ -170,7 +171,7 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 	}
 	// Ensure pssLabel to prevent any conflicts between pss-operator and other
 	// operators, like Flux.
-	result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", pspLabelKey), pspLabelVal))
+	result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", pspLabelKeyForPatch), pspLabelVal))
 
 	// We need to ensure configMap disabling PSPs exists and is added to
 	// .spec.extraConfigs with highest priority.

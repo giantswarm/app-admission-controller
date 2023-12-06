@@ -50,6 +50,7 @@ const (
 // https://github.com/giantswarm/roadmap/issues/2716. Revert once migration to
 // Release >= v19.3.0 is complete and managed apps no longer rely on PSPs.
 func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
+	m.logger.Debugf(ctx, "App mutation for PSP Removal. Starting...\n")
 	result := []mutator.PatchOperation{}
 
 	clusterID := key.ClusterLabel(app)
@@ -60,6 +61,7 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 	}
 
 	if app.Labels[label.AppOperatorVersion] == "0.0.0" && app.Namespace == "giantswarm" {
+		m.logger.Debugf(ctx, "App is not WC app. Skipping\n")
 		// This App is not a Workload Cluster app, but has a ClusterID
 		// annotation - it's an app bundle to be deployed to the MC.
 		return result, nil
@@ -102,6 +104,7 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 		if err := m.ensureConfigMap(ctx, app.Namespace, extraConfigName, extraConfigValues); err != nil {
 			return nil, microerror.Mask(err)
 		}
+		m.logger.Debugf(ctx, "Extra config is already set. Skipping\n")
 		return result, nil
 	}
 
@@ -131,11 +134,12 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 	}
 
 	if slices.Contains(vintageProviders, strings.ToLower(m.provider)) {
+		m.logger.Debugf(ctx, "Vintage provider %s detected, checking release version\n", m.provider)
 		var releaseVersion *semver.Version
 		{
 			label, ok := clusterCR.Labels[label.ReleaseVersion]
 			if !ok {
-				return nil, microerror.Maskf(pspRemovalError, "error infering Release version for Cluster %q", clusterID)
+				return nil, microerror.Maskf(pspRemovalError, "error inferring Release version for Cluster %q", clusterID)
 			}
 
 			releaseSemver, err := semver.NewVersion(label)
@@ -151,9 +155,11 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 			return result, nil
 		}
 	} else if slices.Contains(capiProviders, strings.ToLower(m.provider)) {
+		m.logger.Debugf(ctx, "CAPI provider %s detected, checking cluster labels\n", m.provider)
 		disableLabel, ok := clusterCR.Labels[pspLabelKey]
 		// If the cluster CR does not have a label, we assume it still supports PSPs.
 		if !ok {
+			m.logger.Debugf(ctx, "Cluster doesn't have psp label. Skipping\n")
 			return result, nil
 		}
 		if ok && disableLabel != pspLabelVal {
@@ -179,6 +185,7 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 	}
 	result = append(result, mutator.PatchAdd("/spec/extraConfigs/-", extraConfig))
 
+	m.logger.Debugf(ctx, "Mutation for PSPs are done.\n", m.provider)
 	return result, nil
 }
 

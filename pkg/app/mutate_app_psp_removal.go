@@ -6,16 +6,17 @@ import (
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
-	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
-	"github.com/giantswarm/app/v7/pkg/key"
-	"github.com/giantswarm/k8smetadata/pkg/label"
-	"github.com/giantswarm/microerror"
 	"golang.org/x/exp/slices"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
+	"github.com/giantswarm/app/v7/pkg/key"
+	"github.com/giantswarm/k8smetadata/pkg/label"
+	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/app-admission-controller/config"
 	"github.com/giantswarm/app-admission-controller/pkg/mutator"
@@ -151,8 +152,9 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 		}
 	} else if slices.Contains(capiProviders, strings.ToLower(m.provider)) {
 		disableLabel, ok := clusterCR.Labels[pspLabelKey]
+		// If the cluster CR does not have a label, we assume it still supports PSPs.
 		if !ok {
-			return nil, microerror.Maskf(pspRemovalError, "error finding the cluster %q label", pspLabelKey)
+			return result, nil
 		}
 		if ok && disableLabel != pspLabelVal {
 			return nil, microerror.Maskf(pspRemovalError, "cluster %q label found, but not set to %q", pspLabelKey, pspLabelVal)

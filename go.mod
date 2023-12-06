@@ -91,7 +91,6 @@ replace (
 	github.com/go-logr/logr => github.com/go-logr/logr v1.3.0
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.5.1
-	github.com/nats-io/nats-server/v2 => github.com/nats-io/nats-server/v2 v2.10.6
 	github.com/spf13/viper => github.com/spf13/viper v1.18.0
 	golang.org/x/net => golang.org/x/net v0.19.0
 	k8s.io/klog/v2 v2.2.0 => k8s.io/klog/v2 v2.0.0

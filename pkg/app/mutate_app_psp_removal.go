@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
@@ -51,7 +52,16 @@ const (
 // https://github.com/giantswarm/roadmap/issues/2716. Revert once migration to
 // Release >= v19.3.0 is complete and managed apps no longer rely on PSPs.
 func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
-	m.logger.Debugf(ctx, "App mutation for PSP Removal. Starting...\n")
+	m.logger.Debugf(ctx, "App mutation for PSP Removal. App:%s, Namespace:%s\n",
+		app.Name, app.Namespace)
+
+	isVintageCluster := slices.Contains(vintageProviders, strings.ToLower(m.provider))
+	isCAPICluster := slices.Contains(capiProviders, strings.ToLower(m.provider))
+
+	if !isVintageCluster && !isCAPICluster {
+		return nil, microerror.Maskf(pspRemovalError, "unsupported provider for PSP deprecation: %s", m.provider)
+	}
+
 	result := []mutator.PatchOperation{}
 
 	clusterID := key.ClusterLabel(app)
@@ -62,7 +72,7 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 	}
 
 	if app.Labels[label.AppOperatorVersion] == "0.0.0" && app.Namespace == "giantswarm" {
-		m.logger.Debugf(ctx, "App is not WC app. Skipping\n")
+		m.logger.Debugf(ctx, "App is not WC app. Skipping.\n")
 		// This App is not a Workload Cluster app, but has a ClusterID
 		// annotation - it's an app bundle to be deployed to the MC.
 		return result, nil
@@ -105,7 +115,7 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 		if err := m.ensureConfigMap(ctx, app.Namespace, extraConfigName, extraConfigValues); err != nil {
 			return nil, microerror.Mask(err)
 		}
-		m.logger.Debugf(ctx, "Extra config is already set. Skipping\n")
+		m.logger.Debugf(ctx, "Extra config is already set. Skipping.\n")
 		return result, nil
 	}
 
@@ -131,10 +141,17 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 	}
 
 	if clusterCR == nil {
-		return nil, microerror.Maskf(pspRemovalError, "could not find a Cluster CR matching %q among %d CRs", clusterID, len(clusterCRList.Items))
+		if isVintageCluster {
+			return nil, microerror.Maskf(pspRemovalError, "could not find a Cluster CR matching %q among %d CRs", clusterID, len(clusterCRList.Items))
+		} else {
+			// In CAPI clusters, Cluster CR can be created after the App CR.
+			// pss-operator is responsible to trigger mutation of the App
+			// once Cluster CR exists and has the psp label.
+			return result, nil
+		}
 	}
 
-	if slices.Contains(vintageProviders, strings.ToLower(m.provider)) {
+	if isVintageCluster {
 		m.logger.Debugf(ctx, "Vintage provider %s detected, checking release version\n", m.provider)
 		var releaseVersion *semver.Version
 		{
@@ -155,7 +172,7 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 			// releaseVersion is lower than pssCutoffVersion and still supports PSPs. Nothing to do.
 			return result, nil
 		}
-	} else if slices.Contains(capiProviders, strings.ToLower(m.provider)) {
+	} else if isCAPICluster {
 		m.logger.Debugf(ctx, "CAPI provider %s detected, checking cluster labels\n", m.provider)
 		disableLabel, ok := clusterCR.Labels[pspLabelKey]
 		// If the cluster CR does not have a label, we assume it still supports PSPs.
@@ -166,8 +183,6 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 		if ok && disableLabel != pspLabelVal {
 			return nil, microerror.Maskf(pspRemovalError, "cluster %q label found, but not set to %q", pspLabelKey, pspLabelVal)
 		}
-	} else {
-		return nil, microerror.Maskf(pspRemovalError, "unsupported provider for PSP deprecation: %s", m.provider)
 	}
 	// Ensure pssLabel to prevent any conflicts between pss-operator and other
 	// operators, like Flux.
@@ -206,16 +221,20 @@ func (m *Mutator) ensureConfigMap(ctx context.Context, namespace, name, values s
 		},
 	}
 
-	_, err := m.k8sClient.K8sClient().CoreV1().ConfigMaps(namespace).Create(ctx, cm, metav1.CreateOptions{})
-	if apierrors.IsAlreadyExists(err) {
-		_, err = m.k8sClient.K8sClient().CoreV1().ConfigMaps(namespace).Update(ctx, cm, metav1.UpdateOptions{})
-		if err != nil {
-			return microerror.Mask(err)
+	existing, err := m.k8sClient.K8sClient().CoreV1().ConfigMaps(namespace).Get(ctx, name, metav1.GetOptions{})
+	if err == nil {
+		if reflect.DeepEqual(existing.Data, cm.Data) {
+			m.logger.Debugf(ctx, "Configmap '%s' in '%s' namespace is up-to-date\n", name, namespace)
+			return nil
 		}
-	} else if err != nil {
-		return microerror.Mask(err)
+		m.logger.Debugf(ctx, "Updating configmap '%s' in '%s' namespace\n", name, namespace)
+		_, err = m.k8sClient.K8sClient().CoreV1().ConfigMaps(namespace).Update(ctx, cm, metav1.UpdateOptions{})
+	} else if apierrors.IsNotFound(err) {
+		m.logger.Debugf(ctx, "Creating configmap '%s' in '%s' namespace\n", name, namespace)
+		_, err = m.k8sClient.K8sClient().CoreV1().ConfigMaps(namespace).Create(ctx, cm, metav1.CreateOptions{})
 	}
-	return nil
+
+	return err
 }
 
 // appRequiresCustomPatch checks if a particular app has a defined, customized

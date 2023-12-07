@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Enable app mutation for disabling PSPs in CAPI clusters.
+
 ## [0.23.1] - 2023-12-05
 
 ### Changed

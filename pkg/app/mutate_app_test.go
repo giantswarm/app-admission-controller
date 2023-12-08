@@ -805,9 +805,25 @@ func Test_MutateApp(t *testing.T) {
 			clusters: []*capiv1beta1.Cluster{
 				&eggs2ClusterCapiNoLabel,
 			},
-			provider:    "capz",
-			operation:   admissionv1.Create,
-			expectedErr: "Cluster doesn't have psp label. Skipping\n",
+			provider:  "capz",
+			operation: admissionv1.Create,
+			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), "kiam"),
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
+				mutator.PatchAdd("/spec/config", map[string]string{}),
+				mutator.PatchAdd("/spec/config/configMap", map[string]string{
+					"namespace": "eggs2",
+					"name":      "eggs2-cluster-values",
+				}),
+				mutator.PatchAdd("/spec/kubeConfig/context", map[string]string{
+					"name": "eggs2",
+				}),
+				mutator.PatchAdd("/spec/kubeConfig/secret", map[string]string{
+					"namespace": "eggs2",
+					"name":      "eggs2-kubeconfig",
+				}),
+			},
 		},
 	}
 

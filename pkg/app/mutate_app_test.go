@@ -80,12 +80,12 @@ func Test_MutateApp(t *testing.T) {
 
 	eggs2ClusterCapiNoLabel := capiv1beta1.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "xyz12",
+			Name:      "eggs2",
 			Namespace: "org-giantswarm",
 			Labels: map[string]string{
 				"cluster-operator.giantswarm.io/version": "5.8.0",
-				"cluster.x-k8s.io/cluster-name":          "xyz12",
-				"giantswarm.io/cluster":                  "xyz12",
+				"cluster.x-k8s.io/cluster-name":          "eggs2",
+				"giantswarm.io/cluster":                  "eggs2",
 				"giantswarm.io/organization":             "giantswarm",
 				"giantswarm.io/service-priority":         "medium",
 			},
@@ -774,6 +774,56 @@ func Test_MutateApp(t *testing.T) {
 		},
 		{
 			name:   "case 14: flow with CAPx cluster where Cluster CR is missing.",
+			oldObj: v1alpha1.App{},
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "kiam",
+					Namespace: "eggs2",
+					Labels: map[string]string{
+						label.Cluster: "eggs2",
+					},
+				},
+				Spec: v1alpha1.AppSpec{
+					Catalog:   "giantswarm",
+					Name:      "kiam",
+					Namespace: "kube-system",
+					KubeConfig: v1alpha1.AppSpecKubeConfig{
+						InCluster: false,
+					},
+					Version: "1.4.0",
+				},
+			},
+			apps: []*v1alpha1.App{
+				newTestApp("chart-operator", "eggs2", "3.0.0"),
+			},
+			configMaps: []*corev1.ConfigMap{
+				newTestConfigMap("eggs2-cluster-values", "eggs2"),
+			},
+			secrets: []*corev1.Secret{
+				newTestSecret("eggs2-kubeconfig", "eggs2"),
+			},
+			provider:  "capz",
+			operation: admissionv1.Create,
+			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), "kiam"),
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
+				mutator.PatchAdd("/spec/config", map[string]string{}),
+				mutator.PatchAdd("/spec/config/configMap", map[string]string{
+					"namespace": "eggs2",
+					"name":      "eggs2-cluster-values",
+				}),
+				mutator.PatchAdd("/spec/kubeConfig/context", map[string]string{
+					"name": "eggs2",
+				}),
+				mutator.PatchAdd("/spec/kubeConfig/secret", map[string]string{
+					"namespace": "eggs2",
+					"name":      "eggs2-kubeconfig",
+				}),
+			},
+		},
+		{
+			name:   "case 15: flow with CAPx cluster where the disable label is missing.",
 			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{

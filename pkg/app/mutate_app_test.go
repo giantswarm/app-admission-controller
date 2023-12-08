@@ -62,6 +62,36 @@ func Test_MutateApp(t *testing.T) {
 			},
 		},
 	}
+	eggs2ClusterCapiPSPdisabled := capiv1beta1.Cluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "eggs2",
+			Namespace: "org-giantswarm",
+			Labels: map[string]string{
+				"cluster-operator.giantswarm.io/version": "5.8.0",
+				"cluster.x-k8s.io/cluster-name":          "eggs2",
+				"giantswarm.io/cluster":                  "eggs2",
+				"giantswarm.io/organization":             "giantswarm",
+				"giantswarm.io/service-priority":         "medium",
+				// The psp disabling label is on capi clusters.
+				"policy.giantswarm.io/psp-status": "disabled",
+			},
+		},
+	}
+
+	eggs2ClusterCapiNoLabel := capiv1beta1.Cluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "xyz12",
+			Namespace: "org-giantswarm",
+			Labels: map[string]string{
+				"cluster-operator.giantswarm.io/version": "5.8.0",
+				"cluster.x-k8s.io/cluster-name":          "xyz12",
+				"giantswarm.io/cluster":                  "xyz12",
+				"giantswarm.io/organization":             "giantswarm",
+				"giantswarm.io/service-priority":         "medium",
+			},
+		},
+	}
+
 	xyz12Cluster1920 := capiv1beta1.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "xyz12",
@@ -88,6 +118,7 @@ func Test_MutateApp(t *testing.T) {
 		configMaps         []*corev1.ConfigMap
 		secrets            []*corev1.Secret
 		clusters           []*capiv1beta1.Cluster
+		provider           string
 		operation          admissionv1.Operation
 		expectedPatches    []mutator.PatchOperation
 		expectedConfigMaps []*corev1.ConfigMap
@@ -123,6 +154,7 @@ func Test_MutateApp(t *testing.T) {
 			clusters: []*capiv1beta1.Cluster{
 				&eggs2Cluster1920,
 			},
+			provider:  "aws",
 			operation: admissionv1.Create,
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
@@ -181,6 +213,7 @@ func Test_MutateApp(t *testing.T) {
 					Version: "1.4.0",
 				},
 			},
+			provider: "aws",
 		},
 		{
 			name:   "case 2: cluster secret set",
@@ -221,6 +254,7 @@ func Test_MutateApp(t *testing.T) {
 					"name":      "eggs2-cluster-values",
 				}),
 			},
+			provider: "aws",
 		},
 		{
 			name:   "case 3: set version label only",
@@ -243,6 +277,7 @@ func Test_MutateApp(t *testing.T) {
 					Version: "1.4.0",
 				},
 			},
+			provider: "aws",
 			apps: []*v1alpha1.App{
 				newTestApp("chart-operator", "eggs2", "3.1.0"),
 			},
@@ -274,6 +309,7 @@ func Test_MutateApp(t *testing.T) {
 					Version: "1.4.0",
 				},
 			},
+			provider: "aws",
 			configMaps: []*corev1.ConfigMap{
 				newTestConfigMap("other-app-values", "eggs2"),
 			},
@@ -304,6 +340,7 @@ func Test_MutateApp(t *testing.T) {
 					Version: "1.4.0",
 				},
 			},
+			provider: "aws",
 			apps: []*v1alpha1.App{
 				newTestApp("chart-operator", "eggs2", "3.1.0"),
 			},
@@ -335,6 +372,7 @@ func Test_MutateApp(t *testing.T) {
 					Version: "1.4.0",
 				},
 			},
+			provider:        "aws",
 			apps:            nil,
 			operation:       admissionv1.Create,
 			expectedPatches: nil,
@@ -369,6 +407,7 @@ func Test_MutateApp(t *testing.T) {
 			clusters: []*capiv1beta1.Cluster{
 				&eggs2Cluster1920,
 			},
+			provider:  "aws",
 			operation: admissionv1.Create,
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
@@ -415,6 +454,7 @@ func Test_MutateApp(t *testing.T) {
 			secrets: []*corev1.Secret{
 				newTestSecret("eggs2-kubeconfig", "org-eggs2"),
 			},
+			provider:  "aws",
 			operation: admissionv1.Create,
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
@@ -456,6 +496,7 @@ func Test_MutateApp(t *testing.T) {
 				&eggs2Cluster1930,
 				&xyz12Cluster1920,
 			},
+			provider:  "aws",
 			operation: admissionv1.Create,
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
@@ -534,6 +575,7 @@ func Test_MutateApp(t *testing.T) {
 				&xyz12Cluster1920,
 				&eggs2Cluster1930,
 			},
+			provider:  "aws",
 			operation: admissionv1.Create,
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
@@ -585,6 +627,7 @@ func Test_MutateApp(t *testing.T) {
 				newTestSecret("eggs2-kubeconfig", "eggs2"),
 			},
 			clusters:    []*capiv1beta1.Cluster{},
+			provider:    "aws",
 			operation:   admissionv1.Create,
 			expectedErr: "psp removal error: could not find a Cluster CR matching \"eggs2\" among 0 CRs",
 		},
@@ -622,6 +665,7 @@ func Test_MutateApp(t *testing.T) {
 				&eggs2Cluster1930,
 				&xyz12Cluster1920,
 			},
+			provider:  "aws",
 			operation: admissionv1.Create,
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
@@ -657,6 +701,113 @@ func Test_MutateApp(t *testing.T) {
 					Data: map[string]string{"values": "prometheus:\n  psp: false"},
 				},
 			},
+		},
+		{
+			name:   "case 13: flawless flow for app in CAPx cluster with the psp-status disabled label.",
+			oldObj: v1alpha1.App{},
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "kiam",
+					Namespace: "eggs2",
+					Labels: map[string]string{
+						label.Cluster: "eggs2",
+					},
+				},
+				Spec: v1alpha1.AppSpec{
+					Catalog:   "giantswarm",
+					Name:      "kiam",
+					Namespace: "kube-system",
+					KubeConfig: v1alpha1.AppSpecKubeConfig{
+						InCluster: false,
+					},
+					Version: "1.4.0",
+				},
+			},
+			apps: []*v1alpha1.App{
+				newTestApp("chart-operator", "eggs2", "3.0.0"),
+			},
+			configMaps: []*corev1.ConfigMap{
+				newTestConfigMap("eggs2-cluster-values", "eggs2"),
+			},
+			secrets: []*corev1.Secret{
+				newTestSecret("eggs2-kubeconfig", "eggs2"),
+			},
+			clusters: []*capiv1beta1.Cluster{
+				&eggs2ClusterCapiPSPdisabled,
+			},
+			provider:  "capz",
+			operation: admissionv1.Create,
+			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), "kiam"),
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
+				mutator.PatchAdd("/spec/config", map[string]string{}),
+				mutator.PatchAdd("/spec/config/configMap", map[string]string{
+					"namespace": "eggs2",
+					"name":      "eggs2-cluster-values",
+				}),
+				mutator.PatchAdd("/metadata/labels/policy.giantswarm.io~1psp-status", "disabled"),
+				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
+				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
+					Kind:      "configMap",
+					Name:      "psp-removal-patch",
+					Namespace: "eggs2",
+					Priority:  150,
+				}),
+				mutator.PatchAdd("/spec/kubeConfig/context", map[string]string{
+					"name": "eggs2",
+				}),
+				mutator.PatchAdd("/spec/kubeConfig/secret", map[string]string{
+					"namespace": "eggs2",
+					"name":      "eggs2-kubeconfig",
+				}),
+			},
+			expectedConfigMaps: []*corev1.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Namespace: "eggs2",
+						Name:      "psp-removal-patch",
+					},
+					Data: map[string]string{"values": "global:\n  podSecurityStandards:\n    enforced: true"},
+				},
+			},
+		},
+		{
+			name:   "case 14: flow with CAPx cluster where psp-status disable label is missing.",
+			oldObj: v1alpha1.App{},
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "kiam",
+					Namespace: "eggs2",
+					Labels: map[string]string{
+						label.Cluster: "eggs2",
+					},
+				},
+				Spec: v1alpha1.AppSpec{
+					Catalog:   "giantswarm",
+					Name:      "kiam",
+					Namespace: "kube-system",
+					KubeConfig: v1alpha1.AppSpecKubeConfig{
+						InCluster: false,
+					},
+					Version: "1.4.0",
+				},
+			},
+			apps: []*v1alpha1.App{
+				newTestApp("chart-operator", "eggs2", "3.0.0"),
+			},
+			configMaps: []*corev1.ConfigMap{
+				newTestConfigMap("eggs2-cluster-values", "eggs2"),
+			},
+			secrets: []*corev1.Secret{
+				newTestSecret("eggs2-kubeconfig", "eggs2"),
+			},
+			clusters: []*capiv1beta1.Cluster{
+				&eggs2ClusterCapiNoLabel,
+			},
+			provider:    "capz",
+			operation:   admissionv1.Create,
+			expectedErr: "Cluster doesn't have psp label. Skipping\n",
 		},
 	}
 
@@ -704,7 +855,7 @@ func Test_MutateApp(t *testing.T) {
 			c := MutatorConfig{
 				K8sClient: k8sClient,
 				Logger:    microloggertest.New(),
-				Provider:  "aws",
+				Provider:  tc.provider,
 				ConfigPatches: []config.ConfigPatch{
 					{
 						AppName:         "prometheus-meta-operator",

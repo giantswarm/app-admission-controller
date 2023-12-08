@@ -68,6 +68,7 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 	if clusterID == "" {
 		// This App CR does not belong to any Workload Cluster - it does not
 		// need any more patches.
+		m.logger.Debugf(ctx, "App CR does not belong to any Workload Cluster. Skipping.\n")
 		return result, nil
 	}
 
@@ -147,6 +148,7 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 			// In CAPI clusters, Cluster CR can be created after the App CR.
 			// pss-operator is responsible to trigger mutation of the App
 			// once Cluster CR exists and has the psp label.
+			m.logger.Debugf(ctx, "Could not find a Cluster CR, skipping and trust PSS-Operator.")
 			return result, nil
 		}
 	}

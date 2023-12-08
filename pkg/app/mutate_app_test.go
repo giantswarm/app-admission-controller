@@ -773,7 +773,7 @@ func Test_MutateApp(t *testing.T) {
 			},
 		},
 		{
-			name:   "case 14: flow with CAPx cluster where psp-status disable label is missing.",
+			name:   "case 14: flow with CAPx cluster where Cluster CR is missing.",
 			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{

@@ -1,4 +1,4 @@
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/giantswarm/app-admission-controller/tree/master.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/giantswarm/app-admission-controller/tree/master)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/giantswarm/app-admission-controller/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/giantswarm/app-admission-controller/tree/main)
 
 # app-admission-controller
 

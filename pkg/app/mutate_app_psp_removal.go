@@ -31,7 +31,7 @@ var (
 	// vintageProviders is a slice of provider names, like "aws";
 	// mutateConfigForPSPRemoval is applied to vintage providers exclusively
 	vintageProviders = []string{"aws", "azure", "kvm"}
-	capiProviders    = []string{"capa", "capz", "capvcd", "capv"}
+	capiProviders    = []string{"capa", "capz", "cloud-director", "vsphere"}
 )
 
 const (

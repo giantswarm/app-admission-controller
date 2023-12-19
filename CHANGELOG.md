@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.24.0] - 2023-12-12
+
+### Changed
+
+- Enable app mutation for disabling PSPs in CAPI clusters.
+
 ## [0.23.1] - 2023-12-05
 
 ### Changed
@@ -317,7 +323,8 @@ allow app CR creation.
 - Add validation webhook that is enabled for app CRs with
 `app-operator.giantswarm.io/version` label value >= `3.0.0`.
 
-[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v0.23.1...HEAD
+[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v0.24.0...HEAD
+[0.24.0]: https://github.com/giantswarm/app-admission-controller/compare/v0.23.1...v0.24.0
 [0.23.1]: https://github.com/giantswarm/app-admission-controller/compare/v0.23.0...v0.23.1
 [0.23.0]: https://github.com/giantswarm/app-admission-controller/compare/v0.22.0...v0.23.0
 [0.22.0]: https://github.com/giantswarm/app-admission-controller/compare/v0.21.1...v0.22.0

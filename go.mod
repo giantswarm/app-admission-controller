@@ -16,7 +16,7 @@ require (
 	github.com/giantswarm/micrologger v1.0.0
 	github.com/google/go-cmp v0.6.0
 	github.com/prometheus/client_golang v1.17.0
-	golang.org/x/exp v0.0.0-20231206192017-f3f8817b8deb
+	golang.org/x/exp v0.0.0-20231214170342-aacd6d4b4611
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.24.1
 	k8s.io/apimachinery v0.24.1
@@ -91,7 +91,7 @@ replace (
 	github.com/go-logr/logr => github.com/go-logr/logr v1.3.0
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.5.1
-	github.com/spf13/viper => github.com/spf13/viper v1.18.1
+	github.com/spf13/viper => github.com/spf13/viper v1.18.2
 	golang.org/x/net => golang.org/x/net v0.19.0
 	k8s.io/klog/v2 v2.2.0 => k8s.io/klog/v2 v2.0.0
 	// Required by github.com/giantswarm/apiextensions/v6

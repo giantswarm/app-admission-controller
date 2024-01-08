@@ -88,7 +88,7 @@ require (
 
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.111.0
-	github.com/go-logr/logr => github.com/go-logr/logr v1.3.0
+	github.com/go-logr/logr => github.com/go-logr/logr v1.4.1
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.5.1
 	github.com/spf13/viper => github.com/spf13/viper v1.18.2

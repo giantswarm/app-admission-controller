@@ -78,5 +78,6 @@ psp:
   enableOverrides: true
   config: []
 
-podSecurityStandards:
-  enforced: false
+global:
+  podSecurityStandards:
+    enforced: false

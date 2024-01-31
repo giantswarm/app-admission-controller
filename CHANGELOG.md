@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Use base image from `gsoci.azurecr.io`
+
 ## [0.24.1] - 2024-01-29
 
 ### Fixed

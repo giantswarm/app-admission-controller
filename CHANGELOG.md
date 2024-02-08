@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The cluster values ConfigMap is from now on injected into extra configs and is obligatory for workload cluster apps.
 - Use base image from `gsoci.azurecr.io`
 - Update api version of `PodDisruptionBudget` to `v1` for k8s 1.25.
 

@@ -209,33 +209,49 @@ func (m *Mutator) getChartOperatorAppVersion(ctx context.Context, namespace stri
 	return key.VersionLabel(chartOperatorApp), nil
 }
 
+// The https://github.com/giantswarm/giantswarm/issues/29683 tightens the relations of App Platform
+// and cluster values ConfigMaps as a provider of baseline configuration for apps. Due to this, the
+// cluster ConfigMaps are to be always referenced in App CR for workload clusters. Because so far,
+// the `.spec.config` field has not been truly reserved for this purpose, and hence could be used
+// by user for other purposes, to avoid potential problems with making this reservation now, it has been
+// decided to use the `.spec.extraConfigs` list and oblige the App Admission Controller to populate
+// it with the cluster values.
 func (m *Mutator) mutateConfig(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
 	var result []mutator.PatchOperation
-
-	// Return early if either field is set.
-	if key.AppConfigMapName(app) != "" || key.AppConfigMapNamespace(app) != "" {
-		return nil, nil
-	}
 
 	// Return early if app is a Management Cluster app.
 	if key.VersionLabel(app) == uniqueAppCRVersion {
 		return nil, nil
 	}
 
+	clusterConfigMap := key.ClusterConfigMapName(app)
+
 	// Return early if values configmap not found.
-	_, err := m.k8sClient.K8sClient().CoreV1().ConfigMaps(app.Namespace).Get(ctx, key.ClusterConfigMapName(app), metav1.GetOptions{})
+	_, err := m.k8sClient.K8sClient().CoreV1().ConfigMaps(app.Namespace).Get(ctx, clusterConfigMap, metav1.GetOptions{})
 	if apierrors.IsNotFound(err) {
 		return nil, nil
 	}
 
-	// If there is no secret then create a patch for the config block.
-	if key.AppSecretName(app) == "" && key.AppSecretNamespace(app) == "" {
-		result = append(result, mutator.PatchAdd("/spec/config", map[string]string{}))
+	// if submitted App CR is already configured with the cluster values ConfigMap
+	// in the `.spec.config` field, we skip adding it to the `.spec.extraConfigs` list.
+	// This is because so far the field has been semi-reserved and some controllers as well as
+	// people use it to populate it with the cluster values. If we in addition add these
+	// values to the `.spec.extraConfigs` list it will only raise confusion, see the linked issue.
+	// Note: we do not check the `.spec.extraConfigs` list itself, nor the `.spec.userConfig` field,
+	// primarly because of the rarity of this scenario.
+	if key.AppConfigMapName(app) == clusterConfigMap && key.AppConfigMapNamespace(app) == app.Namespace {
+		return nil, nil
 	}
 
-	result = append(result, mutator.PatchAdd("/spec/config/configMap", map[string]string{
-		"namespace": app.Namespace,
-		"name":      key.ClusterConfigMapName(app),
+	if len(key.ExtraConfigs(app)) == 0 {
+		result = append(result, mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}))
+	}
+
+	result = append(result, mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
+		Kind:      "configmap",
+		Name:      clusterConfigMap,
+		Namespace: app.Namespace,
+		Priority:  1,
 	}))
 
 	return result, nil

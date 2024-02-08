@@ -39,7 +39,8 @@ const (
 	defaultExtraConfigValues = `global:
   podSecurityStandards:
     enforced: true`
-	topPriority = 150
+	bottomPriority = 1
+	topPriority    = 150
 	// pspLabel values have to match the ones defined in pss-operator.
 	// See https://github.com/giantswarm/pss-operator/blob/main/service/controller/handler/pssversion/create.go#L25
 	// pspLabelKeyForPatch has been escaped ('/' replaced with '~1') to fit JSONPatch format.
@@ -197,10 +198,6 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 		return nil, microerror.Mask(err)
 	}
 
-	// and add it to the list of extra configs in the App CR.
-	if len(key.ExtraConfigs(app)) == 0 {
-		result = append(result, mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}))
-	}
 	result = append(result, mutator.PatchAdd("/spec/extraConfigs/-", extraConfig))
 
 	m.logger.Debugf(ctx, "Mutation for PSPs are done.\n", m.provider)

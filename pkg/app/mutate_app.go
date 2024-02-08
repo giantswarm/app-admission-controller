@@ -160,12 +160,9 @@ func (m *Mutator) MutateApp(ctx context.Context, oldApp, app v1alpha1.App, opera
 		return nil, nil
 	}
 
-	configPatches, err := m.mutateConfig(ctx, app)
+	extraConfigPatches, err := m.mutateExtraConfigs(ctx, app)
 	if err != nil {
 		return nil, microerror.Mask(err)
-	}
-	if len(configPatches) > 0 {
-		result = append(result, configPatches...)
 	}
 
 	// Towards https://github.com/giantswarm/roadmap/issues/2716.
@@ -173,6 +170,26 @@ func (m *Mutator) MutateApp(ctx context.Context, oldApp, app v1alpha1.App, opera
 	pspConfigPatches, err := m.mutateConfigForPSPRemoval(ctx, app)
 	if err != nil {
 		return nil, microerror.Mask(err)
+	}
+
+	// This may seem as too much, but since both, the `extraConfigsPatches` and the
+	// `pspConfigPatches`, are capable of adding patches to extra configs field,
+	// it makes sense to me to extra the patch that initially prepares the field to the
+	// parent method, hence it is here.
+	// Note: I have thought about merging the two method together, but since the PSP
+	// removal is the thing that already caused some tension, I would like to avoid
+	// touching it altogether, because I believe what the method provides today has
+	// been tested and works. It should not be difficult to merge the two, yet I
+	// consciously choose to be paranoidical.
+	needsExtraConfigsSet := len(key.ExtraConfigs(app)) == 0 && (hasPatchAddToExtraConfigs(extraConfigPatches) ||
+		hasPatchAddToExtraConfigs(pspConfigPatches))
+
+	if needsExtraConfigsSet {
+		result = append(result, mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}))
+	}
+
+	if len(extraConfigPatches) > 0 {
+		result = append(result, extraConfigPatches...)
 	}
 	if len(pspConfigPatches) > 0 {
 		result = append(result, pspConfigPatches...)
@@ -216,7 +233,7 @@ func (m *Mutator) getChartOperatorAppVersion(ctx context.Context, namespace stri
 // by user for other purposes, to avoid potential problems with making this reservation now, it has been
 // decided to use the `.spec.extraConfigs` list and oblige the App Admission Controller to populate
 // it with the cluster values.
-func (m *Mutator) mutateConfig(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
+func (m *Mutator) mutateExtraConfigs(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
 	var result []mutator.PatchOperation
 
 	// Return early if app is a Management Cluster app.
@@ -243,15 +260,11 @@ func (m *Mutator) mutateConfig(ctx context.Context, app v1alpha1.App) ([]mutator
 		return nil, nil
 	}
 
-	if len(key.ExtraConfigs(app)) == 0 {
-		result = append(result, mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}))
-	}
-
 	result = append(result, mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
 		Kind:      "configmap",
 		Name:      clusterConfigMap,
 		Namespace: app.Namespace,
-		Priority:  1,
+		Priority:  bottomPriority,
 	}))
 
 	return result, nil
@@ -341,6 +354,15 @@ func findKubeConfigNamespace(ctx context.Context, k8sClient kubernetes.Interface
 
 	// Empty return as we can't find a kubeconfig.
 	return "", nil
+}
+
+func hasPatchAddToExtraConfigs(patches []mutator.PatchOperation) bool {
+	for _, patch := range patches {
+		if strings.HasPrefix(patch.Path, "/spec/extraConfigs/") {
+			return true
+		}
+	}
+	return false
 }
 
 func replaceToEscape(from string) string {

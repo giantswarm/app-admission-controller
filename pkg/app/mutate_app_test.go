@@ -163,7 +163,7 @@ func Test_MutateApp(t *testing.T) {
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
 				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
 				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
-					Kind:      "configmap",
+					Kind:      "configMap",
 					Name:      "eggs2-cluster-values",
 					Namespace: "eggs2",
 					Priority:  bottomPriority,
@@ -253,7 +253,7 @@ func Test_MutateApp(t *testing.T) {
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
 				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
-					Kind:      "configmap",
+					Kind:      "configMap",
 					Name:      "eggs2-cluster-values",
 					Namespace: "eggs2",
 					Priority:  bottomPriority,
@@ -419,7 +419,7 @@ func Test_MutateApp(t *testing.T) {
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), "kiam"),
 				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
 				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
-					Kind:      "configmap",
+					Kind:      "configMap",
 					Name:      "eggs2-cluster-values",
 					Namespace: "org-eggs2",
 					Priority:  bottomPriority,
@@ -511,7 +511,7 @@ func Test_MutateApp(t *testing.T) {
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
 				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
 				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
-					Kind:      "configmap",
+					Kind:      "configMap",
 					Name:      "eggs2-cluster-values",
 					Namespace: "eggs2",
 					Priority:  bottomPriority,
@@ -590,7 +590,7 @@ func Test_MutateApp(t *testing.T) {
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), "kiam"),
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
 				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
-					Kind:      "configmap",
+					Kind:      "configMap",
 					Name:      "eggs2-cluster-values",
 					Namespace: "eggs2",
 					Priority:  bottomPriority,
@@ -682,7 +682,7 @@ func Test_MutateApp(t *testing.T) {
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
 				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
 				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
-					Kind:      "configmap",
+					Kind:      "configMap",
 					Name:      "eggs2-cluster-values",
 					Namespace: "eggs2",
 					Priority:  bottomPriority,
@@ -753,7 +753,7 @@ func Test_MutateApp(t *testing.T) {
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
 				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
 				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
-					Kind:      "configmap",
+					Kind:      "configMap",
 					Name:      "eggs2-cluster-values",
 					Namespace: "eggs2",
 					Priority:  bottomPriority,
@@ -821,7 +821,7 @@ func Test_MutateApp(t *testing.T) {
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
 				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
 				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
-					Kind:      "configmap",
+					Kind:      "configMap",
 					Name:      "eggs2-cluster-values",
 					Namespace: "eggs2",
 					Priority:  bottomPriority,
@@ -876,7 +876,7 @@ func Test_MutateApp(t *testing.T) {
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
 				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
 				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
-					Kind:      "configmap",
+					Kind:      "configMap",
 					Name:      "eggs2-cluster-values",
 					Namespace: "eggs2",
 					Priority:  bottomPriority,

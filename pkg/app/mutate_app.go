@@ -261,7 +261,7 @@ func (m *Mutator) mutateExtraConfigs(ctx context.Context, app v1alpha1.App) ([]m
 	}
 
 	result = append(result, mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
-		Kind:      "configmap",
+		Kind:      "configMap",
 		Name:      clusterConfigMap,
 		Namespace: app.Namespace,
 		Priority:  bottomPriority,

@@ -890,6 +890,76 @@ func Test_MutateApp(t *testing.T) {
 				}),
 			},
 		},
+		{
+			name:   "case 15: no change flow for app in Release >= 19.3.0 (PSP Removal patch is not the last one)",
+			oldObj: v1alpha1.App{},
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "kiam",
+					Namespace: "eggs2",
+					Labels: map[string]string{
+						label.Cluster: "eggs2",
+					},
+				},
+				Spec: v1alpha1.AppSpec{
+					Catalog:   "giantswarm",
+					Name:      "kiam",
+					Namespace: "kube-system",
+					KubeConfig: v1alpha1.AppSpecKubeConfig{
+						InCluster: false,
+					},
+					ExtraConfigs: []v1alpha1.AppExtraConfig{
+						{
+							Kind:      "configMap",
+							Name:      "psp-removal-patch",
+							Namespace: "eggs2",
+							Priority:  150,
+						},
+						{
+							Kind:      "configMap",
+							Name:      "eggs2-dummy-config",
+							Namespace: "eggs2",
+							Priority:  100,
+						},
+					},
+					Version: "1.4.0",
+				},
+			},
+			apps: []*v1alpha1.App{
+				newTestApp("chart-operator", "eggs2", "3.0.0"),
+			},
+			configMaps: []*corev1.ConfigMap{
+				newTestConfigMap("eggs2-cluster-values", "eggs2"),
+			},
+			secrets: []*corev1.Secret{
+				newTestSecret("eggs2-kubeconfig", "eggs2"),
+			},
+			clusters: []*capiv1beta1.Cluster{
+				&xyz12Cluster1920,
+				&eggs2Cluster1930,
+			},
+			provider:  "aws",
+			operation: admissionv1.Create,
+			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), "kiam"),
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
+				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
+					Kind:      "configMap",
+					Name:      "eggs2-cluster-values",
+					Namespace: "eggs2",
+					Priority:  bottomPriority,
+				}),
+				mutator.PatchAdd("/metadata/labels/policy.giantswarm.io~1psp-status", "disabled"),
+				mutator.PatchAdd("/spec/kubeConfig/context", map[string]string{
+					"name": "eggs2",
+				}),
+				mutator.PatchAdd("/spec/kubeConfig/secret", map[string]string{
+					"namespace": "eggs2",
+					"name":      "eggs2-kubeconfig",
+				}),
+			},
+		},
 	}
 
 	appSchemeBuilder := runtime.SchemeBuilder(schemeBuilder{

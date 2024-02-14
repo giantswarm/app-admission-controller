@@ -108,17 +108,18 @@ func (m *Mutator) mutateConfigForPSPRemoval(ctx context.Context, app v1alpha1.Ap
 	// If extraConfigs are already patched with 'extraConfigName', let's save
 	// ourselves some checks, ensure ConfigMap, and assume everything is in
 	// order.
-	ec := key.ExtraConfigs(app)
-	if len(ec) > 0 && ec[len(ec)-1] == extraConfig {
-		// Ensure pssLabel to prevent any conflicts between pss-operator and other
-		// operators, like Flux.
-		result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", pspLabelKeyForPatch), pspLabelVal))
+	for _, ec := range key.ExtraConfigs(app) {
+		if ec == extraConfig {
+			// Ensure pssLabel to prevent any conflicts between pss-operator and other
+			// operators, like Flux.
+			result = append(result, mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", pspLabelKeyForPatch), pspLabelVal))
 
-		if err := m.ensureConfigMap(ctx, app.Namespace, extraConfigName, extraConfigValues); err != nil {
-			return nil, microerror.Mask(err)
+			if err := m.ensureConfigMap(ctx, app.Namespace, extraConfigName, extraConfigValues); err != nil {
+				return nil, microerror.Mask(err)
+			}
+			m.logger.Debugf(ctx, "Extra config is already set. Skipping.\n")
+			return result, nil
 		}
-		m.logger.Debugf(ctx, "Extra config is already set. Skipping.\n")
-		return result, nil
 	}
 
 	// This App belongs to a Workload Cluster, which is using a certain Release

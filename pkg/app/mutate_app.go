@@ -250,9 +250,10 @@ func (m *Mutator) mutateExtraConfigs(ctx context.Context, app v1alpha1.App) ([]m
 	}
 
 	// if submitted App CR is already configured with the cluster values ConfigMap
-	// in the `.spec.config` or `.spec.extraConfigs` fields, we skip adding it to
-	// the `.spec.extraConfigs` list. If we in addition add these values to the
-	// `.spec.extraConfigs` list it will only raise confusion, see the linked issue.
+	// in the `.spec.config` or `.spec.extraConfigs` or `.spec.userConfig` fields,
+	// we skip adding it to the `.spec.extraConfigs` list. If we in addition add
+	// these values to the `.spec.extraConfigs` list it will only raise confusion,
+	// see the linked issue.
 	if key.AppConfigMapName(app) == clusterConfigMap && key.AppConfigMapNamespace(app) == app.Namespace {
 		return nil, nil
 	}
@@ -261,6 +262,10 @@ func (m *Mutator) mutateExtraConfigs(ctx context.Context, app v1alpha1.App) ([]m
 		if c.Name == clusterConfigMap && c.Namespace == app.Namespace {
 			return nil, nil
 		}
+	}
+
+	if key.UserConfigMapName(app) == clusterConfigMap && key.UserConfigMapNamespace(app) == app.Namespace {
+		return nil, nil
 	}
 
 	result = append(result, mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{

@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Use base image from `gsoci.azurecr.io`
+- Update api version of `PodDisruptionBudget` to `v1` for k8s 1.25.
 
 ## [0.24.1] - 2024-01-29
 

@@ -243,14 +243,6 @@ func (m *Mutator) mutateExtraConfigs(ctx context.Context, app v1alpha1.App) ([]m
 
 	clusterConfigMap := key.ClusterConfigMapName(app)
 
-	// Return early if values configmap not found.
-	_, err := m.k8sClient.K8sClient().CoreV1().ConfigMaps(app.Namespace).Get(ctx, clusterConfigMap, metav1.GetOptions{})
-	if apierrors.IsNotFound(err) {
-		return nil, nil
-	} else if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
 	// if submitted App CR is already configured with the cluster values ConfigMap
 	// in the `.spec.config` or `.spec.extraConfigs` or `.spec.userConfig` fields,
 	// we skip adding it to the `.spec.extraConfigs` list. If we in addition add

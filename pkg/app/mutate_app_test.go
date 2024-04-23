@@ -161,10 +161,12 @@ func Test_MutateApp(t *testing.T) {
 				mutator.PatchAdd("/metadata/labels", map[string]string{}),
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), "kiam"),
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
-				mutator.PatchAdd("/spec/config", map[string]string{}),
-				mutator.PatchAdd("/spec/config/configMap", map[string]string{
-					"namespace": "eggs2",
-					"name":      "eggs2-cluster-values",
+				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
+				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
+					Kind:      "configMap",
+					Name:      "eggs2-cluster-values",
+					Namespace: "eggs2",
+					Priority:  bottomPriority,
 				}),
 				mutator.PatchAdd("/spec/kubeConfig/context", map[string]string{
 					"name": "eggs2",
@@ -249,74 +251,15 @@ func Test_MutateApp(t *testing.T) {
 			operation: admissionv1.Create,
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
-				mutator.PatchAdd("/spec/config/configMap", map[string]string{
-					"namespace": "eggs2",
-					"name":      "eggs2-cluster-values",
+				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
+				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
+					Kind:      "configMap",
+					Name:      "eggs2-cluster-values",
+					Namespace: "eggs2",
+					Priority:  bottomPriority,
 				}),
 			},
 			provider: "aws",
-		},
-		{
-			name:   "case 3: set version label only",
-			oldObj: v1alpha1.App{},
-			obj: v1alpha1.App{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "kiam",
-					Namespace: "eggs2",
-					Labels: map[string]string{
-						"app": "kiam",
-					},
-				},
-				Spec: v1alpha1.AppSpec{
-					Catalog:   "giantswarm",
-					Name:      "kiam",
-					Namespace: "kube-system",
-					KubeConfig: v1alpha1.AppSpecKubeConfig{
-						InCluster: true,
-					},
-					Version: "1.4.0",
-				},
-			},
-			provider: "aws",
-			apps: []*v1alpha1.App{
-				newTestApp("chart-operator", "eggs2", "3.1.0"),
-			},
-			operation: admissionv1.Create,
-			expectedPatches: []mutator.PatchOperation{
-				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
-				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.1.0"),
-			},
-		},
-		{
-			name:   "case 4: no config map patch if it doesn't exist",
-			oldObj: v1alpha1.App{},
-			obj: v1alpha1.App{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "kiam",
-					Namespace: "eggs2",
-					Labels: map[string]string{
-						"app":                    "kiam",
-						label.AppOperatorVersion: "3.0.0",
-					},
-				},
-				Spec: v1alpha1.AppSpec{
-					Catalog:   "giantswarm",
-					Name:      "kiam",
-					Namespace: "kube-system",
-					KubeConfig: v1alpha1.AppSpecKubeConfig{
-						InCluster: true,
-					},
-					Version: "1.4.0",
-				},
-			},
-			provider: "aws",
-			configMaps: []*corev1.ConfigMap{
-				newTestConfigMap("other-app-values", "eggs2"),
-			},
-			operation: admissionv1.Create,
-			expectedPatches: []mutator.PatchOperation{
-				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
-			},
 		},
 		{
 			name:   "case 5: replace version label when it has legacy value 1.0.0",
@@ -348,6 +291,13 @@ func Test_MutateApp(t *testing.T) {
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.1.0"),
+				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
+				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
+					Kind:      "configMap",
+					Name:      "eggs2-cluster-values",
+					Namespace: "eggs2",
+					Priority:  bottomPriority,
+				}),
 			},
 		},
 		{
@@ -412,10 +362,12 @@ func Test_MutateApp(t *testing.T) {
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), "kiam"),
-				mutator.PatchAdd("/spec/config", map[string]string{}),
-				mutator.PatchAdd("/spec/config/configMap", map[string]string{
-					"namespace": "org-eggs2",
-					"name":      "eggs2-cluster-values",
+				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
+				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
+					Kind:      "configMap",
+					Name:      "eggs2-cluster-values",
+					Namespace: "org-eggs2",
+					Priority:  bottomPriority,
 				}),
 				mutator.PatchAdd("/spec/kubeConfig/context", map[string]string{
 					"name": "eggs2",
@@ -427,10 +379,9 @@ func Test_MutateApp(t *testing.T) {
 			},
 		},
 		{
-			// When `giantswarm.io/cluster` label is missing for the org-namespaced
-			// apps, then some patches will be skipped due to mutator not being able
-			// to determine correct config names. We then expect the validator to return
-			// error upon spotting missing label.
+			// Since we have validation logic in place that is responsible for denying
+			// App CR without `giantswarm.io/cluster` label set, we do not need to perform
+			// extra validation here.
 			name:   "case 8: missing cluster label",
 			oldObj: v1alpha1.App{},
 			obj: v1alpha1.App{
@@ -460,6 +411,13 @@ func Test_MutateApp(t *testing.T) {
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchAdd("/metadata/labels", map[string]string{}),
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), "kiam"),
+				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
+				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
+					Kind:      "configMap",
+					Name:      "-cluster-values",
+					Namespace: "org-eggs2",
+					Priority:  bottomPriority,
+				}),
 			},
 		},
 		{
@@ -502,13 +460,14 @@ func Test_MutateApp(t *testing.T) {
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), "kiam"),
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
-				mutator.PatchAdd("/spec/config", map[string]string{}),
-				mutator.PatchAdd("/spec/config/configMap", map[string]string{
-					"namespace": "eggs2",
-					"name":      "eggs2-cluster-values",
+				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
+				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
+					Kind:      "configMap",
+					Name:      "eggs2-cluster-values",
+					Namespace: "eggs2",
+					Priority:  bottomPriority,
 				}),
 				mutator.PatchAdd("/metadata/labels/policy.giantswarm.io~1psp-status", "disabled"),
-				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
 				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
 					Kind:      "configMap",
 					Name:      "psp-removal-patch",
@@ -581,10 +540,11 @@ func Test_MutateApp(t *testing.T) {
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), "kiam"),
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
-				mutator.PatchAdd("/spec/config", map[string]string{}),
-				mutator.PatchAdd("/spec/config/configMap", map[string]string{
-					"namespace": "eggs2",
-					"name":      "eggs2-cluster-values",
+				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
+					Kind:      "configMap",
+					Name:      "eggs2-cluster-values",
+					Namespace: "eggs2",
+					Priority:  bottomPriority,
 				}),
 				mutator.PatchAdd("/metadata/labels/policy.giantswarm.io~1psp-status", "disabled"),
 				mutator.PatchAdd("/spec/kubeConfig/context", map[string]string{
@@ -671,13 +631,14 @@ func Test_MutateApp(t *testing.T) {
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), "prometheus-meta-operator"),
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
-				mutator.PatchAdd("/spec/config", map[string]string{}),
-				mutator.PatchAdd("/spec/config/configMap", map[string]string{
-					"namespace": "eggs2",
-					"name":      "eggs2-cluster-values",
+				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
+				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
+					Kind:      "configMap",
+					Name:      "eggs2-cluster-values",
+					Namespace: "eggs2",
+					Priority:  bottomPriority,
 				}),
 				mutator.PatchAdd("/metadata/labels/policy.giantswarm.io~1psp-status", "disabled"),
-				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
 				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
 					Kind:      "configMap",
 					Name:      "psp-removal-patch-pmo",
@@ -741,13 +702,14 @@ func Test_MutateApp(t *testing.T) {
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), "kiam"),
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
-				mutator.PatchAdd("/spec/config", map[string]string{}),
-				mutator.PatchAdd("/spec/config/configMap", map[string]string{
-					"namespace": "eggs2",
-					"name":      "eggs2-cluster-values",
+				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
+				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
+					Kind:      "configMap",
+					Name:      "eggs2-cluster-values",
+					Namespace: "eggs2",
+					Priority:  bottomPriority,
 				}),
 				mutator.PatchAdd("/metadata/labels/policy.giantswarm.io~1psp-status", "disabled"),
-				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
 				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
 					Kind:      "configMap",
 					Name:      "psp-removal-patch",
@@ -808,10 +770,12 @@ func Test_MutateApp(t *testing.T) {
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), "kiam"),
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
-				mutator.PatchAdd("/spec/config", map[string]string{}),
-				mutator.PatchAdd("/spec/config/configMap", map[string]string{
-					"namespace": "eggs2",
-					"name":      "eggs2-cluster-values",
+				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
+				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
+					Kind:      "configMap",
+					Name:      "eggs2-cluster-values",
+					Namespace: "eggs2",
+					Priority:  bottomPriority,
 				}),
 				mutator.PatchAdd("/spec/kubeConfig/context", map[string]string{
 					"name": "eggs2",
@@ -861,11 +825,83 @@ func Test_MutateApp(t *testing.T) {
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), "kiam"),
 				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
-				mutator.PatchAdd("/spec/config", map[string]string{}),
-				mutator.PatchAdd("/spec/config/configMap", map[string]string{
-					"namespace": "eggs2",
-					"name":      "eggs2-cluster-values",
+				mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}),
+				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
+					Kind:      "configMap",
+					Name:      "eggs2-cluster-values",
+					Namespace: "eggs2",
+					Priority:  bottomPriority,
 				}),
+				mutator.PatchAdd("/spec/kubeConfig/context", map[string]string{
+					"name": "eggs2",
+				}),
+				mutator.PatchAdd("/spec/kubeConfig/secret", map[string]string{
+					"namespace": "eggs2",
+					"name":      "eggs2-kubeconfig",
+				}),
+			},
+		},
+		{
+			name:   "case 15: no change flow for app in Release >= 19.3.0 (PSP Removal patch is not the last one)",
+			oldObj: v1alpha1.App{},
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "kiam",
+					Namespace: "eggs2",
+					Labels: map[string]string{
+						label.Cluster: "eggs2",
+					},
+				},
+				Spec: v1alpha1.AppSpec{
+					Catalog:   "giantswarm",
+					Name:      "kiam",
+					Namespace: "kube-system",
+					KubeConfig: v1alpha1.AppSpecKubeConfig{
+						InCluster: false,
+					},
+					ExtraConfigs: []v1alpha1.AppExtraConfig{
+						{
+							Kind:      "configMap",
+							Name:      "psp-removal-patch",
+							Namespace: "eggs2",
+							Priority:  150,
+						},
+						{
+							Kind:      "configMap",
+							Name:      "eggs2-dummy-config",
+							Namespace: "eggs2",
+							Priority:  100,
+						},
+					},
+					Version: "1.4.0",
+				},
+			},
+			apps: []*v1alpha1.App{
+				newTestApp("chart-operator", "eggs2", "3.0.0"),
+			},
+			configMaps: []*corev1.ConfigMap{
+				newTestConfigMap("eggs2-cluster-values", "eggs2"),
+			},
+			secrets: []*corev1.Secret{
+				newTestSecret("eggs2-kubeconfig", "eggs2"),
+			},
+			clusters: []*capiv1beta1.Cluster{
+				&xyz12Cluster1920,
+				&eggs2Cluster1930,
+			},
+			provider:  "aws",
+			operation: admissionv1.Create,
+			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppKubernetesName)), "kiam"),
+				mutator.PatchAdd(fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.AppOperatorVersion)), "3.0.0"),
+				mutator.PatchAdd("/spec/extraConfigs/-", v1alpha1.AppExtraConfig{
+					Kind:      "configMap",
+					Name:      "eggs2-cluster-values",
+					Namespace: "eggs2",
+					Priority:  bottomPriority,
+				}),
+				mutator.PatchAdd("/metadata/labels/policy.giantswarm.io~1psp-status", "disabled"),
 				mutator.PatchAdd("/spec/kubeConfig/context", map[string]string{
 					"name": "eggs2",
 				}),

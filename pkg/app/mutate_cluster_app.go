@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
@@ -34,6 +35,9 @@ func (m *Mutator) mutateClusterApp(ctx context.Context, app v1alpha1.App) ([]mut
 		return nil, microerror.Maskf(releaseVersionNotSpecified, "Release version label '%s' not set in cluster App CR '%s/%s'", label.ReleaseVersion, app.Namespace, app.Name)
 	}
 
+	// ensure that release version has "v" prefix, because Release CRs have it in the name
+	releaseVersion = strings.TrimPrefix(releaseVersion, "v")
+	releaseVersion = fmt.Sprintf("v%s", releaseVersion)
 	var release releases.Release
 	objectKey := client.ObjectKey{
 		Name: releaseVersion,

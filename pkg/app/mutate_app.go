@@ -203,6 +203,14 @@ func (m *Mutator) MutateApp(ctx context.Context, oldApp, app v1alpha1.App, opera
 		result = append(result, kubeConfigPatches...)
 	}
 
+	clusterAppPatches, err := m.mutateClusterApp(ctx, app)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	if len(clusterAppPatches) > 0 {
+		result = append(result, clusterAppPatches...)
+	}
+
 	return result, nil
 }
 

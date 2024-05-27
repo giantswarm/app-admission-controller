@@ -19,7 +19,7 @@ func (m *Mutator) mutateClusterApp(ctx context.Context, app v1alpha1.App) ([]mut
 		app.Name, app.Namespace)
 
 	// Check if app is a cluster-$provider app
-	isClusterApp := app.Spec.Catalog == "cluster" && strings.HasPrefix(app.Spec.Name, "cluster-")
+	isClusterApp := (app.Spec.Catalog == "cluster" || app.Spec.Catalog == "cluster-test") && strings.HasPrefix(app.Spec.Name, "cluster-")
 	if !isClusterApp {
 		return nil, nil
 	}

@@ -8,6 +8,7 @@ import (
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	releases "github.com/giantswarm/release-operator/v3/api/v1alpha1"
 	"gopkg.in/yaml.v3"
 	restclient "k8s.io/client-go/rest"
 	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
@@ -74,6 +75,7 @@ func Parse() (Config, error) {
 			SchemeBuilder: k8sclient.SchemeBuilder{
 				v1alpha1.AddToScheme,
 				capiv1beta1.AddToScheme,
+				releases.AddToScheme,
 			},
 			Logger: config.Logger,
 

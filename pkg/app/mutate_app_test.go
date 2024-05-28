@@ -915,6 +915,17 @@ func Test_MutateApp(t *testing.T) {
 		},
 		{
 			name: "case 16: cluster app name is set from the Release resource",
+			configMaps: []*corev1.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "mycluster-user-values",
+						Namespace: "org-giantswarm",
+					},
+					Data: map[string]string{
+						"values": "global:\n  release:\n    version: 25.0.0",
+					},
+				},
+			},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "mycluster",
@@ -925,7 +936,6 @@ func Test_MutateApp(t *testing.T) {
 					Labels: map[string]string{
 						"app-operator.giantswarm.io/version": "0.0.0",
 						"app.kubernetes.io/name":             "cluster-aws",
-						"release.giantswarm.io/version":      "25.0.0",
 					},
 				},
 				Spec: v1alpha1.AppSpec{
@@ -935,7 +945,13 @@ func Test_MutateApp(t *testing.T) {
 					},
 					Name:      "cluster-aws",
 					Namespace: "org-giantswarm",
-					Version:   "",
+					UserConfig: v1alpha1.AppSpecUserConfig{
+						ConfigMap: v1alpha1.AppSpecUserConfigConfigMap{
+							Name:      "mycluster-user-values",
+							Namespace: "org-giantswarm",
+						},
+					},
+					Version: "",
 				},
 			},
 			releases: []*release.Release{

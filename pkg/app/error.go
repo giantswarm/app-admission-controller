@@ -38,3 +38,7 @@ var releaseVersionNotSpecified = &microerror.Error{
 var clusterAppVersionNotFound = &microerror.Error{
 	Kind: "clusterAppVersionNotFoundError",
 }
+
+var clusterAppUserConfigNotSet = &microerror.Error{
+	Kind: "clusterAppUserConfigNotSetError",
+}

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
@@ -18,14 +19,65 @@ import (
 	"github.com/giantswarm/app-admission-controller/pkg/mutator"
 )
 
+type providerReleaseConfig struct {
+	lastClusterAppVersionWithoutRelease *semver.Version
+}
+
+var providersReleaseConfig = map[string]providerReleaseConfig{
+	"cluster-aws": {
+		lastClusterAppVersionWithoutRelease: semver.New(0, 76, 1, "", ""),
+	},
+}
+
 func (m *Mutator) mutateClusterApp(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
 	m.logger.Debugf(ctx, "Cluster app mutation for setting App version based on the release. App/Cluster:%s, Namespace:%s\n",
 		app.Name, app.Namespace)
+
+	releaseConfig, providerSupportsReleases := providersReleaseConfig[app.Spec.Name]
+	if !providerSupportsReleases {
+		return nil, nil
+	}
+	lastClusterAppVersionWithoutRelease := releaseConfig.lastClusterAppVersionWithoutRelease
 
 	// Check if app is a cluster-$provider app
 	isClusterApp := (app.Spec.Catalog == "cluster" || app.Spec.Catalog == "cluster-test") && strings.HasPrefix(app.Spec.Name, "cluster-")
 	if !isClusterApp {
 		return nil, nil
+	}
+
+	// Check if the App.spec.version is already set to a cluster-aws release from which we upgrade to new releases
+	if app.Spec.Version != "" {
+		currentClusterAppVersion, err := semver.NewVersion(app.Spec.Version)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		if !currentClusterAppVersion.GreaterThan(lastClusterAppVersionWithoutRelease) {
+			// This is a cluster that is using an older version of the cluster-$provider app, a version that does
+			// not use new releases, so it does not have release version. Therefore, we don't overwrite cluster app
+			// version here.
+			//
+			// True for cluster-aws versions older or equal to v0.76.1.
+			return nil, nil
+		}
+
+		// Additional temporary check during testing.
+		//
+		// Check if this is a dev build on top of the latest version.
+		isNewDevBuild := currentClusterAppVersion.Major() == lastClusterAppVersionWithoutRelease.Major() &&
+			currentClusterAppVersion.Minor() == lastClusterAppVersionWithoutRelease.Minor() &&
+			currentClusterAppVersion.Patch() == lastClusterAppVersionWithoutRelease.Patch() &&
+			currentClusterAppVersion.Prerelease() != ""
+		// The last "standalone" cluster-aws version will be v0.76.1, but current dev builds on top of it are per semver
+		// actually older, and here we want to treat custom dev build with Releases as newer.
+		clusterAppReleasesDevBuild := semver.New(0, 76, 1, "b76af2c26f4224ffb0d718e940e232fac05c89a0", "")
+		isClusterAppReleasesDevBuild := currentClusterAppVersion.Equal(clusterAppReleasesDevBuild)
+
+		if isNewDevBuild && !isClusterAppReleasesDevBuild {
+			// This is a development cluster that is using a dev version of the cluster-$provider app that does not use
+			// new releases, so it does not have release version. Therefore, we don't overwrite cluster app
+			// version here.
+			return nil, nil
+		}
 	}
 
 	userConfigMapName := app.Spec.UserConfig.ConfigMap.Name

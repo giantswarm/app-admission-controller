@@ -28,12 +28,6 @@ func (m *Mutator) mutateClusterApp(ctx context.Context, app v1alpha1.App) ([]mut
 		return nil, nil
 	}
 
-	// Do nothing if the App version is already set
-	// TODO: fix this and allow for version updates
-	if app.Spec.Version != "" {
-		return nil, nil
-	}
-
 	userConfigMapName := app.Spec.UserConfig.ConfigMap.Name
 	if userConfigMapName == "" {
 		return nil, microerror.Maskf(clusterAppUserConfigNotSet, "Cluster App '%s/%s does not have the user config", app.Namespace, app.Name)

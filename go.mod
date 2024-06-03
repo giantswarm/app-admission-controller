@@ -15,7 +15,7 @@ require (
 	github.com/giantswarm/k8sclient/v7 v7.0.1
 	github.com/giantswarm/k8smetadata v0.24.0
 	github.com/giantswarm/microerror v0.4.1
-	github.com/giantswarm/micrologger v1.0.0
+	github.com/giantswarm/micrologger v1.1.1
 	github.com/google/go-cmp v0.6.0
 	github.com/prometheus/client_golang v1.19.1
 	golang.org/x/exp v0.0.0-20240531132922-fd00a4e0eefc
@@ -41,7 +41,7 @@ require (
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/giantswarm/appcatalog v0.6.0 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
-	github.com/go-logfmt/logfmt v0.5.1 // indirect
+	github.com/go-logfmt/logfmt v0.6.0 // indirect
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.19.5 // indirect

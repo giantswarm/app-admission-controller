@@ -1,17 +1,19 @@
 module github.com/giantswarm/app-admission-controller
 
-go 1.18
+go 1.21
+
+toolchain go1.22.3
 
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/alecthomas/kingpin/v2 v2.4.0
 	github.com/dyson/certman v0.3.0
-	github.com/giantswarm/apiextensions-application v0.6.0
-	github.com/giantswarm/app/v7 v7.0.0
+	github.com/giantswarm/apiextensions-application v0.6.1
+	github.com/giantswarm/app/v7 v7.0.1
 	github.com/giantswarm/apptest v1.2.1
 	github.com/giantswarm/backoff v1.0.0
 	github.com/giantswarm/k8sclient/v7 v7.0.1
-	github.com/giantswarm/k8smetadata v0.23.0
+	github.com/giantswarm/k8smetadata v0.24.0
 	github.com/giantswarm/microerror v0.4.1
 	github.com/giantswarm/micrologger v1.0.0
 	github.com/google/go-cmp v0.6.0
@@ -81,7 +83,7 @@ require (
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect
 	sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
-	sigs.k8s.io/yaml v1.3.0 // indirect
+	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
 replace (

@@ -92,10 +92,10 @@ func (m *Mutator) mutateClusterApp(ctx context.Context, app v1alpha1.App) ([]mut
 	// remove "v" prefix from the release version, because Release CRs do not have it in the name
 	releaseVersion := strings.TrimPrefix(userValues.Global.Release.Version, "v")
 	providerName := m.provider
-	if realProviderName, ok := providersNameMap[m.provider]; ok {
+	if realProviderName, ok := realProviderNameMap[m.provider]; ok {
 		providerName = realProviderName
 	}
-	releaseVersion = fmt.Sprintf("%s-%s", "provider", releaseVersion)
+	releaseVersion = fmt.Sprintf("%s-%s", providerName, releaseVersion)
 
 	// finally, get the Release resource
 	var release releases.Release

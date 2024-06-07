@@ -21,11 +21,11 @@ require (
 	github.com/prometheus/client_golang v1.19.1
 	golang.org/x/exp v0.0.0-20240604190554-fc45aab8b7f8
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/api v0.26.15
-	k8s.io/apimachinery v0.26.15
-	k8s.io/client-go v0.26.15
-	sigs.k8s.io/cluster-api v1.4.9
-	sigs.k8s.io/controller-runtime v0.14.7
+	k8s.io/api v0.24.17
+	k8s.io/apimachinery v0.24.17
+	k8s.io/client-go v0.24.17
+	sigs.k8s.io/cluster-api v1.0.4
+	sigs.k8s.io/controller-runtime v0.12.1
 )
 
 require (
@@ -37,7 +37,6 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/emicklei/go-restful/v3 v3.9.0 // indirect
 	github.com/evanphx/json-patch v5.6.0+incompatible // indirect
-	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/giantswarm/appcatalog v0.6.0 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
@@ -78,7 +77,11 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/apiextensions-apiserver v0.24.0 // indirect
 	k8s.io/component-base v0.24.0 // indirect
+<<<<<<< HEAD
 	k8s.io/klog/v2 v2.120.1 // indirect
+=======
+	k8s.io/klog/v2 v2.80.1 // indirect
+>>>>>>> b39f2ee (Revert k8s dependency update)
 	k8s.io/kube-openapi v0.0.0-20221012153701-172d655c2280 // indirect
 	k8s.io/utils v0.0.0-20221128185143-99ec85e7a448 // indirect
 	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
@@ -95,5 +98,5 @@ replace (
 	golang.org/x/net => golang.org/x/net v0.26.0
 	k8s.io/klog/v2 v2.2.0 => k8s.io/klog/v2 v2.0.0
 	// Required by github.com/giantswarm/apiextensions/v6
-	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.4.9
+	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.0.4
 )

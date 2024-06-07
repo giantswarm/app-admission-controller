@@ -9,7 +9,7 @@ import (
 	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
-	releases "github.com/giantswarm/releases/sdk/api/v1alpha1"
+	releases "github.com/giantswarm/release-operator/v3/api/v1alpha1"
 	"gopkg.in/yaml.v3"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

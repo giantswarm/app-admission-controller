@@ -11,7 +11,7 @@ import (
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclienttest"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/micrologger/microloggertest"
-	release "github.com/giantswarm/releases/sdk/api/v1alpha1"
+	release "github.com/giantswarm/release-operator/v3/api/v1alpha1"
 	"github.com/google/go-cmp/cmp"
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -957,7 +957,7 @@ func Test_MutateApp(t *testing.T) {
 			releases: []*release.Release{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "v25.0.0",
+						Name: "aws-25.0.0",
 					},
 					Spec: release.ReleaseSpec{
 						Components: []release.ReleaseSpecComponent{

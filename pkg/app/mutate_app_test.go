@@ -977,7 +977,71 @@ func Test_MutateApp(t *testing.T) {
 			},
 		},
 		{
-			name: "case 17: cluster app version is not using the Release resource",
+			name: "case 17: cluster app catalog and version are set from the Release resource",
+			configMaps: []*corev1.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "mycluster-user-values",
+						Namespace: "org-giantswarm",
+					},
+					Data: map[string]string{
+						"values": "global:\n  release:\n    version: 25.0.0",
+					},
+				},
+			},
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "mycluster",
+					Namespace: "org-giantswarm",
+					Annotations: map[string]string{
+						"some": "annotation",
+					},
+					Labels: map[string]string{
+						"app-operator.giantswarm.io/version": "0.0.0",
+						"app.kubernetes.io/name":             "cluster-aws",
+					},
+				},
+				Spec: v1alpha1.AppSpec{
+					Catalog: "cluster",
+					KubeConfig: v1alpha1.AppSpecKubeConfig{
+						InCluster: true,
+					},
+					Name:      "cluster-aws",
+					Namespace: "org-giantswarm",
+					UserConfig: v1alpha1.AppSpecUserConfig{
+						ConfigMap: v1alpha1.AppSpecUserConfigConfigMap{
+							Name:      "mycluster-user-values",
+							Namespace: "org-giantswarm",
+						},
+					},
+					Version: "1.0.0",
+				},
+			},
+			releases: []*release.Release{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "aws-25.0.0",
+					},
+					Spec: release.ReleaseSpec{
+						Components: []release.ReleaseSpecComponent{
+							{
+								Catalog: "cluster-test",
+								Name:    "cluster-aws",
+								Version: "1.0.1-0a3f64159eeb71a73c6167cd860e467a04dc37ab",
+							},
+						},
+					},
+				},
+			},
+			operation: admissionv1.Update,
+			provider:  "capa",
+			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/spec/version", "1.0.1-0a3f64159eeb71a73c6167cd860e467a04dc37ab"),
+				mutator.PatchAdd("/spec/catalog", "cluster-test"),
+			},
+		},
+		{
+			name: "case 18: cluster app version is not using the Release resource",
 			configMaps: []*corev1.ConfigMap{
 				{
 					ObjectMeta: metav1.ObjectMeta{

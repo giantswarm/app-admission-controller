@@ -108,9 +108,11 @@ func (m *Mutator) mutateClusterApp(ctx context.Context, app v1alpha1.App) ([]mut
 	}
 
 	// and we get cluster-$provider app version
+	var clusterAppCatalog string
 	var clusterAppVersion string
 	for _, component := range release.Spec.Components {
 		if component.Name == app.Spec.Name {
+			clusterAppCatalog = component.Catalog
 			clusterAppVersion = component.Version
 			break
 		}
@@ -120,8 +122,12 @@ func (m *Mutator) mutateClusterApp(ctx context.Context, app v1alpha1.App) ([]mut
 	}
 
 	// Finally, create a patch for populating the cluster-$provider App version
-	result := []mutator.PatchOperation{
-		mutator.PatchAdd("/spec/version", clusterAppVersion),
+	var result []mutator.PatchOperation
+	if app.Spec.Version != clusterAppVersion {
+		result = append(result, mutator.PatchAdd("/spec/version", clusterAppVersion))
+	}
+	if app.Spec.Catalog != clusterAppCatalog {
+		result = append(result, mutator.PatchAdd("/spec/catalog", clusterAppCatalog))
 	}
 
 	return result, nil

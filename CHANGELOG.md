@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Support for CAPI workload clusters that use Release resources. See [RFC](https://github.com/giantswarm/rfc/pull/96) for more details.
+
 ## [0.24.3] - 2024-04-23
 
 ## [0.24.2] - 2024-02-15

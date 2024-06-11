@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.25.0] - 2024-06-11
+
 ### Added
 
 - Support for CAPI workload clusters that use Release resources. See [RFC](https://github.com/giantswarm/rfc/pull/96) for more details.
@@ -343,7 +345,8 @@ allow app CR creation.
 - Add validation webhook that is enabled for app CRs with
 `app-operator.giantswarm.io/version` label value >= `3.0.0`.
 
-[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v0.24.3...HEAD
+[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v0.25.0...HEAD
+[0.25.0]: https://github.com/giantswarm/app-admission-controller/compare/v0.24.3...v0.25.0
 [0.24.3]: https://github.com/giantswarm/app-admission-controller/compare/v0.24.2...v0.24.3
 [0.24.2]: https://github.com/giantswarm/app-admission-controller/compare/v0.24.1...v0.24.2
 [0.24.1]: https://github.com/giantswarm/app-admission-controller/compare/v0.24.0...v0.24.1

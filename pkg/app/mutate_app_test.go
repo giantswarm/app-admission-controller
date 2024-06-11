@@ -11,6 +11,7 @@ import (
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclienttest"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/micrologger/microloggertest"
+	release "github.com/giantswarm/release-operator/v3/api/v1alpha1"
 	"github.com/google/go-cmp/cmp"
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -118,6 +119,7 @@ func Test_MutateApp(t *testing.T) {
 		configMaps         []*corev1.ConfigMap
 		secrets            []*corev1.Secret
 		clusters           []*capiv1beta1.Cluster
+		releases           []*release.Release
 		provider           string
 		operation          admissionv1.Operation
 		expectedPatches    []mutator.PatchOperation
@@ -911,11 +913,184 @@ func Test_MutateApp(t *testing.T) {
 				}),
 			},
 		},
+		{
+			name: "case 16: cluster app version is set from the Release resource",
+			configMaps: []*corev1.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "mycluster-user-values",
+						Namespace: "org-giantswarm",
+					},
+					Data: map[string]string{
+						"values": "global:\n  release:\n    version: 25.0.0",
+					},
+				},
+			},
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "mycluster",
+					Namespace: "org-giantswarm",
+					Annotations: map[string]string{
+						"some": "annotation",
+					},
+					Labels: map[string]string{
+						"app-operator.giantswarm.io/version": "0.0.0",
+						"app.kubernetes.io/name":             "cluster-aws",
+					},
+				},
+				Spec: v1alpha1.AppSpec{
+					Catalog: "cluster",
+					KubeConfig: v1alpha1.AppSpecKubeConfig{
+						InCluster: true,
+					},
+					Name:      "cluster-aws",
+					Namespace: "org-giantswarm",
+					UserConfig: v1alpha1.AppSpecUserConfig{
+						ConfigMap: v1alpha1.AppSpecUserConfigConfigMap{
+							Name:      "mycluster-user-values",
+							Namespace: "org-giantswarm",
+						},
+					},
+					Version: "",
+				},
+			},
+			releases: []*release.Release{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "aws-25.0.0",
+					},
+					Spec: release.ReleaseSpec{
+						Components: []release.ReleaseSpecComponent{
+							{
+								Catalog: "cluster",
+								Name:    "cluster-aws",
+								Version: "1.0.0",
+							},
+						},
+					},
+				},
+			},
+			operation: admissionv1.Create,
+			provider:  "capa",
+			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/spec/version", "1.0.0"),
+			},
+		},
+		{
+			name: "case 17: cluster app catalog and version are set from the Release resource",
+			configMaps: []*corev1.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "mycluster-user-values",
+						Namespace: "org-giantswarm",
+					},
+					Data: map[string]string{
+						"values": "global:\n  release:\n    version: 25.0.0",
+					},
+				},
+			},
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "mycluster",
+					Namespace: "org-giantswarm",
+					Annotations: map[string]string{
+						"some": "annotation",
+					},
+					Labels: map[string]string{
+						"app-operator.giantswarm.io/version": "0.0.0",
+						"app.kubernetes.io/name":             "cluster-aws",
+					},
+				},
+				Spec: v1alpha1.AppSpec{
+					Catalog: "cluster",
+					KubeConfig: v1alpha1.AppSpecKubeConfig{
+						InCluster: true,
+					},
+					Name:      "cluster-aws",
+					Namespace: "org-giantswarm",
+					UserConfig: v1alpha1.AppSpecUserConfig{
+						ConfigMap: v1alpha1.AppSpecUserConfigConfigMap{
+							Name:      "mycluster-user-values",
+							Namespace: "org-giantswarm",
+						},
+					},
+					Version: "1.0.0",
+				},
+			},
+			releases: []*release.Release{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "aws-25.0.0",
+					},
+					Spec: release.ReleaseSpec{
+						Components: []release.ReleaseSpecComponent{
+							{
+								Catalog: "cluster-test",
+								Name:    "cluster-aws",
+								Version: "1.0.1-0a3f64159eeb71a73c6167cd860e467a04dc37ab",
+							},
+						},
+					},
+				},
+			},
+			operation: admissionv1.Update,
+			provider:  "capa",
+			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/spec/version", "1.0.1-0a3f64159eeb71a73c6167cd860e467a04dc37ab"),
+				mutator.PatchAdd("/spec/catalog", "cluster-test"),
+			},
+		},
+		{
+			name: "case 18: cluster app version is not using the Release resource",
+			configMaps: []*corev1.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "mycluster-user-values",
+						Namespace: "org-giantswarm",
+					},
+					Data: map[string]string{
+						"values": "global:\n  metadata:\n    name: mycluster",
+					},
+				},
+			},
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "mycluster",
+					Namespace: "org-giantswarm",
+					Annotations: map[string]string{
+						"some": "annotation",
+					},
+					Labels: map[string]string{
+						"app-operator.giantswarm.io/version": "0.0.0",
+						"app.kubernetes.io/name":             "cluster-aws",
+					},
+				},
+				Spec: v1alpha1.AppSpec{
+					Catalog: "cluster",
+					KubeConfig: v1alpha1.AppSpecKubeConfig{
+						InCluster: true,
+					},
+					Name:      "cluster-aws",
+					Namespace: "org-giantswarm",
+					UserConfig: v1alpha1.AppSpecUserConfig{
+						ConfigMap: v1alpha1.AppSpecUserConfigConfigMap{
+							Name:      "mycluster-user-values",
+							Namespace: "org-giantswarm",
+						},
+					},
+					Version: "0.76.1",
+				},
+			},
+			operation:       admissionv1.Create,
+			provider:        "capa",
+			expectedPatches: nil,
+		},
 	}
 
 	appSchemeBuilder := runtime.SchemeBuilder(schemeBuilder{
 		v1alpha1.AddToScheme,
 		capiv1beta1.AddToScheme,
+		release.AddToScheme,
 	})
 	err := appSchemeBuilder.AddToScheme(scheme.Scheme)
 	if err != nil {
@@ -934,6 +1109,10 @@ func Test_MutateApp(t *testing.T) {
 
 			for _, cluster := range tc.clusters {
 				g8sObjs = append(g8sObjs, cluster)
+			}
+
+			for _, release := range tc.releases {
+				g8sObjs = append(g8sObjs, release)
 			}
 
 			k8sObjs := make([]runtime.Object, 0)

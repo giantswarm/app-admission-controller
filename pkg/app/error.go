@@ -30,3 +30,11 @@ var parsingFailedError = &microerror.Error{
 func IsParsingFailed(err error) bool {
 	return microerror.Cause(err) == parsingFailedError
 }
+
+var clusterAppVersionNotFound = &microerror.Error{
+	Kind: "clusterAppVersionNotFoundError",
+}
+
+var clusterAppUserConfigNotSet = &microerror.Error{
+	Kind: "clusterAppUserConfigNotSetError",
+}

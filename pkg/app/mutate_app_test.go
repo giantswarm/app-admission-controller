@@ -1161,6 +1161,94 @@ func Test_MutateApp(t *testing.T) {
 			provider:        "capa",
 			expectedPatches: nil,
 		},
+		{
+			name: "case 19: cluster app uses config for user values instead of user config",
+			configMaps: []*corev1.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "mycluster-config",
+						Namespace: "org-giantswarm",
+					},
+					Data: map[string]string{
+						"values": "global:\n  release:\n    version: 25.0.0",
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "cluster-catalog",
+						Namespace: "giantswarm",
+					},
+					Data: map[string]string{
+						"values": "foo: bar",
+					},
+				},
+			},
+			obj: v1alpha1.App{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "mycluster",
+					Namespace: "org-giantswarm",
+					Annotations: map[string]string{
+						"some": "annotation",
+					},
+					Labels: map[string]string{
+						"app-operator.giantswarm.io/version": "0.0.0",
+						"app.kubernetes.io/name":             "cluster-aws",
+					},
+				},
+				Spec: v1alpha1.AppSpec{
+					Catalog: "cluster",
+					KubeConfig: v1alpha1.AppSpecKubeConfig{
+						InCluster: true,
+					},
+					Name:      "cluster-aws",
+					Namespace: "org-giantswarm",
+					Config: v1alpha1.AppSpecConfig{
+						ConfigMap: v1alpha1.AppSpecConfigConfigMap{
+							Name:      "mycluster-config",
+							Namespace: "org-giantswarm",
+						},
+					},
+					Version: "",
+				},
+			},
+			catalogs: []*v1alpha1.Catalog{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Namespace: "giantswarm",
+						Name:      "cluster",
+					},
+					Spec: v1alpha1.CatalogSpec{
+						Config: &v1alpha1.CatalogSpecConfig{
+							ConfigMap: &v1alpha1.CatalogSpecConfigConfigMap{
+								Name:      "cluster-catalog",
+								Namespace: "giantswarm",
+							},
+						},
+					},
+				},
+			},
+			releases: []*release.Release{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "aws-25.0.0",
+					},
+					Spec: release.ReleaseSpec{
+						Components: []release.ReleaseSpecComponent{
+							{
+								Catalog: "cluster",
+								Name:    "cluster-aws",
+								Version: "1.0.0",
+							},
+						},
+					},
+				},
+			},
+			operation: admissionv1.Create,
+			provider:  "capa",
+			expectedPatches: []mutator.PatchOperation{
+				mutator.PatchAdd("/spec/version", "1.0.0"),
+			},
+		},
 	}
 
 	appSchemeBuilder := runtime.SchemeBuilder(schemeBuilder{

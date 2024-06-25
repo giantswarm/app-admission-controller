@@ -120,6 +120,7 @@ func Test_MutateApp(t *testing.T) {
 		secrets            []*corev1.Secret
 		clusters           []*capiv1beta1.Cluster
 		releases           []*release.Release
+		catalogs           []*v1alpha1.Catalog
 		provider           string
 		operation          admissionv1.Operation
 		expectedPatches    []mutator.PatchOperation
@@ -925,6 +926,15 @@ func Test_MutateApp(t *testing.T) {
 						"values": "global:\n  release:\n    version: 25.0.0",
 					},
 				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "cluster-catalog",
+						Namespace: "giantswarm",
+					},
+					Data: map[string]string{
+						"values": "foo: bar",
+					},
+				},
 			},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
@@ -952,6 +962,22 @@ func Test_MutateApp(t *testing.T) {
 						},
 					},
 					Version: "",
+				},
+			},
+			catalogs: []*v1alpha1.Catalog{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Namespace: "giantswarm",
+						Name:      "cluster",
+					},
+					Spec: v1alpha1.CatalogSpec{
+						Config: &v1alpha1.CatalogSpecConfig{
+							ConfigMap: &v1alpha1.CatalogSpecConfigConfigMap{
+								Name:      "cluster-catalog",
+								Namespace: "giantswarm",
+							},
+						},
+					},
 				},
 			},
 			releases: []*release.Release{
@@ -988,6 +1014,15 @@ func Test_MutateApp(t *testing.T) {
 						"values": "global:\n  release:\n    version: 25.0.0",
 					},
 				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "cluster-catalog",
+						Namespace: "giantswarm",
+					},
+					Data: map[string]string{
+						"values": "foo: bar",
+					},
+				},
 			},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
@@ -1015,6 +1050,22 @@ func Test_MutateApp(t *testing.T) {
 						},
 					},
 					Version: "1.0.0",
+				},
+			},
+			catalogs: []*v1alpha1.Catalog{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Namespace: "giantswarm",
+						Name:      "cluster",
+					},
+					Spec: v1alpha1.CatalogSpec{
+						Config: &v1alpha1.CatalogSpecConfig{
+							ConfigMap: &v1alpha1.CatalogSpecConfigConfigMap{
+								Name:      "cluster-catalog",
+								Namespace: "giantswarm",
+							},
+						},
+					},
 				},
 			},
 			releases: []*release.Release{
@@ -1052,6 +1103,15 @@ func Test_MutateApp(t *testing.T) {
 						"values": "global:\n  metadata:\n    name: mycluster",
 					},
 				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "cluster-catalog",
+						Namespace: "giantswarm",
+					},
+					Data: map[string]string{
+						"values": "foo: bar",
+					},
+				},
 			},
 			obj: v1alpha1.App{
 				ObjectMeta: metav1.ObjectMeta{
@@ -1081,6 +1141,22 @@ func Test_MutateApp(t *testing.T) {
 					Version: "0.76.1",
 				},
 			},
+			catalogs: []*v1alpha1.Catalog{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Namespace: "giantswarm",
+						Name:      "cluster",
+					},
+					Spec: v1alpha1.CatalogSpec{
+						Config: &v1alpha1.CatalogSpecConfig{
+							ConfigMap: &v1alpha1.CatalogSpecConfigConfigMap{
+								Name:      "cluster-catalog",
+								Namespace: "giantswarm",
+							},
+						},
+					},
+				},
+			},
 			operation:       admissionv1.Create,
 			provider:        "capa",
 			expectedPatches: nil,
@@ -1105,6 +1181,10 @@ func Test_MutateApp(t *testing.T) {
 
 			for _, app := range tc.apps {
 				g8sObjs = append(g8sObjs, app)
+			}
+
+			for _, catalog := range tc.catalogs {
+				g8sObjs = append(g8sObjs, catalog)
 			}
 
 			for _, cluster := range tc.clusters {

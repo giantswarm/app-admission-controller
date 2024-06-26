@@ -8,6 +8,7 @@ import (
 	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/app/v7/pkg/key"
+	"github.com/giantswarm/app/v7/pkg/values"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
@@ -35,6 +36,7 @@ type Mutator struct {
 	// provider & configPatches are required by mutateConfigForPSPRemoval()
 	provider      string
 	configPatches []config.ConfigPatch
+	valuesService *values.Values
 }
 
 func NewMutator(config MutatorConfig) (*Mutator, error) {
@@ -45,11 +47,21 @@ func NewMutator(config MutatorConfig) (*Mutator, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
+	valuesServiceConfig := values.Config{
+		K8sClient: config.K8sClient.K8sClient(),
+		Logger:    config.Logger,
+	}
+	valuesService, err := values.New(valuesServiceConfig)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	mutator := &Mutator{
 		k8sClient:     config.K8sClient,
 		logger:        config.Logger,
 		provider:      config.Provider,
 		configPatches: config.ConfigPatches,
+		valuesService: valuesService,
 	}
 
 	return mutator, nil

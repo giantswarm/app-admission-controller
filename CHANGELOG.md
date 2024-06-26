@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix cluster app mutation, so it merges all config before trying to read release version.
+
 ## [0.25.0] - 2024-06-11
 
 ### Added

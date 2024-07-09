@@ -66,7 +66,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
 	golang.org/x/net v0.25.0 // indirect
-	golang.org/x/oauth2 v0.20.0 // indirect
+	golang.org/x/oauth2 v0.21.0 // indirect
 	golang.org/x/sys v0.21.0 // indirect
 	golang.org/x/term v0.21.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
@@ -86,7 +86,7 @@ require (
 )
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.114.0
+	cloud.google.com/go => cloud.google.com/go v0.115.0
 	github.com/go-logr/logr => github.com/go-logr/logr v1.4.2
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.5.2

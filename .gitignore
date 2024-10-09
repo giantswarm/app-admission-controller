@@ -1,2 +1,2 @@
 /app-admission-controller*
-/testdata/current
+testdata/certs/current/*

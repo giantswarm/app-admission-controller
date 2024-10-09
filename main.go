@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"crypto/sha1"
 	"crypto/tls"
 	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
+	"reflect"
 	"syscall"
 	"time"
 
@@ -107,12 +109,23 @@ func mainWithError() error {
 		}
 	}
 
+	cm, err := certman.New(cfg.CertFile, cfg.KeyFile)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if err := cm.Watch(); err != nil {
+		panic(microerror.JSON(err))
+	}
+
 	// Here we register our endpoints.
 	handler := http.NewServeMux()
 	handler.Handle("/mutate/app", mutator.Handler(appMutator))
 	handler.Handle("/validate/app", validator.Handler(appValidator))
 
-	handler.HandleFunc("/healthz", healthCheck)
+	handler.HandleFunc("/healthz", func(writer http.ResponseWriter, request *http.Request) {
+		healthCheck(writer, request, cm, cfg.CertFile, cfg.KeyFile)
+	})
 
 	metrics := http.NewServeMux()
 	metrics.Handle("/metrics", promhttp.Handler())
@@ -120,28 +133,38 @@ func mainWithError() error {
 	newLogger.Debugf(ctx, "listening on port %s", cfg.Address)
 
 	go serveMetrics(cfg, metrics)
-	serveTLS(cfg, handler)
+	serveTLS(cfg, cm, handler)
 
 	return nil
 }
 
-func healthCheck(writer http.ResponseWriter, request *http.Request) {
-	writer.WriteHeader(http.StatusOK)
-	_, err := writer.Write([]byte("ok"))
+func healthCheck(writer http.ResponseWriter, request *http.Request, cm *certman.CertMan, crtFile, keyFile string) {
+	inMemCrt, err := cm.GetCertificate(nil)
 	if err != nil {
 		panic(microerror.JSON(err))
+	}
+
+	inDirCrt, err := tls.LoadX509KeyPair(crtFile, keyFile)
+	if err != nil {
+		panic(microerror.JSON(err))
+	}
+
+	if reflect.DeepEqual(sha1.Sum(inMemCrt.Certificate[0]), sha1.Sum(inDirCrt.Certificate[0])) {
+		writer.WriteHeader(http.StatusOK)
+		_, err = writer.Write([]byte("ok"))
+		if err != nil {
+			panic(microerror.JSON(err))
+		}
+	} else {
+		writer.WriteHeader(http.StatusServiceUnavailable)
+		_, err = writer.Write([]byte("bad certificate"))
+		if err != nil {
+			panic(microerror.JSON(err))
+		}
 	}
 }
 
-func serveTLS(config config.Config, handler http.Handler) {
-	cm, err := certman.New(config.CertFile, config.KeyFile)
-	if err != nil {
-		panic(microerror.JSON(err))
-	}
-	if err := cm.Watch(); err != nil {
-		panic(microerror.JSON(err))
-	}
-
+func serveTLS(config config.Config, cm *certman.CertMan, handler http.Handler) {
 	server := &http.Server{
 		Addr:    config.Address,
 		Handler: handler,
@@ -162,7 +185,7 @@ func serveTLS(config config.Config, handler http.Handler) {
 		}
 	}()
 
-	err = server.ListenAndServeTLS("", "")
+	err := server.ListenAndServeTLS("", "")
 	if err != nil {
 		if err != http.ErrServerClosed {
 			panic(microerror.JSON(err))

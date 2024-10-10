@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"crypto/sha1"
+	"crypto/sha256"
 	"crypto/tls"
 	"fmt"
 	"net/http"
@@ -149,7 +149,7 @@ func healthCheck(writer http.ResponseWriter, request *http.Request, cm *certman.
 		panic(microerror.JSON(err))
 	}
 
-	if reflect.DeepEqual(sha1.Sum(inMemCrt.Certificate[0]), sha1.Sum(inDirCrt.Certificate[0])) {
+	if reflect.DeepEqual(sha256.Sum224(inMemCrt.Certificate[0]), sha256.Sum224(inDirCrt.Certificate[0])) {
 		writer.WriteHeader(http.StatusOK)
 		_, err = writer.Write([]byte("ok"))
 		if err != nil {

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Extend the `/healthz` endpoint to check for a valid certificate and let Kubernetes liveness probes handle restarts in case of an error.
+
 ## [0.26.0] - 2024-06-27
 
 ### Fixed

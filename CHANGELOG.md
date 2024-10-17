@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed logic fetching Releases for cluster apps to work with cross-provider MCs
+
 ## [0.26.0] - 2024-06-27
 
 ### Fixed

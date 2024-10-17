@@ -16,14 +16,6 @@ import (
 	"github.com/giantswarm/app-admission-controller/pkg/mutator"
 )
 
-// realProviderNameMap maps temporary CAPI provider names to real provider names that we need in CAPI releases.
-// We need this only for
-// AWS and Azure where we have name conflicts.
-var realProviderNameMap = map[string]string{
-	"capa": "aws",
-	"capz": "azure",
-}
-
 func (m *Mutator) mutateClusterApp(ctx context.Context, app v1alpha1.App) ([]mutator.PatchOperation, error) {
 	// Check if app is a cluster-$provider app
 	isClusterApp := (app.Spec.Catalog == "cluster" || app.Spec.Catalog == "cluster-test") && strings.HasPrefix(app.Spec.Name, "cluster-")
@@ -106,10 +98,9 @@ func (m *Mutator) mutateClusterApp(ctx context.Context, app v1alpha1.App) ([]mut
 
 	// remove "v" prefix from the release version, because Release CRs do not have it in the name
 	releaseVersion = strings.TrimPrefix(releaseVersion, "v")
-	providerName := m.provider
-	if realProviderName, ok := realProviderNameMap[m.provider]; ok {
-		providerName = realProviderName
-	}
+
+	// Provider name is based on the cluster app being used
+	providerName := strings.ToLower(strings.TrimPrefix(app.Spec.Name, "cluster-"))
 	releaseVersion = fmt.Sprintf("%s-%s", providerName, releaseVersion)
 
 	// finally, get the Release resource

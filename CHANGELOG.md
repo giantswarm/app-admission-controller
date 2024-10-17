@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Extend the `/healthz` endpoint to check for a valid certificate and let Kubernetes liveness probes handle restarts in case of an error.
 
+## [0.26.1] - 2024-10-17
+
+### Fixed
+
+- Fixed logic fetching Releases for cluster apps to work with cross-provider MCs
+
 ## [0.26.0] - 2024-06-27
 
 ### Fixed
@@ -355,7 +361,8 @@ allow app CR creation.
 - Add validation webhook that is enabled for app CRs with
 `app-operator.giantswarm.io/version` label value >= `3.0.0`.
 
-[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v0.26.0...HEAD
+[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v0.26.1...HEAD
+[0.26.1]: https://github.com/giantswarm/app-admission-controller/compare/v0.26.0...v0.26.1
 [0.26.0]: https://github.com/giantswarm/app-admission-controller/compare/v0.25.0...v0.26.0
 [0.25.0]: https://github.com/giantswarm/app-admission-controller/compare/v0.24.3...v0.25.0
 [0.24.3]: https://github.com/giantswarm/app-admission-controller/compare/v0.24.2...v0.24.3

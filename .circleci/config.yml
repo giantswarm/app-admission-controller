@@ -7,149 +7,157 @@ workflows:
   version: 2
   build:
     jobs:
-      - architect/go-build:
-          name: go-build
-          context: architect
-          binary: app-admission-controller
-          filters:
+    - architect/go-build:
+        name: go-build
+        context: architect
+        binary: app-admission-controller
+        filters:
             # Do this on every commit and when a new tag is created.
-            tags:
-              only: /^v.*/
+          tags:
+            only: /^v.*/
 
-      - architect/push-to-registries:
-          context: architect
-          name: push-to-registries
-          requires:
-            - go-build
-          filters:
-            tags:
-              only: /^v.*/
+    - architect/push-to-registries:
+        context: architect
+        name: push-to-registries
+        requires:
+        - go-build
+        filters:
+          tags:
+            only: /^v.*/
 
-      - architect/push-to-app-catalog:
-          name: push-app-admission-controller-to-control-plane-catalog
-          context: architect
-          app_catalog: "control-plane-catalog"
-          app_catalog_test: "control-plane-test-catalog"
-          chart: "app-admission-controller"
-          requires:
-            - push-to-registries
-          filters:
+          branches:
+            ignore:
+            - main
+            - master
+    - architect/push-to-app-catalog:
+        name: push-app-admission-controller-to-control-plane-catalog
+        context: architect
+        app_catalog: control-plane-catalog
+        app_catalog_test: control-plane-test-catalog
+        chart: app-admission-controller
+        requires:
+        - push-to-registries
+        filters:
             # Do this on every commit and when a new tag is created.
-            tags:
-              only: /^v.*/
+          tags:
+            only: /^v.*/
 
-      - architect/integration-test:
-          name: mutation-integration-test
-          setup-script: "integration/setup.sh"
-          test-dir: "integration/test/mutation"
-          filters:
+          branches:
+            ignore:
+            - main
+            - master
+    - architect/integration-test:
+        name: mutation-integration-test
+        setup-script: integration/setup.sh
+        test-dir: integration/test/mutation
+        filters:
             # Do not trigger the job on merge to master.
-            branches:
-              ignore:
-                - master
-          requires:
-            - push-app-admission-controller-to-control-plane-catalog
+          branches:
+            ignore:
+            - master
+        requires:
+        - push-app-admission-controller-to-control-plane-catalog
 
-      - architect/integration-test:
-          name: validation-integration-test
-          setup-script: "integration/setup.sh"
-          test-dir: "integration/test/validation"
-          filters:
+    - architect/integration-test:
+        name: validation-integration-test
+        setup-script: integration/setup.sh
+        test-dir: integration/test/validation
+        filters:
             # Do not trigger the job on merge to master.
-            branches:
-              ignore:
-                - master
-          requires:
-            - push-app-admission-controller-to-control-plane-catalog
+          branches:
+            ignore:
+            - master
+        requires:
+        - push-app-admission-controller-to-control-plane-catalog
 
-      - architect/push-to-app-collection:
-          context: architect
-          name: push-app-admission-controller-to-aws-app-collection
-          app_name: "app-admission-controller"
-          app_collection_repo: "aws-app-collection"
-          requires:
-            - push-app-admission-controller-to-control-plane-catalog
-            - push-to-registries
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v.*/
+    - architect/push-to-app-collection:
+        context: architect
+        name: push-app-admission-controller-to-aws-app-collection
+        app_name: app-admission-controller
+        app_collection_repo: aws-app-collection
+        requires:
+        - push-app-admission-controller-to-control-plane-catalog
+        - push-to-registries
+        filters:
+          branches:
+            ignore: /.*/
+          tags:
+            only: /^v.*/
 
-      - architect/push-to-app-collection:
-          context: architect
-          name: push-app-admission-controller-to-azure-app-collection
-          app_name: "app-admission-controller"
-          app_collection_repo: "azure-app-collection"
-          requires:
-            - push-app-admission-controller-to-control-plane-catalog
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v.*/
+    - architect/push-to-app-collection:
+        context: architect
+        name: push-app-admission-controller-to-azure-app-collection
+        app_name: app-admission-controller
+        app_collection_repo: azure-app-collection
+        requires:
+        - push-app-admission-controller-to-control-plane-catalog
+        filters:
+          branches:
+            ignore: /.*/
+          tags:
+            only: /^v.*/
 
-      - architect/push-to-app-collection:
-          context: architect
-          name: push-app-admission-controller-to-gcp-app-collection
-          app_name: "app-admission-controller"
-          app_collection_repo: "gcp-app-collection"
-          requires:
-            - push-app-admission-controller-to-control-plane-catalog
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v.*/
+    - architect/push-to-app-collection:
+        context: architect
+        name: push-app-admission-controller-to-gcp-app-collection
+        app_name: app-admission-controller
+        app_collection_repo: gcp-app-collection
+        requires:
+        - push-app-admission-controller-to-control-plane-catalog
+        filters:
+          branches:
+            ignore: /.*/
+          tags:
+            only: /^v.*/
 
-      - architect/push-to-app-collection:
-          context: architect
-          name: push-app-admission-controller-to-vsphere-app-collection
-          app_name: "app-admission-controller"
-          app_collection_repo: "vsphere-app-collection"
-          requires:
-            - push-app-admission-controller-to-control-plane-catalog
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v.*/
+    - architect/push-to-app-collection:
+        context: architect
+        name: push-app-admission-controller-to-vsphere-app-collection
+        app_name: app-admission-controller
+        app_collection_repo: vsphere-app-collection
+        requires:
+        - push-app-admission-controller-to-control-plane-catalog
+        filters:
+          branches:
+            ignore: /.*/
+          tags:
+            only: /^v.*/
 
-      - architect/push-to-app-collection:
-          context: architect
-          name: push-to-cloud-director-app-collection
-          app_name: "app-admission-controller"
-          app_collection_repo: "cloud-director-app-collection"
-          requires:
-            - push-app-admission-controller-to-control-plane-catalog
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v.*/
+    - architect/push-to-app-collection:
+        context: architect
+        name: push-to-cloud-director-app-collection
+        app_name: app-admission-controller
+        app_collection_repo: cloud-director-app-collection
+        requires:
+        - push-app-admission-controller-to-control-plane-catalog
+        filters:
+          branches:
+            ignore: /.*/
+          tags:
+            only: /^v.*/
 
-      - architect/push-to-app-collection:
-          context: architect
-          name: push-to-capa-app-collection
-          app_name: "app-admission-controller"
-          app_collection_repo: "capa-app-collection"
-          requires:
-            - push-app-admission-controller-to-control-plane-catalog
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v.*/
+    - architect/push-to-app-collection:
+        context: architect
+        name: push-to-capa-app-collection
+        app_name: app-admission-controller
+        app_collection_repo: capa-app-collection
+        requires:
+        - push-app-admission-controller-to-control-plane-catalog
+        filters:
+          branches:
+            ignore: /.*/
+          tags:
+            only: /^v.*/
 
-      - architect/push-to-app-collection:
-          context: architect
-          name: push-to-capz-app-collection
-          app_name: "app-admission-controller"
-          app_collection_repo: "capz-app-collection"
-          requires:
-            - push-app-admission-controller-to-control-plane-catalog
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v.*/
+    - architect/push-to-app-collection:
+        context: architect
+        name: push-to-capz-app-collection
+        app_name: app-admission-controller
+        app_collection_repo: capz-app-collection
+        requires:
+        - push-app-admission-controller-to-control-plane-catalog
+        filters:
+          branches:
+            ignore: /.*/
+          tags:
+            only: /^v.*/

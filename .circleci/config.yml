@@ -50,6 +50,7 @@ workflows:
         name: mutation-integration-test
         setup-script: integration/setup.sh
         test-dir: integration/test/mutation
+        test-timeout: 30m
         filters:
             # Do not trigger the job on merge to master.
           branches:
@@ -62,6 +63,7 @@ workflows:
         name: validation-integration-test
         setup-script: integration/setup.sh
         test-dir: integration/test/validation
+        test-timeout: 30m
         filters:
             # Do not trigger the job on merge to master.
           branches:

@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- Removed PSP support and thus support for pre v1.25 Kubernetes clusters.
+  - Removed `.global.podSecurityStandards.enforced` Helm value.
+- Removed `.project.branch` and `project.commit` Helm values.
+
+### Changed
+
+- Bump `architect-orb` to `v5.11.1`.
+- Updated build pipeline to use `app-build-suite`.
+  - Changed value for `application.giantswarm.io/branch` label to point to `.Chart.AppVersion` instead as ABS does not support mangling the templates anymore.
+  - Changed value for `application.giantswarm.io/commit` label to point to `.Chart.AppVersion` instead as ABS does not support mangling the templates anymore.
+- Defaulted `.image.tag` to be an empty string and default that to `.Chart.AppVersion` in the deployment.
+- Bumped `cert-manager-app` version to `v3.8.1` in integration tests and disabled PSP for it by setting `.global.podSecurityStandards.enforce` to `true` for it.
+
 ## [0.26.2] - 2024-10-22
 
 ### Fixed

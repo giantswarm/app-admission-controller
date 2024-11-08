@@ -3,14 +3,10 @@ provider:
 
 image:
   name: "giantswarm/app-admission-controller"
-  tag: "[[ .Version ]]"
+  tag: ""
 
 registry:
   domain: gsoci.azurecr.io
-
-project:
-  branch: "[[ .Branch ]]"
-  commit: "[[ .SHA ]]"
 
 deploymentStrategy:
   rollingUpdate:
@@ -60,6 +56,7 @@ podSecurityContext:
 # Add seccomp to container security context
 securityContext:
   allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
   capabilities:
     drop:
       - ALL
@@ -77,7 +74,3 @@ serviceMonitor:
 psp:
   enableOverrides: true
   config: []
-
-global:
-  podSecurityStandards:
-    enforced: false

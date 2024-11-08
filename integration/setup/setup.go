@@ -48,7 +48,8 @@ func installResources(ctx context.Context, testConfig TestConfig) error {
 			CatalogName:   "control-plane-catalog",
 			Name:          "cert-manager-app",
 			Namespace:     metav1.NamespaceSystem,
-			Version:       "2.3.1",
+			Version:       "3.8.1",
+			ValuesYAML:    templates.CertManagerValues,
 			WaitForDeploy: true,
 		},
 		{

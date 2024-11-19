@@ -20,6 +20,15 @@ spec:
       labels:
         {{- include "labels.common" . | nindent 8 }}
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    {{- include "labels.selector" . | nindent 20 }}
+                topologyKey: kubernetes.io/hostname
+              weight: 100
       volumes:
         - name: {{ include "name" . }}-certificates
           secret:
@@ -38,7 +47,7 @@ spec:
         {{- end }}
       containers:
         - name: {{ include "name" . }}
-          image: "{{ .Values.registry.domain }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.registry.domain }}/{{ .Values.image.name }}:{{ include "image.tag" . }}"
           args:
             - ./app-admission-controller
             - --tls-cert-file=/certs/ca.crt

@@ -15,6 +15,7 @@ repos:
       - id: check-merge-conflict
       - id: check-shebang-scripts-are-executable
       - id: detect-private-key
+        exclude: ^testdata/certs/old/tls.key$|^testdata/certs/new/tls.key$
       - id: end-of-file-fixer
       - id: mixed-line-ending
       - id: trailing-whitespace
@@ -29,5 +30,3 @@ repos:
         args: [ -E, gosec, -E, goconst, -E, govet, --timeout, 300s ]
       - id: go-imports
         args: [ -local, github.com/giantswarm/app-admission-controller ]
-
-exclude: ^testdata

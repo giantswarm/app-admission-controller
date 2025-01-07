@@ -65,6 +65,9 @@ func copyCertificate(path string) error {
 	}
 
 	crt, err := base64.StdEncoding.DecodeString(string(r))
+	if err != nil {
+		return err
+	}
 
 	_, err = w.Write(crt)
 	if err != nil {
@@ -82,6 +85,9 @@ func copyCertificate(path string) error {
 	}
 
 	key, err := base64.StdEncoding.DecodeString(string(r))
+	if err != nil {
+		return err
+	}
 
 	w, err = os.Create("testdata/certs/current/tls.key")
 	if err != nil {

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"io"
+	"encoding/base64"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -54,7 +54,7 @@ func Test_healthCheck(t *testing.T) {
 }
 
 func copyCertificate(path string) error {
-	r, err := os.Open(path + "/tls.crt")
+	r, err := os.ReadFile(path + "/tls-b64.crt")
 	if err != nil {
 		return err
 	}
@@ -64,12 +64,12 @@ func copyCertificate(path string) error {
 		return err
 	}
 
-	_, err = io.Copy(w, r)
+	crt, err := base64.StdEncoding.DecodeString(string(r))
 	if err != nil {
 		return err
 	}
 
-	err = r.Close()
+	_, err = w.Write(crt)
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,12 @@ func copyCertificate(path string) error {
 		return err
 	}
 
-	r, err = os.Open(path + "/tls.key")
+	r, err = os.ReadFile(path + "/tls-b64.key")
+	if err != nil {
+		return err
+	}
+
+	key, err := base64.StdEncoding.DecodeString(string(r))
 	if err != nil {
 		return err
 	}
@@ -89,12 +94,7 @@ func copyCertificate(path string) error {
 		return err
 	}
 
-	_, err = io.Copy(w, r)
-	if err != nil {
-		return err
-	}
-
-	err = r.Close()
+	_, err = w.Write(key)
 	if err != nil {
 		return err
 	}

@@ -1,9 +1,9 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"strings"
-	"context"
 	"testing"
 
 	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
@@ -13,10 +13,10 @@ import (
 	authv1 "k8s.io/api/authentication/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	clientgofake "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/selection"
+	clientgofake "k8s.io/client-go/kubernetes/fake"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
@@ -1624,7 +1624,7 @@ func Test_ValidateApp(t *testing.T) {
 
 			k8sClient := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
 				CtrlClient: &fakierClient{fakeCtrlClient},
-				K8sClient: clientgofake.NewSimpleClientset(k8sObjs...),
+				K8sClient: 	clientgofake.NewSimpleClientset(k8sObjs...),
 			})
 
 			var event recorder.Interface

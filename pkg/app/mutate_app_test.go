@@ -1300,7 +1300,7 @@ func Test_MutateApp(t *testing.T) {
 
 			k8sClient := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
 				CtrlClient: &fakierClient{fakeCtrlClient},
-				K8sClient: 	clientgofake.NewSimpleClientset(k8sObjs...),
+				K8sClient:  clientgofake.NewSimpleClientset(k8sObjs...),
 			})
 
 			c := MutatorConfig{

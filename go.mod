@@ -9,10 +9,10 @@ require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
 	github.com/dyson/certman v0.3.0
 	github.com/giantswarm/apiextensions-application v0.6.2
-	github.com/giantswarm/app/v7 v7.0.3-0.20250117150333-6eebd7a21941
+	github.com/giantswarm/app/v7 v7.0.3-0.20250121131639-d46cdc0bf5d3
 	github.com/giantswarm/apptest v1.2.1
 	github.com/giantswarm/backoff v1.0.1
-	github.com/giantswarm/k8sclient/v7 v7.0.1
+	github.com/giantswarm/k8sclient/v7 v7.2.0
 	github.com/giantswarm/k8smetadata v0.25.0
 	github.com/giantswarm/microerror v0.4.1
 	github.com/giantswarm/micrologger v1.1.2
@@ -24,21 +24,19 @@ require (
 	k8s.io/api v0.30.3
 	k8s.io/apimachinery v0.30.3
 	k8s.io/client-go v0.30.3
-	sigs.k8s.io/cluster-api v1.0.4
-	sigs.k8s.io/controller-runtime v0.16.3
+	sigs.k8s.io/cluster-api v1.8.8
+	sigs.k8s.io/controller-runtime v0.18.7
 )
 
 require (
 	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/blang/semver v3.5.1+incompatible // indirect
-	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
-	github.com/evanphx/json-patch v5.6.0+incompatible // indirect
-	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
+	github.com/emicklei/go-restful/v3 v3.12.1 // indirect
+	github.com/evanphx/json-patch v5.7.0+incompatible // indirect
+	github.com/evanphx/json-patch/v5 v5.9.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/giantswarm/appcatalog v0.6.0 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
@@ -74,15 +72,13 @@ require (
 	golang.org/x/term v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/time v0.8.0 // indirect
-	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/protobuf v1.35.2 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/apiextensions-apiserver v0.30.3 // indirect
-	k8s.io/component-base v0.30.3 // indirect
 	k8s.io/klog/v2 v2.120.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect
-	k8s.io/utils v0.0.0-20230726121419-3b25d923346b // indirect
+	k8s.io/utils v0.0.0-20231127182322-b307cd553661 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
@@ -97,5 +93,5 @@ replace (
 	golang.org/x/net => golang.org/x/net v0.34.0
 	k8s.io/klog/v2 v2.2.0 => k8s.io/klog/v2 v2.0.0
 	// Required by github.com/giantswarm/apiextensions/v6
-	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.0.4
+	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.8.8
 )

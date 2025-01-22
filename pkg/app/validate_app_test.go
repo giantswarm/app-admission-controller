@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -12,13 +13,71 @@ import (
 	authv1 "k8s.io/api/authentication/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/selection"
 	clientgofake "k8s.io/client-go/kubernetes/fake"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
 	"github.com/giantswarm/app-admission-controller/internal/recorder"
 	secins "github.com/giantswarm/app-admission-controller/internal/security/inspector"
 )
+
+// This client has been added as a way to work around the error coming from here:
+// https://github.com/kubernetes-sigs/controller-runtime/blob/v0.16.3/pkg/client/fake/client.go#L595
+//
+// (ljakimczuk): Fake client of the Controller Runtime version we have been using so far (v0.6.5) did
+// not support field selectors, hence our tests were working smooth, for such selectors were ignored.
+// The new version supports them, but requires registering the appropriate indexing function, but
+// apparently only selection by the '==' and '=' operators are allowed, and we use more, hence tests
+// fail. Due to lack of other smart ideas, I decided to create this wrapper for fake client, which
+// captures the List() call and prunes out unsupported selectors before calling the actual List() of
+// the fake client.
+
+type fakierClient struct {
+	client.Client
+}
+
+func (m *fakierClient) List(ctx context.Context, obj client.ObjectList, opts ...client.ListOption) error {
+	listOpts := client.ListOptions{}
+	listOpts.ApplyOptions(opts)
+
+	// create new selector by filtering out selections other than by the '==' or '=' operators
+	newFieldSelectorsStr := []string{}
+	if listOpts.FieldSelector != nil {
+		for _, r := range listOpts.FieldSelector.Requirements() {
+			if r.Operator == selection.Equals || r.Operator == selection.DoubleEquals {
+				newFieldSelectorsStr = append(newFieldSelectorsStr, fmt.Sprintf("%s%s%s", r.Field, r.Operator, r.Value))
+			}
+		}
+	}
+
+	// parse the new selector
+	newFieldSelectors, err := fields.ParseSelector(strings.Join(newFieldSelectorsStr, ","))
+	if err != nil {
+		return err
+	}
+
+	// do not pass empty string, for it leads to an error anyway
+	if newFieldSelectors.Empty() {
+		listOpts.FieldSelector = nil
+	} else {
+		listOpts.FieldSelector = newFieldSelectors
+	}
+
+	// run the actual List() of the fake client
+	return m.Client.List(ctx, obj, &listOpts)
+}
+
+var appNameIndexer func(obj client.Object) []string = func(obj client.Object) []string {
+	app, ok := obj.(*v1alpha1.App)
+	if !ok {
+		panic(fmt.Errorf("got %T object, want %T object", obj, v1alpha1.App{}))
+	}
+
+	return []string{app.Name}
+}
 
 func Test_ValidateApp(t *testing.T) {
 	secInsCfg := secins.Config{
@@ -1557,12 +1616,15 @@ func Test_ValidateApp(t *testing.T) {
 			scheme := runtime.NewScheme()
 			_ = v1alpha1.AddToScheme(scheme)
 
+			fakeCtrlClient := fake.NewClientBuilder().
+				WithScheme(scheme).
+				WithRuntimeObjects(g8sObjs...).
+				WithIndex(&v1alpha1.App{}, "metadata.name", appNameIndexer).
+				Build()
+
 			k8sClient := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
-				CtrlClient: fake.NewClientBuilder().
-					WithScheme(scheme).
-					WithRuntimeObjects(g8sObjs...).
-					Build(),
-				K8sClient: clientgofake.NewSimpleClientset(k8sObjs...),
+				CtrlClient: &fakierClient{fakeCtrlClient},
+				K8sClient:  clientgofake.NewSimpleClientset(k8sObjs...),
 			})
 
 			var event recorder.Interface

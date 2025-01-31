@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2025-01-31
+
 ### Changed
 
 - Decrease retry interval to 1 seconds (3 times, linear) in cluster app mutation logic to fit into 10s API server
@@ -385,7 +387,8 @@ allow app CR creation.
 - Add validation webhook that is enabled for app CRs with
 `app-operator.giantswarm.io/version` label value >= `3.0.0`.
 
-[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/giantswarm/app-admission-controller/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/giantswarm/app-admission-controller/compare/v0.26.2...v1.0.0
 [0.26.2]: https://github.com/giantswarm/app-admission-controller/compare/v0.26.1...v0.26.2
 [0.26.1]: https://github.com/giantswarm/app-admission-controller/compare/v0.26.0...v0.26.1

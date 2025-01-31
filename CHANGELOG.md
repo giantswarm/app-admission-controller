@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Decrease retry interval to 2 seconds (3 times, linear) in cluster app mutation logic to fit into 10s API server
+- Decrease retry interval to 1 seconds (3 times, linear) in cluster app mutation logic to fit into 10s API server
   timeout limitation for mutating hooks.
 
 ## [1.0.0] - 2024-11-19

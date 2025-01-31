@@ -65,7 +65,7 @@ func (m *Mutator) mutateClusterApp(ctx context.Context, app v1alpha1.App) ([]mut
 		}
 		return nil
 	}
-	b := backoff.NewMaxRetries(3, 2*time.Second)
+	b := backoff.NewMaxRetries(3, 1*time.Second)
 	n := backoff.NewNotifier(m.logger, ctx)
 	err := backoff.RetryNotify(getUserValues, b, n)
 	if err != nil {

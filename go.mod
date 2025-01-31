@@ -19,7 +19,7 @@ require (
 	github.com/giantswarm/release-operator/v3 v3.2.0
 	github.com/google/go-cmp v0.6.0
 	github.com/prometheus/client_golang v1.20.5
-	golang.org/x/exp v0.0.0-20250106191152-7588d65b2ba8
+	golang.org/x/exp v0.0.0-20250128182459-e0ece0dbea4c
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.31.3
 	k8s.io/apimachinery v0.31.3

@@ -43,26 +43,29 @@ func (m *Mutator) mutateClusterApp(ctx context.Context, app v1alpha1.App) ([]mut
 		// release version is cluster-specific, and it should never be set globally in the catalog values. So we just
 		// use whatever catalog is set in the cluster App, and fallback to cluster catalog.
 		catalogName := app.Spec.Catalog
+		catalogNamespace := "giantswarm"
 		if catalogName == "" {
 			catalogName = "cluster"
 		}
 		catalog := v1alpha1.Catalog{
 			ObjectMeta: metav1.ObjectMeta{
-				Namespace: "giantswarm",
+				Namespace: catalogNamespace,
 				Name:      catalogName,
 			},
 		}
 		err = m.k8sClient.CtrlClient().Get(ctx, client.ObjectKeyFromObject(&catalog), &catalog)
 		if err != nil {
+			m.logger.Errorf(ctx, err, "failed to get catalog %s/%s for cluster app %s/%s", catalogNamespace, catalogName, app.Name, app.Namespace)
 			return microerror.Mask(err)
 		}
 		clusterAppConfig, err = m.valuesService.MergeConfigMapData(ctx, app, catalog)
 		if err != nil {
+			m.logger.Errorf(ctx, err, "failed to merge config map data for cluster app %s/%s", app.Name, app.Namespace)
 			return microerror.Mask(err)
 		}
 		return nil
 	}
-	b := backoff.NewMaxRetries(3, 5*time.Second)
+	b := backoff.NewMaxRetries(3, 2*time.Second)
 	n := backoff.NewNotifier(m.logger, ctx)
 	err := backoff.RetryNotify(getUserValues, b, n)
 	if err != nil {

@@ -9,7 +9,7 @@ require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
 	github.com/dyson/certman v0.3.0
 	github.com/giantswarm/apiextensions-application v0.6.2
-	github.com/giantswarm/app/v7 v7.0.4
+	github.com/giantswarm/app/v7 v7.1.0
 	github.com/giantswarm/apptest v1.4.1
 	github.com/giantswarm/backoff v1.0.1
 	github.com/giantswarm/k8sclient/v7 v7.2.0
@@ -67,7 +67,7 @@ require (
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
 	golang.org/x/net v0.33.0 // indirect
-	golang.org/x/oauth2 v0.25.0 // indirect
+	golang.org/x/oauth2 v0.27.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/term v0.30.0 // indirect
 	golang.org/x/text v0.23.0 // indirect

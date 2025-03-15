@@ -88,7 +88,7 @@ replace (
 	github.com/go-logr/logr => github.com/go-logr/logr v1.4.2
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.5.3
-	github.com/spf13/viper => github.com/spf13/viper v1.19.0
+	github.com/spf13/viper => github.com/spf13/viper v1.20.0
 	golang.org/x/net => golang.org/x/net v0.37.0
 	k8s.io/klog/v2 v2.2.0 => k8s.io/klog/v2 v2.0.0
 	// Required by github.com/giantswarm/apiextensions/v6

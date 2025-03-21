@@ -15,7 +15,6 @@ import (
 	admissionv1 "k8s.io/api/admission/v1"
 
 	"github.com/giantswarm/app-admission-controller/internal/recorder"
-	"github.com/giantswarm/app-admission-controller/pkg/project"
 	"github.com/giantswarm/app-admission-controller/pkg/validator"
 
 	secins "github.com/giantswarm/app-admission-controller/internal/security/inspector"
@@ -71,14 +70,8 @@ func NewValidator(config ValidatorConfig) (*Validator, error) {
 			K8sClient: config.K8sClient.K8sClient(),
 			Logger:    config.Logger,
 
-			ProjectName: project.Name(),
-			Provider:    config.Provider,
-
-			// `EnableManagedByLabel` enables skipping checks for
-			// ConfigMap and Secret existence when the `giantswarm.io/managed-by`
-			// label is present. This is used when app CRs are managed
-			// with gitops tools like flux.
-			EnableManagedByLabel: true,
+			IsAdmissionController: true,
+			Provider:              config.Provider,
 		}
 		appValidator, err = validation.NewValidator(c)
 		if err != nil {

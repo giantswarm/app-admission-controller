@@ -14,10 +14,10 @@ import (
 	"github.com/giantswarm/micrologger"
 	admissionv1 "k8s.io/api/admission/v1"
 
-	"github.com/giantswarm/app-admission-controller/internal/recorder"
-	"github.com/giantswarm/app-admission-controller/pkg/validator"
+	"github.com/giantswarm/app-admission-controller/v2/internal/recorder"
+	"github.com/giantswarm/app-admission-controller/v2/pkg/validator"
 
-	secins "github.com/giantswarm/app-admission-controller/internal/security/inspector"
+	secins "github.com/giantswarm/app-admission-controller/v2/internal/security/inspector"
 )
 
 const (

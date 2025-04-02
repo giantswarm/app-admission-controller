@@ -17,13 +17,13 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"github.com/giantswarm/app-admission-controller/config"
-	"github.com/giantswarm/app-admission-controller/pkg/app"
-	"github.com/giantswarm/app-admission-controller/pkg/mutator"
-	"github.com/giantswarm/app-admission-controller/pkg/validator"
+	"github.com/giantswarm/app-admission-controller/v2/config"
+	"github.com/giantswarm/app-admission-controller/v2/pkg/app"
+	"github.com/giantswarm/app-admission-controller/v2/pkg/mutator"
+	"github.com/giantswarm/app-admission-controller/v2/pkg/validator"
 
-	"github.com/giantswarm/app-admission-controller/internal/recorder"
-	secins "github.com/giantswarm/app-admission-controller/internal/security/inspector"
+	"github.com/giantswarm/app-admission-controller/v2/internal/recorder"
+	secins "github.com/giantswarm/app-admission-controller/v2/internal/security/inspector"
 )
 
 func main() {

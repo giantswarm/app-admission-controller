@@ -20,8 +20,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
-	"github.com/giantswarm/app-admission-controller/internal/recorder"
-	secins "github.com/giantswarm/app-admission-controller/internal/security/inspector"
+	"github.com/giantswarm/app-admission-controller/v2/internal/recorder"
+	secins "github.com/giantswarm/app-admission-controller/v2/internal/security/inspector"
 )
 
 // This client has been added as a way to work around the error coming from here:

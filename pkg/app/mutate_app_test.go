@@ -22,8 +22,8 @@ import (
 	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
-	"github.com/giantswarm/app-admission-controller/config"
-	"github.com/giantswarm/app-admission-controller/pkg/mutator"
+	"github.com/giantswarm/app-admission-controller/v2/config"
+	"github.com/giantswarm/app-admission-controller/v2/pkg/mutator"
 )
 
 func Test_MutateApp(t *testing.T) {

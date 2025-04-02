@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Bump `app` library to `v8.0.0`.
+
+### Remove
+
+- Remove existence checks for App CR referenced config maps and secrets under `.spec.config`, `.spec.userConfig`,
+  `.spec.kubeConfig.secret`. Previously, it was possible to skip these checks by setting adding the label
+  `giantswarm.io/managed-by` to the App CR with a non-empty value. Reason is moving towards eventual consistency and
+  letting these checks fail at reconciliation as admission controller will anyway just run these checks on admission
+  events only, and we have these checks "duplicated" in `app-operator`, where they should be.
+
 ## [1.0.1] - 2025-01-31
 
 ### Changed

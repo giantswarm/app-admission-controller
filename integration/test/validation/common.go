@@ -11,7 +11,7 @@ import (
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/app-admission-controller/integration/helpers"
+	"github.com/giantswarm/app-admission-controller/v2/integration/helpers"
 )
 
 func executeAppTest(ctx context.Context, expectedError string, appConfig helpers.AppConfig) error {

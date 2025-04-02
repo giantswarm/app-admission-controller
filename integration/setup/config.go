@@ -22,8 +22,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
 
-	"github.com/giantswarm/app-admission-controller/integration/env"
-	"github.com/giantswarm/app-admission-controller/integration/helpers"
+	"github.com/giantswarm/app-admission-controller/v2/integration/env"
+	"github.com/giantswarm/app-admission-controller/v2/integration/helpers"
 )
 
 type TestConfig struct {

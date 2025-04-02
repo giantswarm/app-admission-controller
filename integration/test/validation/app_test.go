@@ -11,7 +11,7 @@ import (
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/app-admission-controller/integration/helpers"
+	"github.com/giantswarm/app-admission-controller/v2/integration/helpers"
 )
 
 const (

@@ -6,7 +6,7 @@ package mutation
 import (
 	"testing"
 
-	"github.com/giantswarm/app-admission-controller/integration/setup"
+	"github.com/giantswarm/app-admission-controller/v2/integration/setup"
 )
 
 var (

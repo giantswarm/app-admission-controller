@@ -12,8 +12,8 @@ import (
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/app-admission-controller/integration/env"
-	"github.com/giantswarm/app-admission-controller/integration/templates"
+	"github.com/giantswarm/app-admission-controller/v2/integration/env"
+	"github.com/giantswarm/app-admission-controller/v2/integration/templates"
 )
 
 func Setup(m *testing.M, config TestConfig) {

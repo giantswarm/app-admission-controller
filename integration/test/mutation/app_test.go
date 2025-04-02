@@ -11,7 +11,7 @@ import (
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/app-admission-controller/integration/helpers"
+	"github.com/giantswarm/app-admission-controller/v2/integration/helpers"
 )
 
 const (

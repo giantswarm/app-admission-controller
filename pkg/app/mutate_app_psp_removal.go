@@ -19,9 +19,9 @@ import (
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/app-admission-controller/config"
-	"github.com/giantswarm/app-admission-controller/pkg/mutator"
-	"github.com/giantswarm/app-admission-controller/pkg/project"
+	"github.com/giantswarm/app-admission-controller/v2/config"
+	"github.com/giantswarm/app-admission-controller/v2/pkg/mutator"
+	"github.com/giantswarm/app-admission-controller/v2/pkg/project"
 )
 
 var (

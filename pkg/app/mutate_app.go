@@ -19,8 +19,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/giantswarm/app-admission-controller/config"
-	"github.com/giantswarm/app-admission-controller/pkg/mutator"
+	"github.com/giantswarm/app-admission-controller/v2/config"
+	"github.com/giantswarm/app-admission-controller/v2/pkg/mutator"
 )
 
 type MutatorConfig struct {

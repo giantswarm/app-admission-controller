@@ -1,4 +1,4 @@
-module github.com/giantswarm/app-admission-controller
+module github.com/giantswarm/app-admission-controller/v2
 
 go 1.23.0
 

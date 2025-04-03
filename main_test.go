@@ -54,7 +54,7 @@ func Test_healthCheck(t *testing.T) {
 }
 
 func copyCertificate(path string) error {
-	r, err := os.ReadFile(path + "/tls-b64.crt")
+	r, err := os.ReadFile(path + "/tls-b64.crt") //nolint:gosec
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func copyCertificate(path string) error {
 		return err
 	}
 
-	r, err = os.ReadFile(path + "/tls-b64.key")
+	r, err = os.ReadFile(path + "/tls-b64.key") //nolint:gosec
 	if err != nil {
 		return err
 	}

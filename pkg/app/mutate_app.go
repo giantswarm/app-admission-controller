@@ -388,5 +388,5 @@ func hasPatchAddToExtraConfigs(patches []mutator.PatchOperation) bool {
 }
 
 func replaceToEscape(from string) string {
-	return strings.Replace(from, "/", "~1", -1)
+	return strings.ReplaceAll(from, "/", "~1")
 }

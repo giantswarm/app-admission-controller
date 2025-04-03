@@ -31,7 +31,7 @@ func (i *Inspector) Inspect(ctx context.Context, app v1alpha1.App, userInfo auth
 	// blacklisted namespaces, as it means this apps
 	// is one of the MAPI apps
 	if i.isPrivateApp(ctx, app) {
-		i.logger.Debugf(ctx, "skipping validation for app comming from private %#q namespace", app.ObjectMeta.Namespace)
+		i.logger.Debugf(ctx, "skipping validation for app comming from private %#q namespace", app.Namespace)
 		return nil
 	}
 
@@ -105,7 +105,7 @@ func (i *Inspector) isBlacklistedApp(ctx context.Context, app v1alpha1.App) erro
 // If yes, it means app is being installed by Giantswarm stuff or
 // Giantswarm controllers.
 func (i *Inspector) isPrivateApp(ctx context.Context, app v1alpha1.App) bool {
-	_, ok := i.fixedNamespaceBlacklist[app.ObjectMeta.Namespace]
+	_, ok := i.fixedNamespaceBlacklist[app.Namespace]
 	return ok
 }
 

@@ -28,10 +28,12 @@ type Mutator interface {
 }
 
 var (
-	scheme        = runtime.NewScheme()
-	codecs        = serializer.NewCodecFactory(scheme)
-	Deserializer  = codecs.UniversalDeserializer()
-	InternalError = errors.New("internal admission controller error")
+	scheme       = runtime.NewScheme()
+	codecs       = serializer.NewCodecFactory(scheme)
+	Deserializer = codecs.UniversalDeserializer()
+	// InternalError represents a generic internal error within the admission controller.
+	// It is used when the controller encounters an unexpected condition that prevents normal operation.
+	InternalError = errors.New("internal admission controller error") //nolint:staticcheck
 )
 
 func Handler(mutator Mutator) http.HandlerFunc {

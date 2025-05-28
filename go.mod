@@ -83,7 +83,7 @@ require (
 )
 
 replace (
-	github.com/go-logr/logr => github.com/go-logr/logr v1.4.2
+	github.com/go-logr/logr => github.com/go-logr/logr v1.4.3
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.5.3
 	golang.org/x/net => golang.org/x/net v0.40.0

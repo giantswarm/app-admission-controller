@@ -64,11 +64,11 @@ require (
 	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
-	golang.org/x/net v0.38.0 // indirect
+	golang.org/x/net v0.40.0 // indirect
 	golang.org/x/oauth2 v0.28.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/term v0.32.0 // indirect
-	golang.org/x/text v0.25.0 // indirect
+	golang.org/x/text v0.26.0 // indirect
 	golang.org/x/time v0.9.0 // indirect
 	google.golang.org/protobuf v1.36.5 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
@@ -87,7 +87,7 @@ replace (
 	github.com/go-logr/logr => github.com/go-logr/logr v1.4.3
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.5.3
-	golang.org/x/net => golang.org/x/net v0.40.0
+	golang.org/x/net => golang.org/x/net v0.41.0
 	k8s.io/klog/v2 v2.2.0 => k8s.io/klog/v2 v2.0.0
 	// Required by github.com/giantswarm/apiextensions/v6
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.10.2

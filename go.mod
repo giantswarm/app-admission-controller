@@ -2,7 +2,7 @@ module github.com/giantswarm/app-admission-controller/v2
 
 go 1.24.0
 
-toolchain go1.24.3
+toolchain go1.24.4
 
 require (
 	github.com/Masterminds/semver/v3 v3.3.1

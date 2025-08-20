@@ -11,7 +11,7 @@ import (
 	releases "github.com/giantswarm/release-operator/v3/api/v1alpha1"
 	"gopkg.in/yaml.v3"
 	restclient "k8s.io/client-go/rest"
-	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	capiv1beta1 "sigs.k8s.io/cluster-api/api/core/v1beta1"
 )
 
 const (

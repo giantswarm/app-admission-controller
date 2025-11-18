@@ -14,6 +14,4 @@ global:
 const AppAdmissionControllerValues = `
 provider:
   kind: aws
-registry:
-  domain: quay.io
 `

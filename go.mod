@@ -25,7 +25,7 @@ require (
 	k8s.io/api v0.34.2
 	k8s.io/apimachinery v0.34.2
 	k8s.io/client-go v0.34.2
-	sigs.k8s.io/cluster-api v1.11.2
+	sigs.k8s.io/cluster-api v1.11.3
 	sigs.k8s.io/controller-runtime v0.22.4
 )
 
@@ -93,5 +93,5 @@ replace (
 	golang.org/x/net => golang.org/x/net v0.47.0
 	k8s.io/klog/v2 v2.2.0 => k8s.io/klog/v2 v2.0.0
 	// Required by github.com/giantswarm/apiextensions/v6
-	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.11.2
+	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.11.3
 )

@@ -1293,17 +1293,17 @@ func Test_MutateApp(t *testing.T) {
 				k8sObjs = append(k8sObjs, secret)
 			}
 
-			fakeCtrlClient := fake.NewClientBuilder().
-				WithScheme(scheme.Scheme).
-				WithRuntimeObjects(g8sObjs...).
-				Build()
+		fakeCtrlClient := fake.NewClientBuilder().
+			WithScheme(scheme.Scheme).
+			WithRuntimeObjects(g8sObjs...).
+			Build()
 
-		k8sClient := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
-			CtrlClient: &fakierClient{fakeCtrlClient},
-			K8sClient:  clientgofake.NewClientset(k8sObjs...),
-		})
+			k8sClient := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
+				CtrlClient: &fakierClient{fakeCtrlClient},
+				K8sClient:  clientgofake.NewClientset(k8sObjs...),
+			})
 
-			c := MutatorConfig{
+		c := MutatorConfig{
 				K8sClient: k8sClient,
 				Logger:    microloggertest.New(),
 				Provider:  tc.provider,

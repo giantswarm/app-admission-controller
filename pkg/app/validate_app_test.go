@@ -1616,18 +1616,18 @@ func Test_ValidateApp(t *testing.T) {
 			scheme := runtime.NewScheme()
 			_ = v1alpha1.AddToScheme(scheme)
 
-			fakeCtrlClient := fake.NewClientBuilder().
-				WithScheme(scheme).
-				WithRuntimeObjects(g8sObjs...).
-				WithIndex(&v1alpha1.App{}, "metadata.name", appNameIndexer).
-				Build()
+		fakeCtrlClient := fake.NewClientBuilder().
+			WithScheme(scheme).
+			WithRuntimeObjects(g8sObjs...).
+			WithIndex(&v1alpha1.App{}, "metadata.name", appNameIndexer).
+			Build()
 
-		k8sClient := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
-			CtrlClient: &fakierClient{fakeCtrlClient},
-			K8sClient:  clientgofake.NewClientset(k8sObjs...),
-		})
+			k8sClient := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
+				CtrlClient: &fakierClient{fakeCtrlClient},
+				K8sClient:  clientgofake.NewClientset(k8sObjs...),
+			})
 
-			var event recorder.Interface
+		var event recorder.Interface
 			{
 				c := recorder.Config{
 					K8sClient: k8sClient,

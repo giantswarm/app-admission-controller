@@ -1609,9 +1609,9 @@ func Test_ValidateApp(t *testing.T) {
 				k8sObjs = append(k8sObjs, cm)
 			}
 
-		for _, secret := range tc.secrets {
-			k8sObjs = append(k8sObjs, secret)
-		}
+			for _, secret := range tc.secrets {
+				k8sObjs = append(k8sObjs, secret)
+			}
 
 			scheme := runtime.NewScheme()
 			_ = v1alpha1.AddToScheme(scheme)

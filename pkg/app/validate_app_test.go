@@ -1622,10 +1622,10 @@ func Test_ValidateApp(t *testing.T) {
 				WithIndex(&v1alpha1.App{}, "metadata.name", appNameIndexer).
 				Build()
 
-			k8sClient := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
-				CtrlClient: &fakierClient{fakeCtrlClient},
-				K8sClient:  clientgofake.NewSimpleClientset(k8sObjs...),
-			})
+		k8sClient := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
+			CtrlClient: &fakierClient{fakeCtrlClient},
+			K8sClient:  clientgofake.NewClientset(k8sObjs...),
+		})
 
 			var event recorder.Interface
 			{

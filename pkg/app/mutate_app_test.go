@@ -1298,10 +1298,10 @@ func Test_MutateApp(t *testing.T) {
 				WithRuntimeObjects(g8sObjs...).
 				Build()
 
-			k8sClient := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
-				CtrlClient: &fakierClient{fakeCtrlClient},
-				K8sClient:  clientgofake.NewSimpleClientset(k8sObjs...),
-			})
+		k8sClient := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
+			CtrlClient: &fakierClient{fakeCtrlClient},
+			K8sClient:  clientgofake.NewClientset(k8sObjs...),
+		})
 
 			c := MutatorConfig{
 				K8sClient: k8sClient,

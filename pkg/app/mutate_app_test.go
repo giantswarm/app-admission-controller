@@ -1285,13 +1285,13 @@ func Test_MutateApp(t *testing.T) {
 
 			k8sObjs := make([]runtime.Object, 0)
 
-			for _, cm := range tc.configMaps {
-				k8sObjs = append(k8sObjs, cm)
-			}
-
-		for _, secret := range tc.secrets {
-			k8sObjs = append(k8sObjs, secret)
+		for _, cm := range tc.configMaps {
+			k8sObjs = append(k8sObjs, cm)
 		}
+
+			for _, secret := range tc.secrets {
+				k8sObjs = append(k8sObjs, secret)
+			}
 
 			fakeCtrlClient := fake.NewClientBuilder().
 				WithScheme(scheme.Scheme).

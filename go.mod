@@ -17,7 +17,7 @@ require (
 	github.com/giantswarm/k8smetadata v0.25.0
 	github.com/giantswarm/microerror v0.4.1
 	github.com/giantswarm/micrologger v1.1.2
-	github.com/giantswarm/release-operator/v3 v3.2.0
+	github.com/giantswarm/releases/sdk v0.11.0
 	github.com/google/go-cmp v0.7.0
 	github.com/prometheus/client_golang v1.23.2
 	golang.org/x/exp v0.0.0-20260112195511-716be5621a96

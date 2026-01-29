@@ -3,7 +3,7 @@ name: app-admission-controller
 description: app-admission-controller validates and defaults app CRs
 home: https://github.com/giantswarm/app-admission-controller
 icon: https://s.giantswarm.io/app-icons/giantswarm/1/dark.svg
-version: 2.0.1
-appVersion: 2.0.1
+version: 2.0.2
+appVersion: 2.0.2
 annotations:
   io.giantswarm.application.team: honeybadger

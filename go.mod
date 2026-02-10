@@ -9,7 +9,7 @@ require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
 	github.com/dyson/certman v0.3.0
 	github.com/giantswarm/apiextensions-application v0.6.2
-	github.com/giantswarm/app/v8 v8.1.0
+	github.com/giantswarm/app/v8 v8.1.1
 	github.com/giantswarm/apptest v1.4.1
 	github.com/giantswarm/backoff v1.0.1
 	github.com/giantswarm/k8sclient/v7 v7.2.0
@@ -67,7 +67,7 @@ require (
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/net v0.48.0 // indirect
-	golang.org/x/oauth2 v0.33.0 // indirect
+	golang.org/x/oauth2 v0.35.0 // indirect
 	golang.org/x/sys v0.40.0 // indirect
 	golang.org/x/term v0.39.0 // indirect
 	golang.org/x/text v0.33.0 // indirect

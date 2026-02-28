@@ -89,7 +89,7 @@ replace (
 	github.com/go-logr/logr => github.com/go-logr/logr v1.4.3
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.5.3
-	golang.org/x/net => golang.org/x/net v0.50.0
+	golang.org/x/net => golang.org/x/net v0.51.0
 	k8s.io/klog/v2 v2.2.0 => k8s.io/klog/v2 v2.0.0
 	// Required by github.com/giantswarm/apiextensions/v6
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.12.3

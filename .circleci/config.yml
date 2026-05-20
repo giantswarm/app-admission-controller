@@ -8,8 +8,8 @@ workflows:
   build:
     jobs:
     - architect/go-build:
-        name: go-build
         context: architect
+        name: go-build
         binary: app-admission-controller
         filters:
             # Do this on every commit and when a new tag is created.

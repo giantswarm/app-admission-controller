@@ -1,15 +1,15 @@
 version: 2.1
 
 orbs:
-  architect: giantswarm/architect@6.15.0
+  architect: giantswarm/architect@8.2.2
 
 workflows:
   version: 2
   build:
     jobs:
     - architect/go-build:
-        name: go-build
         context: architect
+        name: go-build
         binary: app-admission-controller
         filters:
             # Do this on every commit and when a new tag is created.

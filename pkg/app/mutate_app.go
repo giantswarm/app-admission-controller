@@ -30,8 +30,8 @@ type MutatorConfig struct {
 }
 
 type Mutator struct {
-	k8sClient k8sclient.Interface
-	logger    micrologger.Logger
+	k8sClient     k8sclient.Interface
+	logger        micrologger.Logger
 	configPatches []config.ConfigPatch
 	valuesService *values.Values
 }

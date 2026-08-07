@@ -23,6 +23,8 @@ import (
 	"github.com/giantswarm/app-admission-controller/v2/pkg/mutator"
 )
 
+const bottomPriority = 1
+
 type MutatorConfig struct {
 	K8sClient     k8sclient.Interface
 	Logger        micrologger.Logger

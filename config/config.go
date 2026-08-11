@@ -1,15 +1,12 @@
 package config
 
 import (
-	"os"
-
 	"github.com/alecthomas/kingpin/v2"
 	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	releases "github.com/giantswarm/releases/sdk/api/v1alpha1"
-	"gopkg.in/yaml.v3"
 	restclient "k8s.io/client-go/rest"
 	capiv1beta1 "sigs.k8s.io/cluster-api/api/core/v1beta1"
 )

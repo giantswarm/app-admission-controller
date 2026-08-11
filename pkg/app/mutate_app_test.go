@@ -37,7 +37,6 @@ func Test_MutateApp(t *testing.T) {
 		secrets            []*corev1.Secret
 		releases           []*release.Release
 		catalogs           []*v1alpha1.Catalog
-		provider           string
 		operation          admissionv1.Operation
 		expectedPatches    []mutator.PatchOperation
 		expectedConfigMaps []*corev1.ConfigMap
@@ -70,7 +69,6 @@ func Test_MutateApp(t *testing.T) {
 			secrets: []*corev1.Secret{
 				newTestSecret("eggs2-kubeconfig", "eggs2"),
 			},
-			provider:  "aws",
 			operation: admissionv1.Create,
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
@@ -131,7 +129,6 @@ func Test_MutateApp(t *testing.T) {
 					Version: "1.4.0",
 				},
 			},
-			provider: "aws",
 		},
 		{
 			name:   "case 2: cluster secret set",
@@ -175,7 +172,6 @@ func Test_MutateApp(t *testing.T) {
 					Priority:  bottomPriority,
 				}),
 			},
-			provider: "aws",
 		},
 		{
 			name:   "case 5: replace version label when it has legacy value 1.0.0",
@@ -199,7 +195,6 @@ func Test_MutateApp(t *testing.T) {
 					Version: "1.4.0",
 				},
 			},
-			provider: "aws",
 			apps: []*v1alpha1.App{
 				newTestApp("chart-operator", "eggs2", "3.1.0"),
 			},
@@ -238,7 +233,6 @@ func Test_MutateApp(t *testing.T) {
 					Version: "1.4.0",
 				},
 			},
-			provider:        "aws",
 			apps:            nil,
 			operation:       admissionv1.Create,
 			expectedPatches: nil,
@@ -270,7 +264,6 @@ func Test_MutateApp(t *testing.T) {
 			secrets: []*corev1.Secret{
 				newTestSecret("eggs2-kubeconfig", "org-eggs2"),
 			},
-			provider:  "aws",
 			operation: admissionv1.Create,
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
@@ -318,7 +311,6 @@ func Test_MutateApp(t *testing.T) {
 			secrets: []*corev1.Secret{
 				newTestSecret("eggs2-kubeconfig", "org-eggs2"),
 			},
-			provider:  "aws",
 			operation: admissionv1.Create,
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/metadata/annotations", map[string]string{}),
@@ -416,7 +408,6 @@ func Test_MutateApp(t *testing.T) {
 				},
 			},
 			operation: admissionv1.Create,
-			provider:  "capa",
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/spec/version", "1.0.0"),
 			},
@@ -504,7 +495,6 @@ func Test_MutateApp(t *testing.T) {
 				},
 			},
 			operation: admissionv1.Update,
-			provider:  "capa",
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/spec/version", "1.0.1-0a3f64159eeb71a73c6167cd860e467a04dc37ab"),
 				mutator.PatchAdd("/spec/catalog", "cluster-test"),
@@ -577,7 +567,6 @@ func Test_MutateApp(t *testing.T) {
 				},
 			},
 			operation:       admissionv1.Create,
-			provider:        "capa",
 			expectedPatches: nil,
 		},
 		{
@@ -663,7 +652,6 @@ func Test_MutateApp(t *testing.T) {
 				},
 			},
 			operation: admissionv1.Create,
-			provider:  "capa",
 			expectedPatches: []mutator.PatchOperation{
 				mutator.PatchAdd("/spec/version", "1.0.0"),
 			},
@@ -672,7 +660,6 @@ func Test_MutateApp(t *testing.T) {
 
 	appSchemeBuilder := runtime.SchemeBuilder(schemeBuilder{
 		v1alpha1.AddToScheme,
-		capiv1beta1.AddToScheme,
 		release.AddToScheme,
 	})
 	err := appSchemeBuilder.AddToScheme(scheme.Scheme)
@@ -721,7 +708,6 @@ func Test_MutateApp(t *testing.T) {
 			c := MutatorConfig{
 				K8sClient: k8sClient,
 				Logger:    microloggertest.New(),
-				Provider:  tc.provider,
 				ConfigPatches: []config.ConfigPatch{
 					{
 						AppName:         "prometheus-meta-operator",

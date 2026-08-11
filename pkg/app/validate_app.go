@@ -31,7 +31,6 @@ type ValidatorConfig struct {
 	K8sClient k8sclient.Interface
 	Logger    micrologger.Logger
 
-	Provider  string
 	Inspector *secins.Inspector
 }
 
@@ -53,10 +52,6 @@ func NewValidator(config ValidatorConfig) (*Validator, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
-	if config.Provider == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.Provider must not be empty", config)
-	}
-
 	if config.Inspector == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.SecurityInformer must not be empty", config)
 	}
@@ -71,7 +66,6 @@ func NewValidator(config ValidatorConfig) (*Validator, error) {
 			Logger:    config.Logger,
 
 			IsAdmissionController: true,
-			Provider:              config.Provider,
 		}
 		appValidator, err = validation.NewValidator(c)
 		if err != nil {

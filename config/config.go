@@ -29,10 +29,6 @@ type Config struct {
 	NamespaceBlacklist []string
 	UserWhitelist      []string
 
-	// Configuration for PSP removal
-	PSPConfigFile string
-	PSPPatches    []ConfigPatch
-
 	Logger    micrologger.Logger
 	K8sClient k8sclient.Interface
 }

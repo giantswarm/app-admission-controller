@@ -1646,7 +1646,6 @@ func Test_ValidateApp(t *testing.T) {
 				Event:     event,
 				K8sClient: k8sClient,
 				Logger:    microloggertest.New(),
-				Provider:  "aws",
 				Inspector: ins,
 			}
 

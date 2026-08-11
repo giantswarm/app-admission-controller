@@ -24,7 +24,6 @@ type Config struct {
 	CertFile       string
 	KeyFile        string
 	MetricsAddress string
-	Provider       string
 
 	// Configuration for security validation
 	AppBlacklist       []string
@@ -93,32 +92,14 @@ func Parse() (Config, error) {
 	kingpin.Flag("metrics-address", "The metrics address for Prometheus").Default(defaultMetricsAddress).StringVar(&config.MetricsAddress)
 	kingpin.Flag("tls-cert-file", "File containing the certificate for HTTPS").Required().StringVar(&config.CertFile)
 	kingpin.Flag("tls-key-file", "File containing the private key for HTTPS").Required().StringVar(&config.KeyFile)
-	kingpin.Flag("provider", "Provider of the management cluster. One of aws, azure, kvm").Required().StringVar(&config.Provider)
 
 	kingpin.Flag("whitelist-group", "Whitelisted group").StringsVar(&config.GroupWhitelist)
 	kingpin.Flag("whitelist-user", "Whitelisted user").StringsVar(&config.UserWhitelist)
 	kingpin.Flag("blacklist-app", "Blacklisted apps").StringsVar(&config.AppBlacklist)
 	kingpin.Flag("blacklist-catalog", "Blacklisted catalogs").StringsVar(&config.CatalogBlacklist)
 	kingpin.Flag("blacklist-namespace", "Blacklisted namespaces").StringsVar(&config.NamespaceBlacklist)
-	kingpin.Flag("psp-config-file", "File containing PSP patch configuration").StringVar(&config.PSPConfigFile)
 
 	kingpin.Parse()
-
-	config.PSPPatches = []ConfigPatch{}
-
-	if config.PSPConfigFile != "" {
-		data, err := os.ReadFile(config.PSPConfigFile)
-		if err != nil {
-			return Config{}, microerror.Mask(err)
-		}
-
-		patches := []ConfigPatch{}
-		err = yaml.Unmarshal(data, &patches)
-		if err != nil {
-			return Config{}, microerror.Mask(err)
-		}
-		config.PSPPatches = patches
-	}
 
 	return config, nil
 }

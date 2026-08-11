@@ -65,7 +65,6 @@ func mainWithError() error {
 		c := app.MutatorConfig{
 			K8sClient:     cfg.K8sClient,
 			Logger:        newLogger,
-			ConfigPatches: cfg.PSPPatches,
 		}
 		appMutator, err = app.NewMutator(c)
 		if err != nil {

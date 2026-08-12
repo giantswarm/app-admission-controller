@@ -6,6 +6,7 @@ package env
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
 const (
@@ -18,11 +19,18 @@ const (
 )
 
 var (
-	circleSHA  string
-	kubeconfig string
+	buildVersion string
+	circleSHA    string
+	kubeconfig   string
 )
 
 func init() {
+	filePath = filepath.Join(os.Getenv("CIRCLE_WORKING_DIRECTORY"), ".build_version")
+	buildVersion, err := os.ReadFile(filePath)
+	if buildVersion == "" {
+		panic(fmt.Sprintf(".build_version must not be empty"))
+	}
+
 	circleSHA = os.Getenv(EnvVarCircleSHA)
 	if circleSHA == "" {
 		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarCircleSHA))
@@ -32,6 +40,10 @@ func init() {
 	if kubeconfig == "" {
 		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarE2EKubeconfig))
 	}
+}
+
+func BuildVersion() string {
+	return buildVersion
 }
 
 func CircleSHA() string {

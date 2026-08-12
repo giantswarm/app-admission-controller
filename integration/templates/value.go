@@ -7,7 +7,10 @@ package templates
 const CertManagerValues = `
 global:
   podSecurityStandards:
-    enforced: true
+    enforced: false
+prometheus:
+  servicemonitor:
+    enabled: false
 `
 
 // AppAdmissionControllerValues values required by app-admission-controller chart.

@@ -26,10 +26,11 @@ var (
 
 func init() {
 	filePath = filepath.Join(os.Getenv("CIRCLE_WORKING_DIRECTORY"), ".build_version")
-	buildVersion, err := os.ReadFile(filePath)
-	if buildVersion == "" {
+	buf, err := os.ReadFile(filePath)
+	if string(buf) == "" {
 		panic(fmt.Sprintf(".build_version must not be empty"))
 	}
+	buildVersion = string(buf)
 
 	circleSHA = os.Getenv(EnvVarCircleSHA)
 	if circleSHA == "" {

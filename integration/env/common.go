@@ -25,8 +25,8 @@ var (
 )
 
 func init() {
-	filePath = filepath.Join(os.Getenv("CIRCLE_WORKING_DIRECTORY"), ".build_version")
-	buf, err := os.ReadFile(filePath)
+	filePath := filepath.Join(os.Getenv("CIRCLE_WORKING_DIRECTORY"), ".build_version")
+	buf, _ := os.ReadFile(filePath)
 	if string(buf) == "" {
 		panic(fmt.Sprintf(".build_version must not be empty"))
 	}

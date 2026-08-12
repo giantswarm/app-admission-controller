@@ -17,4 +17,6 @@ prometheus:
 const AppAdmissionControllerValues = `
 provider:
   kind: aws
+serviceMonitor:
+  enabled: false
 `

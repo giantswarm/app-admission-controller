@@ -36,7 +36,7 @@ workflows:
         app_catalog: control-plane-catalog
         app_catalog_test: control-plane-test-catalog
         chart: app-admission-controller
-        override_chart_version: false
+        #override_app_version: false
         requires:
         - push-to-registries
         filters:

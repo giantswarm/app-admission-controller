@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- Support for PSP patches.
+
 ### Changed
 
 - Bump the `architect` CircleCI orb from 6.15.0 to 9.6.0. The 6.x `push-to-app-catalog` job still

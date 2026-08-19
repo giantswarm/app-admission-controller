@@ -15,6 +15,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `gsoci`, and is absent from 9.x. 9.6.0 is the version already running in `coredns-app`,
   `external-dns-app` and `kyverno-policies-dx`.
 
+### Fixed
+
+- Look the integration-test chart up by the short-SHA suffix architect now stamps on dev versions.
+  `appcatalog` resolves a chart with `strings.HasSuffix(entry.Version, sha)`, which matched while orb
+  6.x published `<version>-<full 40-char SHA>`. Orb 9.x publishes the gitsemver dev format, e.g.
+  `2.0.2-dev.<branch>.2026-08-19.13-58-39.ha781825`, whose suffix is `h` plus the 7-character short
+  SHA -- so passing the full `CIRCLE_SHA1` could never match and both `mutation-integration-test` and
+  `validation-integration-test` failed with
+  ``no app `app-admission-controller` in index.yaml with given appVersion``. The chart was published
+  correctly the whole time; only the lookup was wrong.
+
 ## [2.0.1] - 2026-01-29
 
 ## [2.0.1] - 2026-01-29

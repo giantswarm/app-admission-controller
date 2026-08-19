@@ -38,6 +38,25 @@ func CircleSHA() string {
 	return circleSHA
 }
 
+// ChartVersionSHASuffix returns the trailing SHA fragment that architect stamps
+// onto dev chart versions, e.g. "ha781825" for the version
+// "2.0.2-dev.my-branch.2026-08-19.13-58-39.ha781825".
+//
+// appcatalog resolves a chart by testing strings.HasSuffix(entry.Version, sha),
+// which worked while architect orb 6.x published "<version>-<full 40-char SHA>".
+// Orb 9.x publishes the gitsemver dev format above, whose suffix is "h" plus the
+// 7-character short SHA, so the full SHA can never match and every lookup fails
+// with "no app ... in index.yaml with given appVersion".
+func ChartVersionSHASuffix() string {
+	const shortLen = 7
+
+	if len(circleSHA) < shortLen {
+		return circleSHA
+	}
+
+	return fmt.Sprintf("h%s", circleSHA[:shortLen])
+}
+
 func KubeConfig() string {
 	return kubeconfig
 }

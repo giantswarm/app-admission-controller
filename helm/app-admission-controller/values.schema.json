@@ -64,17 +64,6 @@
                 }
             }
         },
-        "psp": {
-            "type": "object",
-            "properties": {
-                "config": {
-                    "type": "array"
-                },
-                "enableOverrides": {
-                    "type": "boolean"
-                }
-            }
-        },
         "registry": {
             "type": "object",
             "properties": {

@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Support for PSP patches.
+  - Removed the `--psp-config-file` flag and the `psp-config` ConfigMap rendered for it.
+  - Removed the `psp.enableOverrides` and `psp.config` Helm values.
 
 ### Changed
 

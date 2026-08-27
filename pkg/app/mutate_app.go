@@ -171,15 +171,9 @@ func (m *Mutator) MutateApp(ctx context.Context, oldApp, app v1alpha1.App, opera
 		return nil, microerror.Mask(err)
 	}
 
-	// This may seem as too much, but since both, the `extraConfigsPatches` and the
-	// `pspConfigPatches`, are capable of adding patches to extra configs field,
-	// it makes sense to me to extract the patch that initially prepares the field to the
-	// parent method, hence it is here.
-	// Note: I have thought about merging the two methods together, but since the PSP
-	// initiative is the thing that has already caused some tension, I would like to avoid
-	// touching it altogether, because I believe what the method provides today has
-	// been tested and works. It should not be difficult to merge the two, yet I
-	// consciously choose to be paranoidical.
+	// The patch that initially prepares the extra configs field is extracted to
+	// this parent method, so that mutateExtraConfigs only has to emit the patches
+	// adding to an already existing field.
 	needsExtraConfigsSet := len(key.ExtraConfigs(app)) == 0 && hasPatchAddToExtraConfigs(extraConfigPatches)
 
 	if needsExtraConfigsSet {

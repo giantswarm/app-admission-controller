@@ -34,7 +34,7 @@ func init() {
 	if string(buf) == "" {
 		panic(".build_version must not be empty")
 	}
-	
+
 	buildVersion = string(buf)
 
 	circleSHA = os.Getenv(EnvVarCircleSHA)

@@ -28,13 +28,11 @@ const bottomPriority = 1
 type MutatorConfig struct {
 	K8sClient     k8sclient.Interface
 	Logger        micrologger.Logger
-	ConfigPatches []config.ConfigPatch
 }
 
 type Mutator struct {
 	k8sClient     k8sclient.Interface
 	logger        micrologger.Logger
-	configPatches []config.ConfigPatch
 	valuesService *values.Values
 }
 
@@ -58,7 +56,6 @@ func NewMutator(config MutatorConfig) (*Mutator, error) {
 	mutator := &Mutator{
 		k8sClient:     config.K8sClient,
 		logger:        config.Logger,
-		configPatches: config.ConfigPatches,
 		valuesService: valuesService,
 	}
 

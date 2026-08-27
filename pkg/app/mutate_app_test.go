@@ -708,17 +708,6 @@ func Test_MutateApp(t *testing.T) {
 			c := MutatorConfig{
 				K8sClient: k8sClient,
 				Logger:    microloggertest.New(),
-				ConfigPatches: []config.ConfigPatch{
-					{
-						AppName:         "prometheus-meta-operator",
-						ConfigMapSuffix: "pmo",
-						Values:          "prometheus:\n  psp: false",
-					},
-					{
-						AppName: "hello-world-app",
-						Values:  "hello:\n  psp_deploy: false",
-					},
-				},
 			}
 			r, err := NewMutator(c)
 			if err != nil {

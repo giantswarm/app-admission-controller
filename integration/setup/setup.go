@@ -56,7 +56,7 @@ func installResources(ctx context.Context, testConfig TestConfig) error {
 			CatalogName:   "control-plane-test-catalog",
 			Name:          "app-admission-controller",
 			Namespace:     "giantswarm",
-			SHA:           env.ChartVersionSHASuffix(),
+			SHA:           env.BuildVersion(),
 			ValuesYAML:    templates.AppAdmissionControllerValues,
 			WaitForDeploy: true,
 		},

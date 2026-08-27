@@ -19,6 +19,4 @@ provider:
   kind: aws
 serviceMonitor:
   enabled: false
-psp:
-  enableOverrides: false
 `

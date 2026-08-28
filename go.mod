@@ -94,3 +94,9 @@ replace (
 	// Required by github.com/giantswarm/apiextensions/v6
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.12.5
 )
+
+replace go.opentelemetry.io/otel/sdk v1.40.0 => go.opentelemetry.io/otel/sdk v1.46.0
+
+replace golang.org/x/crypto v0.50.0 => golang.org/x/crypto v0.55.0
+
+replace golang.org/x/sys v0.43.0 => golang.org/x/sys v0.47.0

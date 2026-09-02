@@ -25,7 +25,7 @@ require (
 	k8s.io/api v0.36.3
 	k8s.io/apimachinery v0.36.3
 	k8s.io/client-go v0.36.3
-	sigs.k8s.io/cluster-api v1.12.5
+	sigs.k8s.io/cluster-api v1.14.1
 	sigs.k8s.io/controller-runtime v0.24.1
 )
 
@@ -92,7 +92,7 @@ replace (
 	golang.org/x/net => golang.org/x/net v0.53.0
 	k8s.io/klog/v2 v2.2.0 => k8s.io/klog/v2 v2.0.0
 	// Required by github.com/giantswarm/apiextensions/v6
-	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.12.5
+	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.14.1
 )
 
 replace go.opentelemetry.io/otel/sdk v1.40.0 => go.opentelemetry.io/otel/sdk v1.46.0

@@ -100,3 +100,5 @@ replace go.opentelemetry.io/otel/sdk v1.40.0 => go.opentelemetry.io/otel/sdk v1.
 replace golang.org/x/crypto v0.50.0 => golang.org/x/crypto v0.55.0
 
 replace golang.org/x/sys v0.43.0 => golang.org/x/sys v0.47.0
+
+replace google.golang.org/grpc v1.79.3 => google.golang.org/grpc v1.83.2

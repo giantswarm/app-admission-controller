@@ -20,7 +20,7 @@ require (
 	github.com/giantswarm/releases/sdk v0.12.0
 	github.com/google/go-cmp v0.7.0
 	github.com/prometheus/client_golang v1.23.2
-	golang.org/x/exp v0.0.0-20260508232706-74f9aab9d74a
+	golang.org/x/exp v0.0.0-20260824195058-e88cd73687aa
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.36.3
 	k8s.io/apimachinery v0.36.3

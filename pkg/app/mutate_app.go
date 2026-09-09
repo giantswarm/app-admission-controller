@@ -19,15 +19,14 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/giantswarm/app-admission-controller/v2/config"
 	"github.com/giantswarm/app-admission-controller/v2/pkg/mutator"
 )
 
 const bottomPriority = 1
 
 type MutatorConfig struct {
-	K8sClient     k8sclient.Interface
-	Logger        micrologger.Logger
+	K8sClient k8sclient.Interface
+	Logger    micrologger.Logger
 }
 
 type Mutator struct {

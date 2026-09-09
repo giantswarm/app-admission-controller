@@ -24,11 +24,11 @@ workflows:
         filters:
           tags:
             only: /^v.*/
-
           branches:
             ignore:
             - main
             - master
+
     - architect/push-to-app-catalog:
         name: push-app-admission-controller-to-control-plane-catalog
         context: architect
@@ -42,11 +42,11 @@ workflows:
             # Do this on every commit and when a new tag is created.
           tags:
             only: /^v.*/
-
           branches:
             ignore:
             - main
             - master
+
     - architect/integration-test:
         name: mutation-integration-test
         setup-script: integration/setup.sh

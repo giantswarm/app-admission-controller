@@ -19,23 +19,19 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/giantswarm/app-admission-controller/v2/config"
 	"github.com/giantswarm/app-admission-controller/v2/pkg/mutator"
 )
 
+const bottomPriority = 1
+
 type MutatorConfig struct {
-	K8sClient     k8sclient.Interface
-	Logger        micrologger.Logger
-	Provider      string
-	ConfigPatches []config.ConfigPatch
+	K8sClient k8sclient.Interface
+	Logger    micrologger.Logger
 }
 
 type Mutator struct {
-	k8sClient k8sclient.Interface
-	logger    micrologger.Logger
-	// provider & configPatches are required by mutateConfigForPSPRemoval()
-	provider      string
-	configPatches []config.ConfigPatch
+	k8sClient     k8sclient.Interface
+	logger        micrologger.Logger
 	valuesService *values.Values
 }
 
@@ -59,8 +55,6 @@ func NewMutator(config MutatorConfig) (*Mutator, error) {
 	mutator := &Mutator{
 		k8sClient:     config.K8sClient,
 		logger:        config.Logger,
-		provider:      config.Provider,
-		configPatches: config.ConfigPatches,
 		valuesService: valuesService,
 	}
 
@@ -177,24 +171,10 @@ func (m *Mutator) MutateApp(ctx context.Context, oldApp, app v1alpha1.App, opera
 		return nil, microerror.Mask(err)
 	}
 
-	// Towards https://github.com/giantswarm/roadmap/issues/2716.
-	// See method documentation for more details.
-	pspConfigPatches, err := m.mutateConfigForPSPRemoval(ctx, app)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	// This may seem as too much, but since both, the `extraConfigsPatches` and the
-	// `pspConfigPatches`, are capable of adding patches to extra configs field,
-	// it makes sense to me to extract the patch that initially prepares the field to the
-	// parent method, hence it is here.
-	// Note: I have thought about merging the two methods together, but since the PSP
-	// initiative is the thing that has already caused some tension, I would like to avoid
-	// touching it altogether, because I believe what the method provides today has
-	// been tested and works. It should not be difficult to merge the two, yet I
-	// consciously choose to be paranoidical.
-	needsExtraConfigsSet := len(key.ExtraConfigs(app)) == 0 && (hasPatchAddToExtraConfigs(extraConfigPatches) ||
-		hasPatchAddToExtraConfigs(pspConfigPatches))
+	// The patch that initially prepares the extra configs field is extracted to
+	// this parent method, so that mutateExtraConfigs only has to emit the patches
+	// adding to an already existing field.
+	needsExtraConfigsSet := len(key.ExtraConfigs(app)) == 0 && hasPatchAddToExtraConfigs(extraConfigPatches)
 
 	if needsExtraConfigsSet {
 		result = append(result, mutator.PatchAdd("/spec/extraConfigs", []v1alpha1.AppExtraConfig{}))
@@ -202,9 +182,6 @@ func (m *Mutator) MutateApp(ctx context.Context, oldApp, app v1alpha1.App, opera
 
 	if len(extraConfigPatches) > 0 {
 		result = append(result, extraConfigPatches...)
-	}
-	if len(pspConfigPatches) > 0 {
-		result = append(result, pspConfigPatches...)
 	}
 
 	kubeConfigPatches, err := m.mutateKubeConfig(ctx, app)

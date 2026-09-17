@@ -39,7 +39,13 @@ func Test_healthCheck(t *testing.T) {
 		t.Fatalf("got %v HTTP response, want 200", rec.Code)
 	}
 
-	// Certificates are good, now reload them
+	// Stop the watcher before touching the files. Otherwise certman's goroutine
+	// races the assertion below: it reloads on the write event, the in-memory and
+	// on-disk pairs match again and the health check answers 200 instead of 503.
+	cm.Stop()
+
+	// Certificates on disk are replaced, but certman is no longer watching, so the
+	// in-memory pair stays stale. That mismatch is what the health check reports.
 	err = copyCertificate("testdata/certs/new")
 	if err != nil {
 		t.Fatalf("error == %#v, want nil", err.Error())

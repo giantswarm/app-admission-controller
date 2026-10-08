@@ -10,11 +10,6 @@ the API server.
 - Bugs: [issues](https://github.com/giantswarm/app-admission-controller/issues)
 - Please visit [our security guidelines](https://www.giantswarm.io/responsible-disclosure) for information on reporting security issues.
 
-## Contributing, reporting bugs
-
-See [our contribution guidelines](CONTRIBUTING.md) for details on submitting patches, the
-contribution workflow as well as reporting bugs.
-
 ## Add a new webhook
 
 See [docs/webhook.md](docs/webhook.md)

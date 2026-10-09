@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
-	"github.com/giantswarm/backoff"
+	"github.com/giantswarm/backoff/v2"
 	"github.com/giantswarm/microerror"
 	releases "github.com/giantswarm/releases/sdk/api/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

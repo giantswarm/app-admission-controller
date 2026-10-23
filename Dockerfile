@@ -1,4 +1,5 @@
 FROM gsoci.azurecr.io/giantswarm/alpine:3.24.2
 WORKDIR /app
-COPY app-admission-controller /app
+ARG TARGETARCH
+COPY app-admission-controller-linux-${TARGETARCH} /app/app-admission-controller
 CMD ["/app/app-admission-controller"]

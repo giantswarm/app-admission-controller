@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Pin `golang.org/x/net` to v0.62.0 (CVE-2026-97045, CVE-2026-78661), and in the module graph nancy scans, `grpc-gateway/v2` v2.27.7 to v2.33.0 (CVE-2026-37236, waiver expired 2026-10-31) and `otel/exporters/otlp/otlptrace` v1.40.0 to v1.47.0 (CVE-2026-81870, waiver until 2026-11-04). Neither of the last two is compiled into the binary. Drop the `.nancy-ignore` waivers that no longer match.
 - Fix ARM64 images.
 - The `helm.sh/chart` label is valid for long chart versions: the 63-character cut trims the whole trailing run of `-`, `.` and `_`.
 

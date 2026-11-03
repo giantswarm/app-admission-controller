@@ -89,7 +89,7 @@ replace (
 	github.com/go-logr/logr => github.com/go-logr/logr v1.4.4
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/gorilla/websocket => github.com/gorilla/websocket v1.5.3
-	golang.org/x/net => golang.org/x/net v0.61.0
+	golang.org/x/net => golang.org/x/net v0.62.0
 	k8s.io/klog/v2 v2.2.0 => k8s.io/klog/v2 v2.0.0
 	// Required by github.com/giantswarm/apiextensions/v6
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.12.5
@@ -104,3 +104,9 @@ replace golang.org/x/sys v0.43.0 => golang.org/x/sys v0.47.0
 replace google.golang.org/grpc v1.79.3 => google.golang.org/grpc v1.83.2
 
 replace go.opentelemetry.io/otel => go.opentelemetry.io/otel v1.47.0
+
+replace github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.7 => github.com/grpc-ecosystem/grpc-gateway/v2 v2.33.0
+
+replace go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.40.0 => go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.47.0
+
+replace go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.40.0 => go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.47.0

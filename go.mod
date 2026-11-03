@@ -108,3 +108,5 @@ replace go.opentelemetry.io/otel => go.opentelemetry.io/otel v1.47.0
 replace github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.7 => github.com/grpc-ecosystem/grpc-gateway/v2 v2.33.0
 
 replace go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.40.0 => go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.47.0
+
+replace go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.40.0 => go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.47.0

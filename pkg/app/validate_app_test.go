@@ -766,6 +766,137 @@ func Test_ValidateApp(t *testing.T) {
 			},
 		},
 		{
+			name: "update blacklisted app from a differently named catalog",
+			obj: &admissionv1.AdmissionRequest{
+				Operation: "UPDATE",
+				Object: runtime.RawExtension{
+					Raw: []byte(`
+						{
+							"apiVersion": "application.giantswarm.io/v1alpha1",
+							"kind": "App",
+							"metadata": {
+								"name": "app-operator-new",
+								"namespace": "demo0",
+								"labels": {
+									"app-operator.giantswarm.io/version": "0.0.0"
+								}
+							},
+							"spec": {
+								"catalog": "my-catalog",
+								"catalogNamespace": "demo0",
+								"name": "app-operator",
+								"namespace": "demo0",
+								"kubeConfig": {
+									"inCluster": true
+								},
+								"version": "0.3.1"
+							}
+						}
+					`),
+				},
+				OldObject: runtime.RawExtension{
+					Raw: []byte(`
+						{
+							"apiVersion": "application.giantswarm.io/v1alpha1",
+							"kind": "App",
+							"metadata": {
+								"name": "app-operator-new",
+								"namespace": "demo0",
+								"labels": {
+									"app-operator.giantswarm.io/version": "0.0.0"
+								}
+							},
+							"spec": {
+								"catalog": "my-catalog",
+								"catalogNamespace": "demo0",
+								"name": "app-operator",
+								"namespace": "demo0",
+								"kubeConfig": {
+									"inCluster": true
+								},
+								"version": "0.3.0"
+							}
+						}
+					`),
+				},
+				UserInfo: authv1.UserInfo{
+					Username: "00001@customer.onmicrosoft.com",
+					Groups: []string{
+						"customer:CUSTOMER-GROUP",
+					},
+				},
+			},
+			catalogs: []*v1alpha1.Catalog{
+				newTestCatalog("my-catalog", "demo0"),
+			},
+			expectedErr: "security violation error: installing `app-operator` app is not allowed",
+		},
+		{
+			name: "update blacklisted app from a differently named catalog as a whitelisted group",
+			obj: &admissionv1.AdmissionRequest{
+				Operation: "UPDATE",
+				Object: runtime.RawExtension{
+					Raw: []byte(`
+						{
+							"apiVersion": "application.giantswarm.io/v1alpha1",
+							"kind": "App",
+							"metadata": {
+								"name": "app-operator-new",
+								"namespace": "demo0",
+								"labels": {
+									"app-operator.giantswarm.io/version": "0.0.0"
+								}
+							},
+							"spec": {
+								"catalog": "my-catalog",
+								"catalogNamespace": "demo0",
+								"name": "app-operator",
+								"namespace": "demo0",
+								"kubeConfig": {
+									"inCluster": true
+								},
+								"version": "0.3.1"
+							}
+						}
+					`),
+				},
+				OldObject: runtime.RawExtension{
+					Raw: []byte(`
+						{
+							"apiVersion": "application.giantswarm.io/v1alpha1",
+							"kind": "App",
+							"metadata": {
+								"name": "app-operator-new",
+								"namespace": "demo0",
+								"labels": {
+									"app-operator.giantswarm.io/version": "0.0.0"
+								}
+							},
+							"spec": {
+								"catalog": "my-catalog",
+								"catalogNamespace": "demo0",
+								"name": "app-operator",
+								"namespace": "demo0",
+								"kubeConfig": {
+									"inCluster": true
+								},
+								"version": "0.3.0"
+							}
+						}
+					`),
+				},
+				UserInfo: authv1.UserInfo{
+					Username: "jane@giantswarm.io",
+					Groups: []string{
+						"giantswarm:giantswarm:giantswarm-admins",
+					},
+				},
+			},
+			catalogs: []*v1alpha1.Catalog{
+				newTestCatalog("my-catalog", "demo0"),
+			},
+		},
+		{
 			name: "modify existing App CR as a regular user",
 			obj: &admissionv1.AdmissionRequest{
 				Operation: "UPDATE",

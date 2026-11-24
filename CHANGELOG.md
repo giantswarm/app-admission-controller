@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Match the app blacklist on the app name alone, whatever catalog a unique (`0.0.0`) App CR names, as defence in depth. Actors outside the user and group whitelists can no longer create or update App CRs of a blacklisted app from another catalog.
+- Match the app blacklist on the app name alone, whatever catalog a unique (`0.0.0`) App CR names, as defence in depth. Actors outside the user and group whitelists can no longer create or update App CRs of a blacklisted app.
 
 ### Fixed
 

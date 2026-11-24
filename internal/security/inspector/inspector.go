@@ -38,7 +38,7 @@ func (i *Inspector) Inspect(ctx context.Context, app v1alpha1.App, userInfo auth
 	// Validate app against blacklisted apps
 	err = i.isBlacklistedApp(ctx, app)
 	if err != nil {
-		i.logger.Errorf(ctx, err, "rejecting blacklisted %#q app", app.Name)
+		i.logger.Errorf(ctx, err, "rejecting app %#q in namespace %#q for blacklisted app %#q", app.Name, app.Namespace, key.AppName(app))
 		return microerror.Mask(err)
 	}
 
@@ -89,10 +89,7 @@ func (i *Inspector) hasBlacklistedReference(ctx context.Context, app v1alpha1.Ap
 // isBlacklistedApp checks if app is one of the prohibited apps, see:
 // https://github.com/giantswarm/giantswarm/issues/21953
 //
-// The app name alone decides. Matching on the catalog name as well let a
-// blacklisted app through when requested from a Catalog CR with a different
-// name that points at the same storage, see:
-// https://github.com/giantswarm/giantswarm/issues/39470
+// The app name alone decides, whatever catalog the App CR names.
 func (i *Inspector) isBlacklistedApp(ctx context.Context, app v1alpha1.App) error {
 	if _, ok := i.appBlacklist[key.AppName(app)]; ok {
 		return microerror.Maskf(securityViolationError, appNotAllowedTemplate, key.AppName(app))

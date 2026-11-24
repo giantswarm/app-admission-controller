@@ -79,6 +79,7 @@
                     "type": "array"
                 },
                 "catalogBlacklist": {
+                    "description": "Deprecated and ignored. Apps in appBlacklist are rejected whatever catalog they come from.",
                     "type": "array"
                 },
                 "groupWhitelist": {

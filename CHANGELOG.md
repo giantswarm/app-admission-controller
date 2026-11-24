@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Deprecated
+
+- `security.catalogBlacklist` (`--blacklist-catalog`) is ignored and logs a warning when set.
+
+### Changed
+
+- Match the app blacklist on the app name alone, whatever catalog a unique (`0.0.0`) App CR names, as defence in depth. Actors outside the user and group whitelists can no longer create or update App CRs of a blacklisted app.
+
 ### Fixed
 
 - Pin `golang.org/x/net` to v0.62.0 (CVE-2026-97045, CVE-2026-78661), and in the module graph nancy scans, `grpc-gateway/v2` v2.27.7 to v2.33.0 (CVE-2026-37236, waiver expired 2026-10-31) and `otel/exporters/otlp/otlptrace` and `otlptracegrpc` v1.40.0 to v1.47.0 (CVE-2026-81870, waiver until 2026-11-04). None of these three is compiled into the binary; the pins are version-scoped `replace` directives and can go once the dependencies require fixed versions. Drop the `.nancy-ignore` waivers that no longer match.

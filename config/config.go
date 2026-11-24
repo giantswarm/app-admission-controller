@@ -24,7 +24,9 @@ type Config struct {
 	Provider       string
 
 	// Configuration for security validation
-	AppBlacklist       []string
+	AppBlacklist []string
+	// CatalogBlacklist is ignored. It is kept so deployments that still pass
+	// --blacklist-catalog keep starting.
 	CatalogBlacklist   []string
 	GroupWhitelist     []string
 	NamespaceBlacklist []string
@@ -82,7 +84,7 @@ func Parse() (Config, error) {
 	kingpin.Flag("whitelist-group", "Whitelisted group").StringsVar(&config.GroupWhitelist)
 	kingpin.Flag("whitelist-user", "Whitelisted user").StringsVar(&config.UserWhitelist)
 	kingpin.Flag("blacklist-app", "Blacklisted apps").StringsVar(&config.AppBlacklist)
-	kingpin.Flag("blacklist-catalog", "Blacklisted catalogs").StringsVar(&config.CatalogBlacklist)
+	kingpin.Flag("blacklist-catalog", "Deprecated and ignored: --blacklist-app blocks an app from any catalog").StringsVar(&config.CatalogBlacklist)
 	kingpin.Flag("blacklist-namespace", "Blacklisted namespaces").StringsVar(&config.NamespaceBlacklist)
 
 	kingpin.Parse()

@@ -18,9 +18,6 @@ deploymentStrategy:
 # security:
 #   appBlacklist:
 #     - "app-operator"
-#   catalogBlacklist:
-#     - "control-plane-catalog"
-#     - "control-plane-test-catalog"
 #   groupWhitelist:
 #     - "giantswarm:giantswarm:giantswarm-admins"
 #   namespaceBlacklist:
@@ -38,7 +35,9 @@ deploymentStrategy:
 #     - "system:serviceaccount:kube-system:"
 
 security:
+  # Apps in appBlacklist are rejected whatever catalog they come from.
   appBlacklist: []
+  # Deprecated and ignored.
   catalogBlacklist: []
   groupWhitelist: []
   namespaceBlacklist: []

@@ -11,13 +11,13 @@ import (
 )
 
 const (
-	appNotAllowedTemplate       = "installing %#q from %#q catalog is not allowed"
+	appNotAllowedTemplate       = "installing %#q app is not allowed"
 	referenceNotAllowedTemplate = "references to %#q namespace not allowed"
 )
 
 // Inspect check App CR against two things at the moment:
 // - references to blacklisted namespaces in config or userConfig
-// - blacklisted apps from blacklisted catalogs being requested
+// - blacklisted apps being requested, from any catalog
 func (i *Inspector) Inspect(ctx context.Context, app v1alpha1.App, userInfo authv1.UserInfo) error {
 	var err error
 
@@ -36,10 +36,9 @@ func (i *Inspector) Inspect(ctx context.Context, app v1alpha1.App, userInfo auth
 	}
 
 	// Validate app against blacklisted apps
-	// and catalogs
 	err = i.isBlacklistedApp(ctx, app)
 	if err != nil {
-		i.logger.Errorf(ctx, err, "rejecting blacklisted %#q app", app.Name)
+		i.logger.Errorf(ctx, err, "rejecting app %#q in namespace %#q for blacklisted app %#q", app.Name, app.Namespace, key.AppName(app))
 		return microerror.Mask(err)
 	}
 
@@ -87,15 +86,13 @@ func (i *Inspector) hasBlacklistedReference(ctx context.Context, app v1alpha1.Ap
 	return nil
 }
 
-// isBlacklistedApp checks if app is one of the prohibited apps, coming
-// from one of prohibited catalogs, see:
+// isBlacklistedApp checks if app is one of the prohibited apps, see:
 // https://github.com/giantswarm/giantswarm/issues/21953
+//
+// The app name alone decides, whatever catalog the App CR names.
 func (i *Inspector) isBlacklistedApp(ctx context.Context, app v1alpha1.App) error {
-	_, isAppBlacklisted := i.appBlacklist[key.AppName(app)]
-	_, isAppCatalogBlacklisted := i.catalogBlacklist[key.CatalogName(app)]
-
-	if isAppBlacklisted && isAppCatalogBlacklisted {
-		return microerror.Maskf(securityViolationError, appNotAllowedTemplate, key.AppName(app), key.CatalogName(app))
+	if _, ok := i.appBlacklist[key.AppName(app)]; ok {
+		return microerror.Maskf(securityViolationError, appNotAllowedTemplate, key.AppName(app))
 	}
 
 	return nil

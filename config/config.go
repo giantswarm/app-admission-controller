@@ -25,7 +25,8 @@ type Config struct {
 
 	// Configuration for security validation
 	AppBlacklist []string
-	// Deprecated: ignored, kept so existing deployments keep starting.
+	// CatalogBlacklist is ignored. It is kept so deployments that still pass
+	// --blacklist-catalog keep starting.
 	CatalogBlacklist   []string
 	GroupWhitelist     []string
 	NamespaceBlacklist []string

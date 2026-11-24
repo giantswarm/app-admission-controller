@@ -726,6 +726,46 @@ func Test_ValidateApp(t *testing.T) {
 			expectedErr: "security violation error: installing `app-operator` app is not allowed",
 		},
 		{
+			name: "install blacklisted app from a differently named catalog as a whitelisted group",
+			obj: &admissionv1.AdmissionRequest{
+				Operation: "CREATE",
+				Object: runtime.RawExtension{
+					Raw: []byte(`
+						{
+							"apiVersion": "application.giantswarm.io/v1alpha1",
+							"kind": "App",
+							"metadata": {
+								"name": "app-operator-new",
+								"namespace": "demo0",
+								"labels": {
+									"app-operator.giantswarm.io/version": "0.0.0"
+								}
+							},
+							"spec": {
+								"catalog": "my-catalog",
+								"catalogNamespace": "demo0",
+								"name": "app-operator",
+								"namespace": "demo0",
+								"kubeConfig": {
+									"inCluster": true
+								},
+								"version": "0.3.0"
+							}
+						}
+					`),
+				},
+				UserInfo: authv1.UserInfo{
+					Username: "jane@giantswarm.io",
+					Groups: []string{
+						"giantswarm:giantswarm:giantswarm-admins",
+					},
+				},
+			},
+			catalogs: []*v1alpha1.Catalog{
+				newTestCatalog("my-catalog", "demo0"),
+			},
+		},
+		{
 			name: "modify existing App CR as a regular user",
 			obj: &admissionv1.AdmissionRequest{
 				Operation: "UPDATE",

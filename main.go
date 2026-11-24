@@ -74,6 +74,9 @@ func mainWithError() error {
 
 	var inspector *secins.Inspector
 	{
+		if len(cfg.CatalogBlacklist) > 0 {
+			newLogger.LogCtx(ctx, "level", "warning", "message", "--blacklist-catalog is deprecated and ignored, --blacklist-app blocks an app from any catalog")
+		}
 
 		c := secins.Config{
 			Logger: newLogger,

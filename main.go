@@ -82,7 +82,6 @@ func mainWithError() error {
 			GroupWhitelist:     cfg.GroupWhitelist,
 			UserWhitelist:      cfg.UserWhitelist,
 			AppBlacklist:       cfg.AppBlacklist,
-			CatalogBlacklist:   cfg.CatalogBlacklist,
 		}
 
 		inspector, err = secins.New(c)

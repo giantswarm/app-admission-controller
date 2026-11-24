@@ -105,10 +105,6 @@ func Test_ValidateApp(t *testing.T) {
 		AppBlacklist: []string{
 			"app-operator",
 		},
-		CatalogBlacklist: []string{
-			"control-plane-catalog",
-			"control-plane-test-catalog",
-		},
 	}
 
 	tests := []struct {
@@ -686,7 +682,48 @@ func Test_ValidateApp(t *testing.T) {
 			catalogs: []*v1alpha1.Catalog{
 				newTestCatalog("control-plane", "giantswarm"),
 			},
-			expectedErr: "security violation error: installing `app-operator` from `control-plane-catalog` catalog is not allowed",
+			expectedErr: "security violation error: installing `app-operator` app is not allowed",
+		},
+		{
+			name: "install blacklisted app from a differently named catalog",
+			obj: &admissionv1.AdmissionRequest{
+				Operation: "CREATE",
+				Object: runtime.RawExtension{
+					Raw: []byte(`
+						{
+							"apiVersion": "application.giantswarm.io/v1alpha1",
+							"kind": "App",
+							"metadata": {
+								"name": "app-operator-new",
+								"namespace": "demo0",
+								"labels": {
+									"app-operator.giantswarm.io/version": "0.0.0"
+								}
+							},
+							"spec": {
+								"catalog": "my-catalog",
+								"catalogNamespace": "demo0",
+								"name": "app-operator",
+								"namespace": "demo0",
+								"kubeConfig": {
+									"inCluster": true
+								},
+								"version": "0.3.0"
+							}
+						}
+					`),
+				},
+				UserInfo: authv1.UserInfo{
+					Username: "00001@customer.onmicrosoft.com",
+					Groups: []string{
+						"customer:CUSTOMER-GROUP",
+					},
+				},
+			},
+			catalogs: []*v1alpha1.Catalog{
+				newTestCatalog("my-catalog", "demo0"),
+			},
+			expectedErr: "security violation error: installing `app-operator` app is not allowed",
 		},
 		{
 			name: "modify existing App CR as a regular user",
@@ -744,7 +781,7 @@ func Test_ValidateApp(t *testing.T) {
 			secrets: []*corev1.Secret{
 				newTestSecret("vault-token", "giantswarm"),
 			},
-			expectedErr: "security violation error: installing `app-operator` from `control-plane-catalog` catalog is not allowed",
+			expectedErr: "security violation error: installing `app-operator` app is not allowed",
 		},
 		{
 			name: "modify existing App CR as a GS member",

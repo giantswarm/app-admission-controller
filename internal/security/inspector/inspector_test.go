@@ -131,7 +131,6 @@ func Test_Inspector_hasBlacklistedReference(t *testing.T) {
 			inspector, err := New(Config{
 				Logger:             microloggertest.New(),
 				AppBlacklist:       []string{},
-				CatalogBlacklist:   []string{},
 				GroupWhitelist:     []string{},
 				NamespaceBlacklist: tc.namespaceBlacklist,
 				UserWhitelist:      []string{},
@@ -146,6 +145,81 @@ func Test_Inspector_hasBlacklistedReference(t *testing.T) {
 			if tc.errorMatcher == nil {
 				if err != nil {
 					t.Fatalf("Expected not validation errors, but got: %#v", err)
+				}
+			} else if !tc.errorMatcher(err) {
+				t.Fatalf("Did not match expected error, got: %#v", err)
+			}
+		})
+	}
+}
+
+func Test_Inspector_isBlacklistedApp(t *testing.T) {
+	tests := []struct {
+		name         string
+		appBlacklist []string
+		app          v1alpha1.App
+		errorMatcher func(error) bool
+	}{
+		{
+			name:         "app not on the blacklist",
+			appBlacklist: []string{"app-operator"},
+			app: v1alpha1.App{
+				Spec: v1alpha1.AppSpec{
+					Catalog: "control-plane-catalog",
+					Name:    "hello-world",
+				},
+			},
+		},
+		{
+			name:         "blacklisted app from the original catalog",
+			appBlacklist: []string{"app-operator"},
+			app: v1alpha1.App{
+				Spec: v1alpha1.AppSpec{
+					Catalog: "control-plane-catalog",
+					Name:    "app-operator",
+				},
+			},
+			errorMatcher: IsSecurityViolationError,
+		},
+		{
+			name:         "blacklisted app from a differently named catalog",
+			appBlacklist: []string{"app-operator"},
+			app: v1alpha1.App{
+				Spec: v1alpha1.AppSpec{
+					Catalog:          "my-catalog",
+					CatalogNamespace: "org-acme",
+					Name:             "app-operator",
+				},
+			},
+			errorMatcher: IsSecurityViolationError,
+		},
+		{
+			name:         "empty blacklist",
+			appBlacklist: []string{},
+			app: v1alpha1.App{
+				Spec: v1alpha1.AppSpec{
+					Catalog: "control-plane-catalog",
+					Name:    "app-operator",
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			inspector, err := New(Config{
+				Logger:       microloggertest.New(),
+				AppBlacklist: tc.appBlacklist,
+			})
+			if err != nil {
+				t.Fatalf("Failed to instantiate inspector: %#v", err)
+			}
+
+			err = inspector.isBlacklistedApp(context.Background(), tc.app)
+
+			if tc.errorMatcher == nil {
+				if err != nil {
+					t.Fatalf("Expected no error, got: %#v", err)
 				}
 			} else if !tc.errorMatcher(err) {
 				t.Fatalf("Did not match expected error, got: %#v", err)

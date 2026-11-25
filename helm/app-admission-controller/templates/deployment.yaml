@@ -47,21 +47,21 @@ spec:
             - ./app-admission-controller
             - --tls-cert-file=/certs/ca.crt
             - --tls-key-file=/certs/tls.key
-            - --provider={{ .Values.provider.kind }}
+            - {{ printf "--provider=%s" (.Values.provider.kind | toString | trim) | quote }}
             {{- range .Values.security.appBlacklist }}
-            - --blacklist-app={{ . }}
+            - {{ printf "--blacklist-app=%s" (. | toString | trim) | quote }}
             {{- end }}
             {{- range .Values.security.catalogBlacklist }}
-            - --blacklist-catalog={{ . }}
+            - {{ printf "--blacklist-catalog=%s" (. | toString | trim) | quote }}
             {{- end }}
             {{- range .Values.security.groupWhitelist }}
-            - --whitelist-group={{ . }}
+            - {{ printf "--whitelist-group=%s" (. | toString | trim) | quote }}
             {{- end }}
             {{- range .Values.security.namespaceBlacklist }}
-            - --blacklist-namespace={{ . }}
+            - {{ printf "--blacklist-namespace=%s" (. | toString | trim) | quote }}
             {{- end }}
             {{- range .Values.security.userWhitelist }}
-            - --whitelist-user={{ . }}
+            - {{ printf "--whitelist-user=%s" (. | toString | trim) | quote }}
             {{- end }}
           volumeMounts:
           - name: {{ include "name" . }}-certificates

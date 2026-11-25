@@ -1,0 +1,14 @@
+# Exercises the security argument rendering in chart tests: entries ending in
+# ":" must stay strings, and non-string entries must render as before.
+security:
+  appBlacklist:
+    - "app-operator"
+  groupWhitelist:
+    - "system:masters"
+    - 2024
+  namespaceBlacklist:
+    - "-prometheus"
+    - "giantswarm"
+  userWhitelist:
+    - "system:serviceaccount:giantswarm:"
+    - "system:serviceaccount:kube-system:"

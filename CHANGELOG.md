@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-11-26
+
 ### Deprecated
 
 - `security.catalogBlacklist` (`--blacklist-catalog`) is ignored and logs a warning when set.
@@ -451,7 +453,8 @@ allow app CR creation.
 - Add validation webhook that is enabled for app CRs with
 `app-operator.giantswarm.io/version` label value >= `3.0.0`.
 
-[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/giantswarm/app-admission-controller/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/giantswarm/app-admission-controller/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/giantswarm/app-admission-controller/compare/v2.0.1...v2.0.1
 [2.0.1]: https://github.com/giantswarm/app-admission-controller/compare/v2.0.0...v2.0.1

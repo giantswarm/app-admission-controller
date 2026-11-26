@@ -141,6 +141,15 @@ provider:
 
 verticalPodAutoscaler:
   enabled: false
+
+# The tests install from control-plane-catalog, and app-operator turns its
+# whole index into appcatalogentry CRs. The index outgrew app-operator's
+# default 250Mi limit, so it was OOM killed and no app CR was reconciled.
+# chart-operator reads its own keys and ignores this one.
+deployment:
+  management:
+    limits:
+      memory: 512Mi
 EOF
 
   helm install "${name}" "${name}" \

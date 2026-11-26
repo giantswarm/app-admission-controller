@@ -5,7 +5,7 @@ var (
 	gitSHA      = "n/a"
 	name        = "app-admission-controller" //nolint:gosec
 	source      = "https://github.com/giantswarm/app-admission-controller"
-	version     = "2.2.0"
+	version     = "2.2.1"
 )
 
 func Description() string {

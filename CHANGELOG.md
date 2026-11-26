@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.1] - 2026-11-26
+
 ### Changed
 
 - Push the image to Aliyun from the in-China runner (`split-china-push` and `sync-china-registry`), so the Aliyun push no longer blocks the chart publish. v2.2.0 never got its chart published because the push hung.
@@ -457,7 +459,8 @@ allow app CR creation.
 - Add validation webhook that is enabled for app CRs with
 `app-operator.giantswarm.io/version` label value >= `3.0.0`.
 
-[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/giantswarm/app-admission-controller/compare/v2.2.1...HEAD
+[2.2.1]: https://github.com/giantswarm/app-admission-controller/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/giantswarm/app-admission-controller/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/giantswarm/app-admission-controller/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/giantswarm/app-admission-controller/compare/v2.0.1...v2.0.1

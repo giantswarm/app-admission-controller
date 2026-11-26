@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Push the image to Aliyun from the in-China runner (`split-china-push` and `sync-china-registry`), so the Aliyun push no longer blocks the chart publish. v2.2.0 never got its chart published because the push hung.
+
 ## [2.2.0] - 2026-11-26
 
 ### Deprecated
